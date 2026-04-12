@@ -1,0 +1,15 @@
+{
+  "name": "insulin-smart-meal-hub",
+  "version": "1.0.0",
+  "description": "Mobile web app for insulin-sensitive meal suggestions",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["insulin", "diabetes", "meal-planning", "jamaican"],
+  "author": "Lifestyle Hikers",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  }
+}

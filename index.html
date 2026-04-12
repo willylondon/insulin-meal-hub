@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Insulin-Smart Meal Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="theme-color" content="#2E86AB">
+    <meta name="description" content="Daily insulin-sensitive meal suggestions for breakfast, lunch, and dinner">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>Insulin-Smart<span>Meal Hub</span></h1>
+                </div>
+                <div class="date-display">
+                    <div id="current-date">Loading...</div>
+                    <div class="meal-count" id="meal-count">0 meals logged</div>
+                </div>
+            </div>
+            <div class="user-message">
+                <p><i class="fas fa-check-circle"></i> Tailored for your insulin sensitivity journey</p>
+            </div>
+        </header>
+
+        <main>
+            <section class="today-meals">
+                <h2><i class="fas fa-calendar-day"></i> Today's Suggestions</h2>
+                <div class="meal-cards">
+                    <div class="meal-card breakfast">
+                        <div class="meal-header">
+                            <span class="meal-type"><i class="fas fa-coffee"></i> Breakfast</span>
+                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="breakfast-time">- min</span></span>
+                        </div>
+                        <h3 id="breakfast-name">Loading meal...</h3>
+                        <div class="meal-tags" id="breakfast-tags">
+                            <span class="tag">High-protein</span>
+                            <span class="tag">Low-carb</span>
+                        </div>
+                        <p class="meal-benefit" id="breakfast-benefit">Kickstarts metabolism with steady energy release.</p>
+                        <div class="meal-actions">
+                            <button class="btn-view" id="view-breakfast">
+                                <i class="fas fa-utensils"></i> View Recipe
+                            </button>
+                            <button class="btn-log" id="log-breakfast">
+                                <i class="fas fa-check"></i> I Ate This
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="meal-card lunch">
+                        <div class="meal-header">
+                            <span class="meal-type"><i class="fas fa-sun"></i> Lunch</span>
+                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="lunch-time">- min</span></span>
+                        </div>
+                        <h3 id="lunch-name">Loading meal...</h3>
+                        <div class="meal-tags" id="lunch-tags">
+                            <span class="tag">High-protein</span>
+                            <span class="tag">Low-carb</span>
+                        </div>
+                        <p class="meal-benefit" id="lunch-benefit">Designed to stabilize blood sugar and improve insulin sensitivity.</p>
+                        <div class="meal-actions">
+                            <button class="btn-view" id="view-lunch">
+                                <i class="fas fa-utensils"></i> View Recipe
+                            </button>
+                            <button class="btn-log" id="log-lunch">
+                                <i class="fas fa-check"></i> I Ate This
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="meal-card dinner">
+                        <div class="meal-header">
+                            <span class="meal-type"><i class="fas fa-moon"></i> Dinner</span>
+                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="dinner-time">- min</span></span>
+                        </div>
+                        <h3 id="dinner-name">Loading meal...</h3>
+                        <div class="meal-tags" id="dinner-tags">
+                            <span class="tag">Omega-3</span>
+                            <span class="tag">High-fiber</span>
+                        </div>
+                        <p class="meal-benefit" id="dinner-benefit">Supports overnight fasting glucose stability.</p>
+                        <div class="meal-actions">
+                            <button class="btn-view" id="view-dinner">
+                                <i class="fas fa-utensils"></i> View Recipe
+                            </button>
+                            <button class="btn-log" id="log-dinner">
+                                <i class="fas fa-check"></i> I Ate This
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="refresh-section">
+                    <button class="btn-refresh" id="refresh-meals">
+                        <i class="fas fa-redo"></i> Get New Suggestions
+                    </button>
+                    <p class="refresh-note">Based on your available ingredients and insulin sensitivity goals</p>
+                </div>
+            </section>
+
+            <section class="recipe-modal" id="recipe-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modal-meal-name">Recipe Details</h2>
+                        <button class="btn-close" id="close-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="recipe-info">
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Prep: <strong id="modal-prep-time">- min</strong></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-utensil-spoon"></i>
+                                <span>Servings: <strong id="modal-servings">-</strong></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-signal"></i>
+                                <span>Difficulty: <strong id="modal-difficulty">-</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="recipe-section">
+                            <h3><i class="fas fa-shopping-basket"></i> Ingredients</h3>
+                            <div class="ingredients-list" id="modal-ingredients">
+                                <p>Loading ingredients...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recipe-section">
+                            <h3><i class="fas fa-list-ol"></i> Instructions</h3>
+                            <div class="instructions-list" id="modal-instructions">
+                                <p>Loading instructions...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recipe-section">
+                            <h3><i class="fas fa-heartbeat"></i> Insulin Benefits</h3>
+                            <div class="benefits-content" id="modal-benefits">
+                                <p>Loading benefits...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recipe-section">
+                            <h3><i class="fas fa-chart-bar"></i> Nutrition Notes</h3>
+                            <div class="nutrition-content" id="modal-nutrition">
+                                <p>Loading nutrition info...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-log-modal" id="log-modal-meal">
+                            <i class="fas fa-check-circle"></i> Log This Meal
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-section">
+                <h2><i class="fas fa-chart-line"></i> Your Insulin Journey</h2>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                        <div class="stat-value" id="total-meals">0</div>
+                        <div class="stat-label">Meals Logged</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-value" id="avg-rating">0.0</div>
+                        <div class="stat-label">Avg. Rating</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-value" id="avg-prep">-</div>
+                        <div class="stat-label">Avg. Prep</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-value" id="top-meal">-</div>
+                        <div class="stat-label">Top Meal</div>
+                    </div>
+                </div>
+                
+                <div class="quick-links">
+                    <button class="link-btn" id="view-all">
+                        <i class="fas fa-book-open"></i> Browse All Recipes
+                    </button>
+                    <button class="link-btn" id="log-manual">
+                        <i class="fas fa-pen"></i> Log Custom Meal
+                    </button>
+                    <button class="link-btn" id="export-data">
+                        <i class="fas fa-download"></i> Export Ebook Data
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <p><i class="fas fa-info-circle"></i> Meals are designed for insulin sensitivity using your available ingredients: chicken, eggs, tuna, sardines, salmon, fish, ackee, peas, beans, nuts, pumpkin, sweet potato.</p>
+                <p class="footer-note">Data is stored locally on your device. For ebook analytics, export your meal logs.</p>
+                <div class="footer-links">
+                    <a href="#" id="how-it-works"><i class="fas fa-question-circle"></i> How It Works</a>
+                    <a href="#" id="add-recipe"><i class="fas fa-plus-circle"></i> Add Recipe</a>
+                    <a href="#" id="reset-data"><i class="fas fa-redo"></i> Reset Data</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <i class="fas fa-check" id="notification-icon"></i>
+            <span id="notification-text">Meal logged successfully!</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

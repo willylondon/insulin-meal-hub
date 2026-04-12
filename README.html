@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insulin-Smart Meal Hub Setup Guide</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #2E86AB; }
+        .step { background: #F0F8FF; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2E86AB; }
+        .code { background: #333; color: #fff; padding: 10px; border-radius: 5px; font-family: monospace; }
+        .tip { background: #E8F5E8; padding: 10px; border-radius: 5px; border-left: 4px solid #7ED321; }
+        .warning { background: #FFF3E0; padding: 10px; border-radius: 5px; border-left: 4px solid #FFA726; }
+        .btn { display: inline-block; background: #2E86AB; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🍽️ Insulin-Smart Meal Hub</h1>
+    <p><strong>Mobile web app for daily insulin-sensitive meal suggestions + ebook data collection</strong></p>
+    
+    <div class="step">
+        <h2>📱 How to Use the App</h2>
+        <ol>
+            <li><strong>Open on your phone:</strong> Navigate to the app folder and open <code>index.html</code> in your mobile browser</li>
+            <li><strong>Daily suggestions:</strong> App shows lunch & dinner meals tailored for insulin sensitivity</li>
+            <li><strong>View recipes:</strong> Tap "View Recipe" for full ingredients and instructions</li>
+            <li><strong>Log meals:</strong> Tap "I Ate This" to track what you actually eat</li>
+            <li><strong>Export data:</strong> Use "Export Ebook Data" to get JSON for your ebook analysis</li>
+        </ol>
+        
+        <p><a class="btn" href="index.html">🚀 Launch the App</a></p>
+    </div>
+    
+    <div class="step">
+        <h2>🔓 Make Your Google Sheet Public (Required)</h2>
+        <p>The app needs to read your meal data from Google Sheets. Here's how to make it public:</p>
+        
+        <ol>
+            <li>Open your Google Sheet: <a href="https://docs.google.com/spreadsheets/d/11mNtn-tcGpEypafr7tz0A0zNlTfJ00KAqKnWnuIGzw4/edit">Sheet Link</a></li>
+            <li>Click the <strong>"Share"</strong> button (top-right corner)</li>
+            <li>Click <strong>"Change to anyone with the link"</strong></li>
+            <li>Set permission to <strong>"Viewer"</strong> (not "Editor")</li>
+            <li>Click <strong>"Copy link"</strong> and <strong>"Done"</strong></li>
+        </ol>
+        
+        <div class="tip">
+            <strong>✅ Why this is safe:</strong> The app only reads data, cannot edit your sheet. Your meal logs are stored locally on your device.
+        </div>
+    </div>
+    
+    <div class="step">
+        <h2>📊 Ebook Data Collection</h2>
+        <p>This app automatically collects data for your future ebook:</p>
+        <ul>
+            <li><strong>Meal frequency:</strong> Which recipes you actually prepare most often</li>
+            <li><strong>Preparation patterns:</strong> Average prep time, difficulty ratings</li>
+            <li><strong>Insulin benefit themes:</strong> Which benefits are most relevant to your journey</li>
+            <li><strong>Personal adaptations:</strong> Your notes and modifications to recipes</li>
+        </ul>
+        
+        <p>Export your data anytime as JSON for analysis in Google Sheets, Excel, or data visualization tools.</p>
+    </div>
+    
+    <div class="step">
+        <h2>➕ Adding More Recipes</h2>
+        <p>Two ways to expand your meal database:</p>
+        
+        <h3>Option 1: Direct in Google Sheets</h3>
+        <ol>
+            <li>Open your Google Sheet</li>
+            <li>Add new rows in the "Recipes" sheet</li>
+            <li>Follow the same column format as existing recipes</li>
+            <li>The app will automatically load new recipes</li>
+        </ol>
+        
+        <h3>Option 2: Edit the Fallback Data</h3>
+        <p>If Google Sheets isn't working, edit <code>fallback-data.json</code> and add new meal objects.</p>
+    </div>
+    
+    <div class="warning">
+        <h3>⚠️ Troubleshooting</h3>
+        <p><strong>App shows "Loading meals..." forever?</strong> Your Google Sheet is still private. Follow Step 2 above.</p>
+        <p><strong>Can't access on mobile?</strong> Upload the folder to GitHub Pages, Netlify, or any web host.</p>
+        <p><strong>Data not saving?</strong> Make sure your browser allows local storage (all modern browsers do).</p>
+    </div>
+    
+    <div class="step">
+        <h2>🚀 Advanced: Deploy to Web</h2>
+        <p>For easier mobile access, deploy to free hosting:</p>
+        
+        <h3>GitHub Pages (Free)</h3>
+        <ol>
+            <li>Create GitHub account (if you don't have one)</li>
+            <li>Create new repository: <code>insulin-meal-hub</code></li>
+            <li>Upload all files from the <code>insulin-meal-hub</code> folder</li>
+            <li>Go to Settings → Pages → Select "main" branch → Save</li>
+            <li>Your app will be at: <code>https://[username].github.io/insulin-meal-hub</code></li>
+        </ol>
+        
+        <h3>Netlify (Easiest)</h3>
+        <ol>
+            <li>Go to <a href="https://app.netlify.com/drop">Netlify Drop</a></li>
+            <li>Drag and drop the entire <code>insulin-meal-hub</code> folder</li>
+            <li>Get a free URL like <code>https://your-meal-hub.netlify.app</code></li>
+        </ol>
+    </div>
+    
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc;">
+        <p>Built for your insulin sensitivity journey & future ebook. Data is stored locally on your device.</p>
+        <p>Need help? Check the app's JavaScript console for errors or contact me.</p>
+    </footer>
+</body>
+</html>
