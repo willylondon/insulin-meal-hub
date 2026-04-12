@@ -1,4 +1,5 @@
 // Insulin-Smart Meal Hub - Main JavaScript
+// Enhanced Version v1.1 - Deployed April 12, 2026
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const CONFIG = {
