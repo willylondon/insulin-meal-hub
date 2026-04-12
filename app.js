@@ -1,6 +1,6 @@
 // Insulin-Smart Meal Hub - Main JavaScript
-// Bulletproof Version v1.1.3 - Final Fix April 12, 2026
-document.addEventListener('DOMContentLoaded', function() {
+// Bulletproof Version v1.1.5 - Final Fix April 12, 2026
+function initApp() {
     console.log("App Initializing...");
 
     // Configuration
@@ -243,7 +243,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
         };
     }
+}
 
-    // Start
-    init();
-});
+// Robust Loader
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
