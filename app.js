@@ -10,6 +10,77 @@ document.addEventListener('DOMContentLoaded', function() {
         NOTIFICATION_DURATION: 3000
     };
 
+    // Health Profile (based on user's provided metrics)
+    const HEALTH_PROFILE = {
+        hba1c: 6.7,           // %
+        fastingGlucose: 5.6,  // mmol/L
+        cholesterol: {
+            total: 6.04,      // mmol/L
+            ldl: 3.62,        // mmol/L
+            hdlLdlRatio: 0.34,
+            cholHdlRatio: 5.0
+        },
+        uricAcid: 0.44,       // mmol/L
+        ggt: null,            // mildly elevated
+        creatinine: 96,       // umol/L
+        egfr: 96,             // mL/min/1.73m²
+        medications: [
+            'Metformin XR 500 mg, half tablet once daily before a meal',
+            'Febuxostat 40 mg once daily',
+            'Rosuvastatin 20 mg nightly'
+        ],
+        goals: [
+            'Improve blood sugar control',
+            'Support insulin sensitivity',
+            'Reduce cholesterol burden',
+            'Lower gout-trigger risk'
+        ]
+    };
+
+    // HTML escaping function for XSS protection
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Customization Settings (user-adjustable)
+    const CUSTOM_SETTINGS = {
+        // Budget: low, medium, high
+        budget: 'medium',
+        // Meal timing: early (before 8am), normal (8am-1pm), late (after 1pm), any
+        mealTiming: 'any',
+        // Ingredients on hand (comma-separated string) - Jamaican accessible
+        ingredientsOnHand: 'chicken, eggs, tuna, sardines, mackerel, ackee, saltfish, pumpkin, sweet potato, callaloo, cabbage, carrot, onion, tomato, garlic, thyme, scallion, bell pepper, coconut milk, olive oil, brown rice, oats, quinoa, beans, lentils, plantain, banana, avocado',
+        // Calorie target per meal (kcal) - adjusted for weight loss goal
+        calorieTarget: 500,
+        // Protein target per meal (g) - optimized for insulin resistance
+        proteinTarget: 35,
+        // Carb tolerance: very-low (<20g), low (20-40g), moderate (40-60g), high (>60g)
+        carbTolerance: 'moderate',
+        // Weight loss goal: none, mild (0.5kg/week), moderate (1kg/week), aggressive (1.5kg/week)
+        weightLossGoal: 'moderate',
+        // Meal mode: breakfast, lunch, dinner, snack, any
+        mealMode: 'any',
+        // Jamaican cuisine preference: traditional, fusion, simple, any
+        cuisinePreference: 'traditional',
+        // Cooking time preference: quick (<20min), moderate (20-40min), any
+        cookingTime: 'any',
+        // Meal prep friendly: yes, no, any
+        mealPrepFriendly: 'any',
+        // Portion size: small, medium, large, extra-large
+        portionSize: 'medium',
+        // Dietary restrictions: none, vegetarian, pescatarian, dairy-free, gluten-free
+        dietaryRestriction: 'none',
+        // Additional preferences
+        avoidGoutTriggers: true,
+        prioritizeHeartHealth: true,
+        minimizeGlucoseSpikes: true,
+        favorJamaicanIngredients: true,
+        limitProcessedFoods: true,
+        includeFiberRichFoods: true
+    };
+
     // State
     let state = {
         meals: [],
@@ -20,7 +91,618 @@ document.addEventListener('DOMContentLoaded', function() {
             avgRating: 0,
             avgPrepTime: 0,
             topMeal: null
+    
+    // ======================
+    // MEAL SCORING & FILTERING
+    // ======================
+    function parseNutritionNotes(notes) {
+        // Parse "~450 cal | 35g protein | 25g fat | 15g carbs | 10g fiber"
+        if (!notes) return { calories: 0, protein: 0, carbs: 0, fiber: 0, fat: 0 };
+        
+        const result = { calories: 0, protein: 0, carbs: 0, fiber: 0, fat: 0 };
+        
+        // Extract calories
+        const calMatch = notes.match(/(\d+)\s*cal/);
+        if (calMatch) result.calories = parseInt(calMatch[1]);
+        
+        // Extract protein
+        const proteinMatch = notes.match(/(\d+)\s*g\s*protein/);
+        if (proteinMatch) result.protein = parseInt(proteinMatch[1]);
+        
+        // Extract carbs
+        const carbsMatch = notes.match(/(\d+)\s*g\s*carbs/);
+        if (carbsMatch) result.carbs = parseInt(carbsMatch[1]);
+        
+        // Extract fiber
+        const fiberMatch = notes.match(/(\d+)\s*g\s*fiber/);
+        if (fiberMatch) result.fiber = parseInt(fiberMatch[1]);
+        
+        // Extract fat
+        const fatMatch = notes.match(/(\d+)\s*g\s*fat/);
+        if (fatMatch) result.fat = parseInt(fatMatch[1]);
+        
+        return result;
+    }
+    
+    function scoreMeal(meal, profile = HEALTH_PROFILE, settings = CUSTOM_SETTINGS) {
+        const scores = {
+            bloodSugar: 5,  // 1-10
+            insulinResistance: 5,
+            heartHealth: 5,
+            goutFriendly: 5,
+            overall: 5
+        };
+        
+        const flags = [];
+        const substitutions = [];
+        
+        // Parse nutrition
+        const nutrition = parseNutritionNotes(meal['Nutrition Notes']);
+        
+        // Apply settings adjustments
+        let settingsBonus = 0;
+        
+        // Medication-aware considerations
+        const medicationFlags = [];
+        if (profile.medications) {
+            profile.medications.forEach(med => {
+                if (med.includes('Metformin') && nutrition.carbs > 50) {
+                    medicationFlags.push('High carb meal - pair with Metformin as prescribed');
+                }
+                if (med.includes('Febuxostat') && meal.Ingredients) {
+                    const ing = meal.Ingredients.toLowerCase();
+                    const highPurine = ['organ meat', 'liver', 'kidney', 'anchovy', 'sardine', 'mackerel', 'scallop'];
+                    highPurine.forEach(item => {
+                        if (ing.includes(item)) {
+                            medicationFlags.push('Contains high-purine foods - continue Febuxostat as prescribed');
+                        }
+                    });
+                }
+                if (med.includes('Rosuvastatin') && meal.Ingredients) {
+                    const ing = meal.Ingredients.toLowerCase();
+                    const highSaturatedFat = ['butter', 'cream', 'cheese', 'fried', 'processed meat', 'bacon', 'sausage'];
+                    highSaturatedFat.forEach(item => {
+                        if (ing.includes(item)) {
+                            medicationFlags.push('High saturated fat - continue Rosuvastatin as prescribed');
+                        }
+                    });
+                }
+            });
         }
+        
+        // 1. Blood Sugar Friendliness
+        // Enhanced for HbA1c 6.7% and fasting glucose 5.6 mmol/L
+        let bloodSugarScore = 5;
+        
+        // Carb optimization for insulin resistance
+        if (nutrition.carbs > 0) {
+            const fiberRatio = nutrition.fiber / nutrition.carbs;
+            // Higher fiber ratio is better
+            if (fiberRatio > 0.2) bloodSugarScore += 3;
+            else if (fiberRatio > 0.15) bloodSugarScore += 2;
+            else if (fiberRatio < 0.05) bloodSugarScore -= 2;
+            
+            // Carb quantity optimization
+            if (nutrition.carbs >= 15 && nutrition.carbs <= 45) bloodSugarScore += 2; // Ideal range
+            else if (nutrition.carbs < 15) bloodSugarScore += 1; // Very low carb
+            else if (nutrition.carbs > 60) bloodSugarScore -= 3; // Too high
+            else if (nutrition.carbs > 45) bloodSugarScore -= 1; // Moderately high
+        }
+        
+        // Adjust for carb tolerance setting
+        if (settings.carbTolerance === 'low' && nutrition.carbs > 25) {
+            bloodSugarScore -= 2;
+            flags.push('High carbs for low-carb preference');
+            substitutions.push('Reduce carb portion by 1/3 or substitute with more vegetables');
+        } else if (settings.carbTolerance === 'moderate' && nutrition.carbs > 40) {
+            bloodSugarScore -= 1;
+            flags.push('Moderately high carbs - consider portion control');
+        } else if (settings.carbTolerance === 'high' && nutrition.carbs < 20) {
+            bloodSugarScore += 1; // more carbs desired
+        }
+        
+        // Check tags for low-carb, high-fiber
+        if (meal.Tags) {
+            const tags = meal.Tags.toLowerCase();
+            if (tags.includes('low-carb')) bloodSugarScore += 1;
+            if (tags.includes('high-fiber')) bloodSugarScore += 1;
+            if (tags.includes('sugar') || tags.includes('sweet')) bloodSugarScore -= 2;
+        }
+        
+        // Check ingredients for glycemic impact
+        if (meal.Ingredients) {
+            const ing = meal.Ingredients.toLowerCase();
+            
+            // High glycemic to avoid
+            const highGi = ['sugar', 'honey', 'syrup', 'molasses', 'white rice', 'white bread', 'white flour', 'potato', 'ripe plantain'];
+            // Low glycemic Jamaican-accessible foods to favor
+            const lowGi = ['sweet potato', 'pumpkin', 'oats', 'quinoa', 'brown rice', 'green banana', 'green plantain', 'yam', 'dasheen', 'coco'];
+            // Jamaican superfoods for blood sugar
+            const jamaicanSuperfoods = ['callaloo', 'cho-cho', 'cabbage', 'okra', 'string beans', 'pak-choi', 'carrot juice (fresh)'];
+            
+            highGi.forEach(item => { 
+                if (ing.includes(item)) {
+                    bloodSugarScore -= 2;
+                    flags.push(`Contains ${item} - may spike blood sugar`);
+                    substitutions.push(`Replace ${item} with sweet potato or pumpkin`);
+                }
+            });
+            lowGi.forEach(item => { 
+                if (ing.includes(item)) {
+                    bloodSugarScore += 1;
+                    if (item === 'sweet potato' || item === 'pumpkin') bloodSugarScore += 1; // Bonus for best options
+                }
+            });
+            jamaicanSuperfoods.forEach(item => { 
+                if (ing.includes(item)) bloodSugarScore += 1;
+            });
+        }
+        
+        scores.bloodSugar = Math.max(1, Math.min(10, bloodSugarScore));
+        
+        // 2. Insulin Resistance Support
+        // Enhanced for optimal insulin sensitivity
+        let insulinScore = 5;
+        
+        // Protein optimization for insulin resistance
+        if (nutrition.protein >= 30 && nutrition.protein <= 50) insulinScore += 3; // Ideal range
+        else if (nutrition.protein >= 25) insulinScore += 2;
+        else if (nutrition.protein >= 20) insulinScore += 1;
+        else if (nutrition.protein < 15) insulinScore -= 2;
+        
+        // Healthy fat optimization
+        if (nutrition.fat >= 15 && nutrition.fat <= 30) insulinScore += 2; // Ideal range
+        else if (nutrition.fat >= 10) insulinScore += 1;
+        else if (nutrition.fat > 35) insulinScore -= 1; // Too high fat
+        
+        // Protein-to-carb ratio important for insulin sensitivity
+        if (nutrition.carbs > 0 && nutrition.protein > 0) {
+            const proteinToCarbRatio = nutrition.protein / nutrition.carbs;
+            if (proteinToCarbRatio > 1.0) insulinScore += 2; // Excellent ratio
+            else if (proteinToCarbRatio > 0.7) insulinScore += 1; // Good ratio
+            else if (proteinToCarbRatio < 0.3) insulinScore -= 1; // Poor ratio
+        }
+        
+        // Adjust for protein target
+        if (settings.proteinTarget) {
+            const diff = nutrition.protein - settings.proteinTarget;
+            if (diff >= 10) insulinScore += 2;
+            else if (diff >= 5) insulinScore += 1;
+            else if (diff <= -10) insulinScore -= 2;
+            else if (diff <= -5) insulinScore -= 1;
+        }
+        
+        // Check for protein sources
+        if (meal.Ingredients) {
+            const ing = meal.Ingredients.toLowerCase();
+            
+            // Optimal proteins for insulin resistance (Jamaican-accessible)
+            const optimalProteins = ['chicken', 'turkey', 'egg', 'mackerel', 'sardine', 'tofu', 'greek yogurt', 'cottage cheese', 'lentils', 'kidney beans', 'gunga peas'];
+            // Good proteins
+            const goodProteins = ['fish', 'beans', 'yogurt', 'cheese', 'pork loin', 'lean beef'];
+            // Proteins to limit
+            const limitProteins = ['processed meat', 'sausage', 'bacon', 'fried chicken', 'fried fish', 'spam', 'corned beef'];
+            // Proteins to avoid with gout considerations
+            const goutRiskProteins = ['organ meat', 'liver', 'kidney', 'anchovy', 'scallop', 'mussels'];
+            
+            optimalProteins.forEach(item => { 
+                if (ing.includes(item)) {
+                    insulinScore += 1;
+                    if (item === 'egg' || item === 'chicken') insulinScore += 0.5; // Bonus for best options
+                }
+            });
+            goodProteins.forEach(item => { 
+                if (ing.includes(item)) insulinScore += 0.5;
+            });
+            limitProteins.forEach(item => { 
+                if (ing.includes(item)) {
+                    insulinScore -= 2;
+                    flags.push(`Contains ${item} - may worsen insulin resistance`);
+                    substitutions.push(`Replace ${item} with grilled chicken or baked fish`);
+                }
+            });
+            goutRiskProteins.forEach(item => { 
+                if (ing.includes(item)) {
+                    insulinScore -= 1; // Cross-impact with gout
+                }
+            });
+        }
+        
+        scores.insulinResistance = Math.max(1, Math.min(10, insulinScore));
+        
+        // 3. Heart/Cholesterol Friendliness - Enhanced for elevated cholesterol
+        let heartScore = 4; // Start lower due to elevated cholesterol (Total: 6.04, LDL: 3.62)
+        
+        // Check for cholesterol-friendly ingredients
+        if (meal.Ingredients) {
+            const ing = meal.Ingredients.toLowerCase();
+            
+            // Excellent for cholesterol (increase score)
+            const cholesterolExcellent = ['olive oil', 'avocado', 'nuts', 'almonds', 'walnuts', 'seeds', 'flaxseed', 
+                                         'salmon', 'sardines', 'mackerel', 'omega-3', 'oats', 'barley', 'beans', 
+                                         'lentils', 'okra', 'eggplant', 'apple', 'berries', 'garlic', 'onion'];
+            // Good for cholesterol
+            const cholesterolGood = ['canola oil', 'avocado oil', 'lean chicken', 'turkey', 'tofu', 'soy', 
+                                    'green leafy vegetables', 'carrots', 'sweet potato', 'whole grains'];
+            // Neutral for cholesterol
+            const cholesterolNeutral = ['rice', 'pasta', 'bread', 'potato', 'corn', 'moderate cheese', 'yogurt'];
+            // Risky for cholesterol (decrease score)
+            const cholesterolRisky = ['butter', 'cream', 'full-fat cheese', 'fried foods', 'processed meat', 
+                                     'bacon', 'sausage', 'hot dog', 'pastry', 'cake', 'cookies', 'ice cream'];
+            // Very risky for cholesterol (significant decrease)
+            const cholesterolVeryRisky = ['trans fat', 'hydrogenated oil', 'shortening', 'palm oil', 'coconut oil', 
+                                         'organ meats', 'high-fat red meat', 'fast food'];
+            
+            cholesterolExcellent.forEach(item => { 
+                if (ing.includes(item)) {
+                    heartScore += 2;
+                    if (item === 'oats' || item === 'beans' || item === 'salmon') heartScore += 1; // Bonus for best options
+                }
+            });
+            cholesterolGood.forEach(item => { 
+                if (ing.includes(item)) heartScore += 1;
+            });
+            cholesterolRisky.forEach(item => { 
+                if (ing.includes(item)) {
+                    heartScore -= 2;
+                    flags.push(`Contains ${item} - may worsen cholesterol`);
+                    substitutions.push(`Replace ${item} with olive oil, avocado, or nuts`);
+                }
+            });
+            cholesterolVeryRisky.forEach(item => { 
+                if (ing.includes(item)) {
+                    heartScore -= 3;
+                    flags.push(`Contains ${item} - significant cholesterol risk`);
+                    substitutions.push(`Avoid ${item} completely for cholesterol management`);
+                }
+            });
+        }
+        
+        // Adjust based on nutrition facts
+        if (nutrition.fat > 0) {
+            // Estimate saturated fat (simplified)
+            const estimatedSatFat = nutrition.fat * 0.3; // Rough estimate
+            if (estimatedSatFat > 10) heartScore -= 2;
+            else if (estimatedSatFat > 5) heartScore -= 1;
+            else if (estimatedSatFat < 3) heartScore += 1;
+        }
+        
+        // Fiber is excellent for cholesterol
+        if (nutrition.fiber >= 10) heartScore += 2;
+        else if (nutrition.fiber >= 5) heartScore += 1;
+        
+        // Apply prioritize heart health setting (always true for this profile)
+        if (settings.prioritizeHeartHealth || profile.cholesterol.total > 5.0) {
+            // Stricter scoring for elevated cholesterol
+            if (heartScore >= 7) heartScore += 1;
+            if (heartScore <= 5) heartScore -= 1;
+            if (heartScore <= 3) heartScore -= 1; // Additional penalty for poor choices
+        }
+        
+        // Check tags for cholesterol benefits
+        if (meal.Tags) {
+            const tags = meal.Tags.toLowerCase();
+            if (tags.includes('omega-3') || tags.includes('high-fiber') || tags.includes('heart-healthy')) {
+                heartScore += 2;
+            }
+            if (tags.includes('low-saturated-fat') || tags.includes('cholesterol-friendly')) {
+                heartScore += 1;
+            }
+        }
+        
+        scores.heartHealth = Math.max(1, Math.min(10, heartScore));
+        
+        // 4. Gout Friendliness - Enhanced for uric acid 0.44 mmol/L
+        let goutScore = 6; // Start at moderate due to elevated uric acid
+        
+        if (meal.Ingredients) {
+            const ing = meal.Ingredients.toLowerCase();
+            
+            // Purine content classification for gout
+            const veryHighPurine = ['organ meat', 'liver', 'kidney', 'heart', 'brain', 'sweetbreads'];
+            const highPurine = ['anchovy', 'sardine', 'mackerel', 'scallop', 'mussels', 'herring', 'trout'];
+            const moderatePurine = ['beef', 'pork', 'lamb', 'veal', 'bacon', 'salmon', 'tuna', 'chicken', 'turkey', 'duck'];
+            const lowPurine = ['egg', 'tofu', 'cheese', 'milk', 'yogurt', 'nuts', 'beans', 'lentils', 'vegetables', 'fruits'];
+            const goutProtective = ['cherry', 'berries', 'citrus', 'coffee', 'low-fat dairy', 'olive oil', 'whole grains'];
+            
+            // Score adjustments based on purine content
+            veryHighPurine.forEach(item => { 
+                if (ing.includes(item)) {
+                    goutScore -= 4;
+                    flags.push(`Contains ${item} - very high purine, high gout risk`);
+                    substitutions.push(`Replace ${item} with egg, tofu, or low-fat dairy`);
+                }
+            });
+            highPurine.forEach(item => { 
+                if (ing.includes(item)) {
+                    goutScore -= 3;
+                    flags.push(`Contains ${item} - high purine, moderate gout risk`);
+                }
+            });
+            moderatePurine.forEach(item => { 
+                if (ing.includes(item)) {
+                    goutScore -= 1;
+                    // Allow moderate purine in controlled portions
+                }
+            });
+            lowPurine.forEach(item => { 
+                if (ing.includes(item)) goutScore += 1;
+            });
+            goutProtective.forEach(item => { 
+                if (ing.includes(item)) goutScore += 2;
+            });
+        }
+        
+        // Adjust based on uric acid level in profile
+        if (profile.uricAcid > 0.42) { // Elevated uric acid threshold
+            goutScore -= 1; // Be more cautious
+            if (goutScore < 5) goutScore -= 1; // Additional penalty for risky meals
+        }
+        
+        // Apply avoid gout triggers setting
+        if (settings.avoidGoutTriggers) {
+            // Be stricter with gout triggers
+            if (goutScore < 6) goutScore -= 1;
+            if (goutScore < 4) goutScore -= 1; // Additional penalty for very risky meals
+        }
+        
+        scores.goutFriendly = Math.max(1, Math.min(10, goutScore));
+        
+        // Overall score (weighted average)
+        scores.overall = Math.round(
+            (scores.bloodSugar * 0.3) +
+            (scores.insulinResistance * 0.3) +
+            (scores.heartHealth * 0.2) +
+            (scores.goutFriendly * 0.2)
+        );
+        
+        // Generate flags based on settings
+        if (settings.carbTolerance === 'low' && nutrition.carbs > 30) {
+            flags.push('High carbs for low-carb preference');
+        }
+        if (settings.proteinTarget && nutrition.protein < settings.proteinTarget - 5) {
+            flags.push('Low protein for your target');
+        }
+        if (settings.calorieTarget && nutrition.calories > settings.calorieTarget + 100) {
+            flags.push('High calorie for your target');
+        }
+        
+        // Original flags
+        if (scores.bloodSugar < 4) flags.push('May cause glucose spike');
+        if (scores.bloodSugar > 7) flags.push('Excellent for blood sugar');
+        
+        if (scores.insulinResistance < 4) flags.push('Low protein for insulin support');
+        if (scores.insulinResistance > 7) flags.push('Great for insulin sensitivity');
+        
+        if (scores.heartHealth < 4) flags.push('Consider heart health alternatives');
+        if (scores.heartHealth > 7) flags.push('Heart-healthy ingredients');
+        
+        if (scores.goutFriendly < 4) flags.push('High purine content - caution if gout prone');
+        if (scores.goutFriendly > 7) flags.push('Gout-friendly');
+        
+        // Substitution suggestions
+        if (scores.bloodSugar < 5 && nutrition.carbs > 40) {
+            substitutions.push('Consider reducing portion size or pairing with more protein/fat');
+        }
+        if (scores.goutFriendly < 5) {
+            substitutions.push('Swap high-purine proteins for chicken, eggs, or tofu');
+        }
+        
+        // Add medication flags to main flags array
+        if (medicationFlags.length > 0) {
+            flags.push(...medicationFlags);
+        }
+        
+        return { scores, flags, substitutions, nutrition };
+    }
+    
+    function filterAndRankMeals(meals, mealType, settings = CUSTOM_SETTINGS) {
+        // First filter by meal type
+        let filtered = meals.filter(meal => meal.Type === mealType);
+        
+        if (filtered.length === 0) return [];
+        
+        // Score each meal
+        const scored = filtered.map(meal => {
+            const scoring = scoreMeal(meal, HEALTH_PROFILE, settings);
+            
+            // Calculate custom score with adjustments
+            let customScore = scoring.scores.overall;
+            
+            // Adjust for ingredients on hand
+            if (settings.ingredientsOnHand) {
+                const ingredientsList = settings.ingredientsOnHand.toLowerCase().split(/[,\s]+/).filter(i => i.length > 2);
+                const mealIngredients = meal.Ingredients?.toLowerCase() || '';
+                let matchCount = 0;
+                ingredientsList.forEach(ing => {
+                    if (mealIngredients.includes(ing)) matchCount++;
+                });
+                // Boost score if at least one ingredient matches
+                if (matchCount > 0) {
+                    customScore += Math.min(3, matchCount);
+                }
+            }
+            
+            // Adjust for budget
+            if (settings.budget === 'low' && meal.Tags?.toLowerCase().includes('budget')) {
+                customScore += 2;
+            } else if (settings.budget === 'high' && meal.Tags?.toLowerCase().includes('premium')) {
+                customScore += 2;
+            }
+            
+            // Adjust for weight loss goal
+            if (settings.weightLossGoal === 'aggressive' && scoring.nutrition.calories < 400) {
+                customScore += 2;
+            } else if (settings.weightLossGoal === 'moderate' && scoring.nutrition.calories < 500) {
+                customScore += 1;
+            } else if (settings.weightLossGoal === 'mild' && scoring.nutrition.calories < 600) {
+                customScore += 1;
+            }
+            
+            // Adjust for Jamaican cuisine preference
+            if (settings.cuisinePreference === 'traditional' && meal.Tags?.toLowerCase().includes('jamaican')) {
+                customScore += 2;
+            } else if (settings.cuisinePreference === 'fusion' && meal.Tags?.toLowerCase().includes('fusion')) {
+                customScore += 2;
+            } else if (settings.cuisinePreference === 'simple' && meal['Prep Time']?.includes('15') || meal['Prep Time']?.includes('20')) {
+                customScore += 1;
+            }
+            
+            // Adjust for cooking time preference
+            if (settings.cookingTime === 'quick') {
+                const prepTime = parseInt(meal['Prep Time']?.match(/\d+/)?.[0] || '30');
+                if (prepTime <= 20) customScore += 2;
+            } else if (settings.cookingTime === 'moderate') {
+                const prepTime = parseInt(meal['Prep Time']?.match(/\d+/)?.[0] || '30');
+                if (prepTime >= 20 && prepTime <= 40) customScore += 1;
+            }
+            
+            // Adjust for meal prep friendly
+            if (settings.mealPrepFriendly === 'yes' && meal.Tags?.toLowerCase().includes('meal-prep')) {
+                customScore += 2;
+            }
+            
+            // Adjust for portion size
+            if (settings.portionSize === 'small' && scoring.nutrition.calories < 400) {
+                customScore += 1;
+            } else if (settings.portionSize === 'large' && scoring.nutrition.calories > 600) {
+                customScore += 1;
+            }
+            
+            // Adjust for dietary restrictions
+            if (settings.dietaryRestriction === 'vegetarian' && !meal.Ingredients?.toLowerCase().includes('chicken') && 
+                !meal.Ingredients?.toLowerCase().includes('fish') && !meal.Ingredients?.toLowerCase().includes('meat')) {
+                customScore += 2;
+            } else if (settings.dietaryRestriction === 'pescatarian' && 
+                (meal.Ingredients?.toLowerCase().includes('fish') || meal.Ingredients?.toLowerCase().includes('seafood'))) {
+                customScore += 2;
+            }
+            
+            // Adjust for Jamaican ingredients preference
+            if (settings.favorJamaicanIngredients) {
+                const jamaicanIngredients = ['ackee', 'saltfish', 'callaloo', 'plantain', 'green banana', 'yam', 'dasheen', 'coco', 'cho-cho', 'scotch bonnet', 'thyme', 'allspice'];
+                const mealIngredients = meal.Ingredients?.toLowerCase() || '';
+                jamaicanIngredients.forEach(ing => {
+                    if (mealIngredients.includes(ing)) customScore += 0.5;
+                });
+            }
+            
+            // Adjust for processed foods limit
+            if (settings.limitProcessedFoods) {
+                const processedFoods = ['processed', 'canned', 'packaged', 'instant', 'fried', 'fast food'];
+                const mealIngredients = meal.Ingredients?.toLowerCase() || '';
+                processedFoods.forEach(item => {
+                    if (mealIngredients.includes(item)) customScore -= 2;
+                });
+            }
+            
+            // Adjust for fiber preference
+            if (settings.includeFiberRichFoods && scoring.nutrition.fiber >= 8) {
+                customScore += 1;
+            }
+            
+            return {
+                meal,
+                scoring,
+                customScore: Math.max(1, Math.min(10, customScore))
+            };
+        });
+        
+        // Sort by custom score descending
+        scored.sort((a, b) => b.customScore - a.customScore);
+        
+        return scored;
+    }
+    // ======================
+    // SETTINGS MANAGEMENT
+    // ======================
+    function toggleSettingsPanel() {
+        const panel = elements.settingsPanel;
+        const grid = elements.settingsPanel.querySelector('.settings-grid');
+        const button = elements.toggleSettingsBtn;
+        
+        if (grid.style.display === 'none') {
+            grid.style.display = '';
+            panel.style.paddingBottom = '16px';
+            button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide';
+        } else {
+            grid.style.display = 'none';
+            panel.style.paddingBottom = '8px';
+            button.innerHTML = '<i class="fas fa-chevron-down"></i> Show';
+        }
+    }
+    
+    function loadSavedSettings() {
+        try {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEY + '_settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                // Update UI elements
+                elements.budgetSelect.value = settings.budget || 'medium';
+                elements.calorieTargetInput.value = settings.calorieTarget || 500;
+                elements.proteinTargetInput.value = settings.proteinTarget || 30;
+                elements.carbToleranceSelect.value = settings.carbTolerance || 'moderate';
+                elements.weightLossGoalSelect.value = settings.weightLossGoal || 'moderate';
+                elements.ingredientsOnHandInput.value = settings.ingredientsOnHand || 'chicken, eggs, tuna, sardines, salmon, ackee, pumpkin, sweet potato, callaloo, cabbage';
+                elements.avoidGoutCheckbox.checked = settings.avoidGoutTriggers !== false;
+                elements.prioritizeHeartCheckbox.checked = settings.prioritizeHeartHealth !== false;
+                
+                // Update range value displays
+                updateRangeValue();
+            }
+        } catch (e) {
+            // console.warn('Could not load saved settings:', e);
+        }
+    }
+    
+    function applySettings() {
+        const settings = {
+            budget: elements.budgetSelect.value,
+            calorieTarget: parseInt(elements.calorieTargetInput.value),
+            proteinTarget: parseInt(elements.proteinTargetInput.value),
+            carbTolerance: elements.carbToleranceSelect.value,
+            weightLossGoal: elements.weightLossGoalSelect.value,
+            ingredientsOnHand: elements.ingredientsOnHandInput.value,
+            avoidGoutTriggers: elements.avoidGoutCheckbox.checked,
+            prioritizeHeartHealth: elements.prioritizeHeartCheckbox.checked,
+            mealTiming: 'any',
+            mealMode: 'any'
+        };
+        
+        // Save to localStorage
+        localStorage.setItem(CONFIG.STORAGE_KEY + '_settings', JSON.stringify(settings));
+        
+        // Re-select meals with new settings
+        selectTodaysMeals();
+        updateUI();
+        
+        showNotification('Settings applied! Refreshing meal suggestions...', 'success');
+    }
+    
+    function updateRangeValue() {
+        // Update calorie target display
+        const calorieValue = elements.calorieTargetInput.value;
+        const calorieDisplay = elements.calorieTargetInput.nextElementSibling;
+        if (calorieDisplay && calorieDisplay.className === 'range-value') {
+            calorieDisplay.textContent = `${calorieValue} kcal per meal`;
+        }
+        
+        // Update protein target display
+        const proteinValue = elements.proteinTargetInput.value;
+        const proteinDisplay = elements.proteinTargetInput.nextElementSibling;
+        if (proteinDisplay && proteinDisplay.className === 'range-value') {
+            proteinDisplay.textContent = `${proteinValue}g protein per meal`;
+        }
+    }
+    ;
+        });
+        
+        // Sort by overall score descending
+        scored.sort((a, b) => b.customScore - a.customScore);
+        
+        return scored;
+    }
+    }
     };
 
     // DOM Elements
@@ -79,7 +761,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Notification
         notification: document.getElementById('notification'),
         notificationIcon: document.getElementById('notification-icon'),
-        notificationText: document.getElementById('notification-text')
+        notificationText: document.getElementById('notification-text'),
+        
+        // Settings Panel Elements
+        settingsPanel: document.getElementById('settings-panel'),
+        toggleSettingsBtn: document.getElementById('toggle-settings'),
+        applySettingsBtn: document.getElementById('apply-settings'),
+        budgetSelect: document.getElementById('budget'),
+        calorieTargetInput: document.getElementById('calorie-target'),
+        proteinTargetInput: document.getElementById('protein-target'),
+        carbToleranceSelect: document.getElementById('carb-tolerance'),
+        weightLossGoalSelect: document.getElementById('weight-loss-goal'),
+        ingredientsOnHandInput: document.getElementById('ingredients-on-hand'),
+        avoidGoutCheckbox: document.getElementById('avoid-gout'),
+        prioritizeHeartCheckbox: document.getElementById('prioritize-heart')
     };
 
     // Current meal being viewed in modal
@@ -98,11 +793,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load data from localStorage
         loadLocalData();
         
+        // Load saved settings
+        loadSavedSettings();
+        
         // Try to load meals from Google Sheets
         try {
             await loadMealsFromGoogleSheets();
         } catch (error) {
-            console.warn('Could not load from Google Sheets, using fallback:', error);
+            // console.warn('Could not load from Google Sheets, using fallback:', error);
             await loadFallbackData();
         }
         
@@ -144,7 +842,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return meal;
         });
         
-        console.log(`Loaded ${state.meals.length} meals from Google Sheets`);
+        // console.log(`Loaded ${state.meals.length} meals from Google Sheets`);
         saveLocalData();
     }
 
@@ -153,10 +851,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(CONFIG.FALLBACK_DATA_URL);
             const data = await response.json();
             state.meals = data.meals;
-            console.log(`Loaded ${state.meals.length} meals from fallback data`);
+            // console.log(`Loaded ${state.meals.length} meals from fallback data`);
             saveLocalData();
         } catch (error) {
-            console.error('Could not load fallback data:', error);
+            // console.error('Could not load fallback data:', error);
             // Use embedded fallback data
             useEmbeddedFallbackData();
         }
@@ -247,17 +945,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // MEAL SELECTION
     // ======================
     function selectTodaysMeals() {
-        const breakfastMeals = state.meals.filter(meal => meal.Type === 'Breakfast');
-        const lunchMeals = state.meals.filter(meal => meal.Type === 'Lunch');
-        const dinnerMeals = state.meals.filter(meal => meal.Type === 'Dinner');
+        // Get customization settings from localStorage if available
+        let customSettings = CUSTOM_SETTINGS;
+        try {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEY + '_settings');
+            if (saved) {
+                customSettings = { ...CUSTOM_SETTINGS, ...JSON.parse(saved) };
+            }
+        } catch (e) {
+            // console.warn('Could not load custom settings:', e);
+        }
         
-        // Simple algorithm: pick based on day of week for variety
+        // Filter and rank meals for each type
+        const breakfastRanked = filterAndRankMeals(state.meals, 'Breakfast', customSettings);
+        const lunchRanked = filterAndRankMeals(state.meals, 'Lunch', customSettings);
+        const dinnerRanked = filterAndRankMeals(state.meals, 'Dinner', customSettings);
+        
+        // Select top meal for each type, but add some variety
+        // Use day of week to pick from top 3 options
         const dayOfWeek = new Date().getDay();
         
-        if (breakfastMeals.length > 0) {
-            const index = dayOfWeek % breakfastMeals.length;
-            state.todayMeals.breakfast = breakfastMeals[index];
+        if (breakfastRanked.length > 0) {
+            const topN = Math.min(3, breakfastRanked.length);
+            const index = dayOfWeek % topN;
+            state.todayMeals.breakfast = breakfastRanked[index].meal;
+            state.todayMeals.breakfast.scoring = breakfastRanked[index].scoring;
         }
+        
+        if (lunchRanked.length > 0) {
+            const topN = Math.min(3, lunchRanked.length);
+            const index = (dayOfWeek + 1) % topN;
+            state.todayMeals.lunch = lunchRanked[index].meal;
+            state.todayMeals.lunch.scoring = lunchRanked[index].scoring;
+        }
+        
+        if (dinnerRanked.length > 0) {
+            const topN = Math.min(3, dinnerRanked.length);
+            const index = (dayOfWeek + 2) % topN;
+            state.todayMeals.dinner = dinnerRanked[index].meal;
+            state.todayMeals.dinner.scoring = dinnerRanked[index].scoring;
+        }
+        
+        // Log selection for debugging
+        // console.log('Selected meals with scoring:', {
+        //     breakfast: state.todayMeals.breakfast?.scoring?.scores,
+        //     lunch: state.todayMeals.lunch?.scoring?.scores,
+        //     dinner: state.todayMeals.dinner?.scoring?.scores
+        // });
+    }
         
         if (lunchMeals.length > 0) {
             const index = dayOfWeek % lunchMeals.length;
@@ -310,7 +1045,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         elements[`${prefix}Name`].textContent = meal['Meal Name'] || 'No meal selected';
         elements[`${prefix}Time`].textContent = meal['Prep Time'] || '- min';
-        elements[`${prefix}Benefit`].textContent = meal['Insulin Benefits']?.substring(0, 100) + '...' || 'Designed for insulin sensitivity.';
+        
+        // Truncate benefit text
+        const benefitText = meal['Insulin Benefits']?.substring(0, 100) + '...' || 'Designed for insulin sensitivity.';
+        elements[`${prefix}Benefit`].textContent = benefitText;
         
         // Update tags
         const tagsContainer = elements[`${prefix}Tags`];
@@ -323,6 +1061,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 tagElement.textContent = tag.trim();
                 tagsContainer.appendChild(tagElement);
             });
+        }
+        
+        // Add score badges if scoring data exists
+        if (meal.scoring) {
+            const scores = meal.scoring.scores;
+            const scoreContainer = document.createElement('div');
+            scoreContainer.className = 'score-badges';
+            scoreContainer.style.marginTop = '8px';
+            scoreContainer.style.display = 'flex';
+            scoreContainer.style.gap = '4px';
+            scoreContainer.style.flexWrap = 'wrap';
+            
+            // Create badge for each score
+            const scoreLabels = [
+                { key: 'bloodSugar', label: 'Sugar', color: '#2E86AB' },
+                { key: 'insulinResistance', label: 'Insulin', color: '#4CAF50' },
+                { key: 'heartHealth', label: 'Heart', color: '#FF9800' },
+                { key: 'goutFriendly', label: 'Gout', color: '#9C27B0' }
+            ];
+            
+            scoreLabels.forEach(item => {
+                if (scores[item.key]) {
+                    const badge = document.createElement('span');
+                    badge.className = 'score-badge';
+                    badge.textContent = `${item.label}: ${scores[item.key]}/10`;
+                    badge.style.backgroundColor = item.color;
+                    badge.style.color = 'white';
+                    badge.style.padding = '2px 6px';
+                    badge.style.borderRadius = '10px';
+                    badge.style.fontSize = '11px';
+                    badge.style.fontWeight = '600';
+                    scoreContainer.appendChild(badge);
+                }
+            });
+            
+            // Add overall badge
+            const overallBadge = document.createElement('span');
+            overallBadge.className = 'score-badge-overall';
+            overallBadge.textContent = `Overall: ${scores.overall}/10`;
+            overallBadge.style.backgroundColor = '#333';
+            overallBadge.style.color = 'white';
+            overallBadge.style.padding = '2px 8px';
+            overallBadge.style.borderRadius = '10px';
+            overallBadge.style.fontSize = '11px';
+            overallBadge.style.fontWeight = 'bold';
+            scoreContainer.appendChild(overallBadge);
+            
+            // Insert after tags container
+            tagsContainer.parentNode.insertBefore(scoreContainer, tagsContainer.nextSibling);
+            
+            // Add flags tooltip if any
+            if (meal.scoring.flags && meal.scoring.flags.length > 0) {
+                const flagIcon = document.createElement('span');
+                flagIcon.innerHTML = ' ⚠️';
+                flagIcon.title = meal.scoring.flags.join('\n');
+                flagIcon.style.cursor = 'help';
+                elements[`${prefix}Name`].appendChild(flagIcon);
+            }
+        }
+    });
         }
     }
 
@@ -380,25 +1178,192 @@ document.addEventListener('DOMContentLoaded', function() {
         // Format ingredients
         if (meal.Ingredients) {
             elements.modalIngredients.innerHTML = meal.Ingredients.split('\n')
-                .map(line => `<p>${line}</p>`)
+                .map(line => `<p>${escapeHtml(line)}</p>`)
                 .join('');
         }
         
         // Format instructions
         if (meal.Instructions) {
             elements.modalInstructions.innerHTML = meal.Instructions.split('\n')
-                .map(line => `<p>${line}</p>`)
+                .map(line => `<p>${escapeHtml(line)}</p>`)
                 .join('');
         }
         
         // Format benefits
         if (meal['Insulin Benefits']) {
-            elements.modalBenefits.innerHTML = `<p>${meal['Insulin Benefits']}</p>`;
+            elements.modalBenefits.innerHTML = `<p>${escapeHtml(meal['Insulin Benefits'])}</p>`;
         }
         
         // Format nutrition
         if (meal['Nutrition Notes']) {
-            elements.modalNutrition.innerHTML = `<p>${meal['Nutrition Notes']}</p>`;
+            elements.modalNutrition.innerHTML = `<p>${escapeHtml(meal['Nutrition Notes'])}</p>`;
+        }
+        
+        // Add portion guidance section
+        const existingPortionSection = document.getElementById('portion-guidance-section');
+        if (existingPortionSection) {
+            existingPortionSection.remove();
+        }
+        
+        if (meal.scoring) {
+            const nutrition = meal.scoring.nutrition;
+            const portionSection = document.createElement('div');
+            portionSection.id = 'portion-guidance-section';
+            portionSection.style.marginTop = '15px';
+            portionSection.style.padding = '12px';
+            portionSection.style.backgroundColor = '#e8f4fd';
+            portionSection.style.borderRadius = '8px';
+            portionSection.style.border = '1px solid #cce7ff';
+            
+            let portionHtml = `<h4 style="margin-top: 0; color: #2E86AB;"><i class="fas fa-utensils"></i> Portion Guidance</h4>`;
+            
+            // Carb portion guidance for insulin resistance
+            if (nutrition.carbs > 0) {
+                let carbGuidance = '';
+                if (nutrition.carbs <= 20) {
+                    carbGuidance = 'Low carb portion - good for blood sugar control';
+                } else if (nutrition.carbs <= 40) {
+                    carbGuidance = 'Moderate carb portion - pair with protein and fat';
+                } else if (nutrition.carbs <= 60) {
+                    carbGuidance = 'High carb portion - consider reducing by 1/4 for better glucose control';
+                } else {
+                    carbGuidance = 'Very high carb portion - reduce by 1/3 or split into two meals';
+                }
+                portionHtml += `<p style="margin: 8px 0;"><strong>Carbohydrates (${nutrition.carbs}g):</strong> ${carbGuidance}</p>`;
+            }
+            
+            // Protein portion guidance
+            if (nutrition.protein > 0) {
+                let proteinGuidance = '';
+                if (nutrition.protein >= 30) {
+                    proteinGuidance = 'Excellent protein amount for insulin sensitivity';
+                } else if (nutrition.protein >= 20) {
+                    proteinGuidance = 'Good protein amount - maintain this level';
+                } else {
+                    proteinGuidance = 'Consider adding 10-15g more protein (e.g., 1 egg or 50g chicken)';
+                }
+                portionHtml += `<p style="margin: 8px 0;"><strong>Protein (${nutrition.protein}g):</strong> ${proteinGuidance}</p>`;
+            }
+            
+            // Practical portion tips
+            portionHtml += `<div style="margin-top: 10px; padding: 10px; background: white; border-radius: 6px;">
+                <h5 style="margin-top: 0; color: #7ED321;"><i class="fas fa-lightbulb"></i> Practical Tips:</h5>
+                <ul style="margin: 8px 0; padding-left: 20px;">
+                    <li>Use palm-sized protein portions (chicken, fish, tofu)</li>
+                    <li>Fill half your plate with non-starchy vegetables</li>
+                    <li>Limit starchy carbs to 1/4 plate (about 1/2 cup cooked)</li>
+                    <li>Add healthy fats: 1 tbsp olive oil, 1/4 avocado, or small handful of nuts</li>
+                    <li>Drink water before and during meals to aid digestion</li>
+                    <li>Eat slowly, chew thoroughly - aim for 20+ minutes per meal</li>
+                </ul>
+            </div>`;
+            
+            // Meal prep tips if applicable
+            if (meal.Tags?.toLowerCase().includes('meal-prep')) {
+                portionHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff8e1; border-radius: 6px;">
+                    <h5 style="margin-top: 0; color: #FF9800;"><i class="fas fa-box"></i> Meal Prep Friendly:</h5>
+                    <ul style="margin: 8px 0; padding-left: 20px;">
+                        <li>Can be prepared in advance and stored 3-4 days in refrigerator</li>
+                        <li>Freeze individual portions for up to 3 months</li>
+                        <li>Reheat gently to preserve nutrients</li>
+                        <li>Portion into containers immediately after cooking</li>
+                    </ul>
+                </div>`;
+            }
+            
+            portionSection.innerHTML = portionHtml;
+            elements.modalNutrition.parentNode.insertBefore(portionSection, elements.modalNutrition.nextSibling);
+        }
+        
+        // Add health scoring section if available
+        const existingScoreSection = document.getElementById('health-score-section');
+        if (existingScoreSection) {
+            existingScoreSection.remove();
+        }
+        
+        if (meal.scoring) {
+            const scores = meal.scoring.scores;
+            const flags = meal.scoring.flags;
+            const substitutions = meal.scoring.substitutions;
+            const nutrition = meal.scoring.nutrition;
+            
+            const scoreSection = document.createElement('div');
+            scoreSection.id = 'health-score-section';
+            scoreSection.style.marginTop = '20px';
+            scoreSection.style.padding = '15px';
+            scoreSection.style.backgroundColor = '#f8f9fa';
+            scoreSection.style.borderRadius = '8px';
+            scoreSection.style.border = '1px solid #dee2e6';
+            
+            let html = `<h3 style="margin-top: 0; color: #2E86AB;"><i class="fas fa-heartbeat"></i> Health Profile Analysis</h3>`;
+            
+            // Score grid
+            html += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">`;
+            const scoreConfig = [
+                { key: 'bloodSugar', label: 'Blood Sugar', color: '#2E86AB', icon: 'fa-chart-line' },
+                { key: 'insulinResistance', label: 'Insulin Support', color: '#4CAF50', icon: 'fa-shield-alt' },
+                { key: 'heartHealth', label: 'Heart Health', color: '#FF9800', icon: 'fa-heart' },
+                { key: 'goutFriendly', label: 'Gout Friendly', color: '#9C27B0', icon: 'fa-exclamation-triangle' }
+            ];
+            
+            scoreConfig.forEach(item => {
+                const value = scores[item.key];
+                let rating = '';
+                if (value >= 9) rating = 'Excellent';
+                else if (value >= 7) rating = 'Good';
+                else if (value >= 5) rating = 'Moderate';
+                else if (value >= 3) rating = 'Poor';
+                else rating = 'Avoid';
+                
+                html += `
+                <div style="background: white; padding: 10px; border-radius: 6px; border-left: 4px solid ${item.color};">
+                    <div style="font-weight: 600; font-size: 14px; color: ${item.color};">
+                        <i class="fas ${item.icon}"></i> ${item.label}
+                    </div>
+                    <div style="font-size: 24px; font-weight: 700; margin: 5px 0;">${value}/10</div>
+                    <div style="font-size: 12px; color: #666;">${rating}</div>
+                </div>`;
+            });
+            html += `</div>`;
+            
+            // Overall score
+            html += `<div style="background: #333; color: white; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center;">
+                <div style="font-size: 16px; font-weight: 600;">Overall Health Score</div>
+                <div style="font-size: 32px; font-weight: 700;">${scores.overall}/10</div>
+            </div>`;
+            
+            // Flags
+            if (flags.length > 0) {
+                html += `<div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 8px; color: #FF6B6B;"><i class="fas fa-flag"></i> Considerations</h4>
+                    <ul style="margin: 0; padding-left: 20px;">`;
+                flags.forEach(flag => {
+                    html += `<li style="margin-bottom: 5px; font-size: 14px;">${escapeHtml(flag)}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+            
+            // Substitutions
+            if (substitutions.length > 0) {
+                html += `<div style="margin-bottom: 15px;">
+                    <h4 style="margin-bottom: 8px; color: #7ED321;"><i class="fas fa-exchange-alt"></i> Suggestions for Improvement</h4>
+                    <ul style="margin: 0; padding-left: 20px;">`;
+                substitutions.forEach(sub => {
+                    html += `<li style="margin-bottom: 5px; font-size: 14px;">${escapeHtml(sub)}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+            
+            // Nutrition summary
+            html += `<div style="font-size: 13px; color: #666; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <strong>Nutrition per serving:</strong> ${nutrition.calories} cal, ${nutrition.protein}g protein, ${nutrition.carbs}g carbs, ${nutrition.fiber}g fiber
+            </div>`;
+            
+            scoreSection.innerHTML = html;
+            
+            // Insert after nutrition section
+            const nutritionElement = elements.modalNutrition.parentNode;
+            nutritionElement.parentNode.insertBefore(scoreSection, nutritionElement.nextSibling);
         }
         
         // Show modal
@@ -464,10 +1429,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                 }
-                console.log('Loaded local data:', state.mealLog.length, 'log entries');
+                // console.log('Loaded local data:', state.mealLog.length, 'log entries');
             }
         } catch (error) {
-            console.error('Error loading local data:', error);
+            // console.error('Error loading local data:', error);
         }
     }
 
@@ -480,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(dataToSave));
         } catch (error) {
-            console.error('Error saving local data:', error);
+            // console.error('Error saving local data:', error);
         }
     }
 
@@ -532,6 +1497,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // View recipe buttons
         elements.viewBreakfastBtn.addEventListener('click', () => {
             if (state.todayMeals.breakfast) showRecipeModal(state.todayMeals.breakfast);
+        // Settings Panel Events
+        elements.toggleSettingsBtn.addEventListener('click', toggleSettingsPanel);
+        elements.applySettingsBtn.addEventListener('click', applySettings);
+        
+        // Live updates for numeric inputs
+        elements.calorieTargetInput.addEventListener('change', updateRangeValue);
+        elements.proteinTargetInput.addEventListener('change', updateRangeValue);
+        
+        // Load saved settings on init
+        loadSavedSettings();
         });
         
         elements.viewLunchBtn.addEventListener('click', () => {

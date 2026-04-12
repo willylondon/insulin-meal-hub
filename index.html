@@ -35,6 +35,73 @@
         </header>
 
         <main>
+            <section class="settings-panel" id="settings-panel">
+                <div class="settings-header">
+                    <h3><i class="fas fa-sliders-h"></i> Customize Your Meal Plan</h3>
+                    <button class="btn-view" id="toggle-settings">
+                        <i class="fas fa-chevron-up"></i> Hide
+                    </button>
+                </div>
+                <div class="settings-grid" id="settings-grid">
+                    <div class="setting-item">
+                        <label for="budget">Budget</label>
+                        <select id="budget">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="calorie-target">Calorie Target (kcal)</label>
+                        <input type="number" id="calorie-target" min="300" max="800" step="50" value="500">
+                        <div class="range-value">500 kcal per meal</div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="protein-target">Protein Target (g)</label>
+                        <input type="number" id="protein-target" min="20" max="60" step="5" value="30">
+                        <div class="range-value">30g protein per meal</div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="carb-tolerance">Carb Tolerance</label>
+                        <select id="carb-tolerance">
+                            <option value="low">Low (&lt;30g)</option>
+                            <option value="moderate" selected>Moderate (30-50g)</option>
+                            <option value="high">High (&gt;50g)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="weight-loss-goal">Weight Loss Goal</label>
+                        <select id="weight-loss-goal">
+                            <option value="none">None</option>
+                            <option value="mild">Mild</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="aggressive">Aggressive</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="ingredients-on-hand">Ingredients On Hand</label>
+                        <input type="text" id="ingredients-on-hand" 
+                               placeholder="chicken, eggs, tuna, pumpkin..."
+                               value="chicken, eggs, tuna, sardines, salmon, ackee, pumpkin, sweet potato, callaloo, cabbage">
+                    </div>
+                    <div class="setting-item">
+                        <label for="avoid-gout">
+                            <input type="checkbox" id="avoid-gout" checked> Avoid Gout Triggers
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label for="prioritize-heart">
+                            <input type="checkbox" id="prioritize-heart" checked> Prioritize Heart Health
+                        </label>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 16px;">
+                    <button class="btn-log" id="apply-settings">
+                        <i class="fas fa-check"></i> Apply Settings & Refresh Meals
+                    </button>
+                </div>
+            </section>
+
             <section class="today-meals">
                 <h2><i class="fas fa-calendar-day"></i> Today's Suggestions</h2>
                 <div class="meal-cards">
