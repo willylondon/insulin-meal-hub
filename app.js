@@ -1,464 +1,551 @@
-// Insulin-Smart Meal Hub - Main JavaScript
-// Bulletproof Version v1.1.5 - Final Fix April 12, 2026
-function initApp() {
-    console.log("App Initializing...");
+// Insulin-Smart Meal Hub — v2.0
+// Clean rewrite: dark premium UI, tab navigation, all interactions wired
 
-    // Configuration
+(function () {
     const CONFIG = {
         GOOGLE_SHEET_ID: '1yBxlRrZEjBy0z5A7K0T5UihVo3PmWVfm',
         SHEET_NAME: '21 Recipes',
         FALLBACK_DATA_URL: 'fallback-data.json',
-        STORAGE_KEY: 'insulinMealHubData',
+        STORAGE_KEY: 'insulinMealHubData_v2',
     };
 
-    // Hardcoded Fallback Data (9 Meals)
     const EMBEDDED_MEALS = [
-        { "Meal ID": "BF001", "Meal Name": "Jamaican Ackee & Scrambled Eggs", "Type": "Breakfast", "Prep Time": "15 min", "Ingredients": "1 cup ackee, 2 eggs, bell pepper, onion, olive oil", "Instructions": "1. Sauté veggies. 2. Add ackee. 3. Scramble eggs. 4. Mix.", "Insulin Benefits": "High protein and healthy fats for stable glucose.", "Nutrition Notes": "420 cal | 28g protein | 12g carbs", "Tags": "Jamaican, Protein" },
-        { "Meal ID": "BF002", "Meal Name": "Callaloo & Sweet Potato Hash", "Type": "Breakfast", "Prep Time": "20 min", "Ingredients": "2 cups callaloo, 1 small sweet potato, thyme, garlic", "Instructions": "1. Steam potato. 2. Sauté callaloo with spices. 3. Combine.", "Insulin Benefits": "Fiber-rich greens paired with slow-release carbs.", "Nutrition Notes": "310 cal | 8g protein | 35g carbs", "Tags": "Fiber, Jamaican" },
-        { "Meal ID": "BF003", "Meal Name": "Coconut Chia Pudding with Mango", "Type": "Breakfast", "Prep Time": "10 min", "Ingredients": "1/4 cup chia, 1 cup coconut milk, 1/2 mango", "Instructions": "1. Mix chia and milk. 2. Chill overnight. 3. Top with mango.", "Insulin Benefits": "Omega-3 fats and fiber prevent sugar spikes.", "Nutrition Notes": "380 cal | 12g protein | 25g carbs", "Tags": "Vegan, Brain Health" },
-        { "Meal ID": "LH001", "Meal Name": "Steamed Fish with Okra & Pumpkin", "Type": "Lunch", "Prep Time": "25 min", "Ingredients": "1 whole snapper, 6 okras, 1 cup pumpkin, scallion", "Instructions": "1. Season fish. 2. Steam with pumpkin and okra 15 min.", "Insulin Benefits": "Low-fat protein with mucilage from okra for digestion.", "Nutrition Notes": "350 cal | 45g protein | 15g carbs", "Tags": "Heart Healthy, Low Carb" },
-        { "Meal ID": "LH002", "Meal Name": "Jerk Chicken Breast over Spinach Salad", "Type": "Lunch", "Prep Time": "20 min", "Ingredients": "1 chicken breast, jerk spices, 3 cups spinach, avocado", "Instructions": "1. Grill chicken. 2. Slice over spinach. 3. Add avocado.", "Insulin Benefits": "Lean protein and healthy fats for metabolic support.", "Nutrition Notes": "450 cal | 42g protein | 10g carbs", "Tags": "High Protein, Keto" },
-        { "Meal ID": "LH003", "Meal Name": "Curried Chickpea & Spinach", "Type": "Lunch", "Prep Time": "15 min", "Ingredients": "1 can chickpeas, 2 cups spinach, curry powder, onion", "Instructions": "1. Sauté onion. 2. Add chickpeas and curry. 3. Wilt spinach.", "Insulin Benefits": "Plant-based protein and high fiber for satiety.", "Nutrition Notes": "320 cal | 15g protein | 40g carbs", "Tags": "Vegan, Fiber" },
-        { "Meal ID": "DN001", "Meal Name": "Grilled Red Snapper with Veggies", "Type": "Dinner", "Prep Time": "30 min", "Ingredients": "Snapper fillet, broccoli, carrots, lemon, olive oil", "Instructions": "1. Grill fish 5 min per side. 2. Steam vegetables.", "Insulin Benefits": "Excellent protein-to-carb ratio for evening stability.", "Nutrition Notes": "380 cal | 40g protein | 12g carbs", "Tags": "Omega-3, Light" },
-        { "Meal ID": "DN002", "Meal Name": "Jamaican Brown Stew Tofu", "Type": "Dinner", "Prep Time": "25 min", "Ingredients": "1 block firm tofu, browning, onion, garlic, pimento", "Instructions": "1. Brown tofu cubes. 2. Simmer with onion and garlic gravy.", "Insulin Benefits": "Plant protein alternative with rich Jamaican spices.", "Nutrition Notes": "290 cal | 22g protein | 18g carbs", "Tags": "Vegetarian, Jamaican" },
-        { "Meal ID": "DN003", "Meal Name": "Herb-Crusted Roasted Turkey Breast", "Type": "Dinner", "Prep Time": "45 min", "Ingredients": "Turkey breast, rosemary, thyme, garlic, olive oil", "Instructions": "1. Rub with herbs. 2. Roast at 375F until cooked through.", "Insulin Benefits": "Very lean protein, perfect for muscle repair and HR.", "Nutrition Notes": "320 cal | 48g protein | 5g carbs", "Tags": "Lean Protein, Low Cal" }
+        { "Meal ID": "BF001", "Meal Name": "Jamaican Ackee & Scrambled Eggs", "Type": "Breakfast", "Prep Time": "15 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1 cup ackee (fresh or canned)\n- 2 eggs\n- 1/4 bell pepper, diced\n- 1 scallion, chopped\n- 1 tsp olive oil\n- Black pepper to taste", "Instructions": "1. Heat oil in pan over medium heat\n2. Sauté pepper and scallion for 2 min\n3. Add ackee and warm through\n4. Push to side, scramble eggs\n5. Combine and season", "Insulin Benefits": "High protein and healthy fats help stabilize blood sugar and prevent morning spikes.", "Nutrition Notes": "~420 cal | 28g protein | 12g carbs | 4g fiber", "Tags": "Jamaican, High-protein, Low-carb" },
+        { "Meal ID": "BF002", "Meal Name": "Callaloo & Sweet Potato Hash", "Type": "Breakfast", "Prep Time": "20 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 2 cups callaloo, chopped\n- 1 small sweet potato, diced\n- 1/4 onion, diced\n- 1 garlic clove\n- 1 tsp coconut oil\n- Thyme", "Instructions": "1. Steam sweet potato 10 min\n2. Heat oil, sauté onion and garlic\n3. Add callaloo, cook 5 min\n4. Add potato, mix and season", "Insulin Benefits": "Fiber-rich greens with slow-release carbs keep glucose steady for hours.", "Nutrition Notes": "~310 cal | 8g protein | 35g carbs | 8g fiber", "Tags": "Jamaican, Fiber, Vegan" },
+        { "Meal ID": "BF003", "Meal Name": "Coconut Chia Pudding", "Type": "Breakfast", "Prep Time": "10 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1/4 cup chia seeds\n- 1 cup coconut milk\n- 1/2 mango, diced\n- 1 tsp honey (optional)", "Instructions": "1. Mix chia and coconut milk\n2. Refrigerate overnight or 1 hour\n3. Top with mango before serving", "Insulin Benefits": "Omega-3 fats and soluble fiber slow glucose absorption and reduce spikes.", "Nutrition Notes": "~380 cal | 12g protein | 25g carbs | 10g fiber", "Tags": "Vegan, Omega-3, Prep-ahead" },
+        { "Meal ID": "LH001", "Meal Name": "Steamed Fish with Okra & Pumpkin", "Type": "Lunch", "Prep Time": "25 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1 whole snapper (or fillet)\n- 6 okras, sliced\n- 1 cup pumpkin, cubed\n- 2 scallions\n- Thyme, scotch bonnet\n- Salt, black pepper", "Instructions": "1. Season fish with salt and thyme\n2. Place in pot with okra and pumpkin\n3. Add scallion and scotch bonnet\n4. Steam over medium heat 15-20 min", "Insulin Benefits": "Lean fish protein with mucilaginous okra slows digestion and stabilizes glucose.", "Nutrition Notes": "~350 cal | 45g protein | 15g carbs | 5g fiber", "Tags": "Jamaican, Heart-healthy, Low-carb" },
+        { "Meal ID": "LH002", "Meal Name": "Jerk Chicken over Spinach Salad", "Type": "Lunch", "Prep Time": "20 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1 chicken breast\n- 2 tbsp jerk seasoning\n- 3 cups spinach\n- 1/2 avocado\n- Cherry tomatoes\n- Lime dressing", "Instructions": "1. Coat chicken with jerk seasoning\n2. Grill or pan-fry 6 min per side\n3. Slice and place over spinach\n4. Add avocado and tomatoes\n5. Dress with lime juice and olive oil", "Insulin Benefits": "Lean protein and healthy fats from avocado support steady metabolic function.", "Nutrition Notes": "~450 cal | 42g protein | 10g carbs | 7g fiber", "Tags": "High-protein, Keto, Jamaican" },
+        { "Meal ID": "LH003", "Meal Name": "Curried Chickpea & Callaloo", "Type": "Lunch", "Prep Time": "15 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1 can chickpeas, drained\n- 2 cups callaloo\n- 1 tbsp curry powder\n- 1/4 onion\n- 1 garlic clove\n- Coconut oil", "Instructions": "1. Sauté onion and garlic in oil\n2. Add curry powder, toast 1 min\n3. Add chickpeas, coat well\n4. Add callaloo, cook 5 min\n5. Season and serve", "Insulin Benefits": "Plant-based protein and high fiber content support steady glucose and long satiety.", "Nutrition Notes": "~320 cal | 15g protein | 40g carbs | 12g fiber", "Tags": "Vegan, High-fiber, Jamaican" },
+        { "Meal ID": "DN001", "Meal Name": "Grilled Snapper with Steamed Veg", "Type": "Dinner", "Prep Time": "30 min", "Servings": "1", "Difficulty": "Easy", "Ingredients": "- 1 snapper fillet\n- Broccoli florets\n- Sliced carrots\n- Lemon juice\n- Olive oil, garlic\n- Fresh thyme", "Instructions": "1. Marinate fillet in lemon, garlic, thyme\n2. Grill 5 min per side\n3. Steam broccoli and carrots 8 min\n4. Plate with a drizzle of olive oil", "Insulin Benefits": "Excellent protein-to-carb ratio supports overnight fasting glucose stability.", "Nutrition Notes": "~380 cal | 40g protein | 12g carbs | 6g fiber", "Tags": "Omega-3, Low-carb, Heart-healthy" },
+        { "Meal ID": "DN002", "Meal Name": "Jamaican Brown Stew Tofu", "Type": "Dinner", "Prep Time": "25 min", "Servings": "1", "Difficulty": "Medium", "Ingredients": "- 1 block firm tofu, cubed\n- 1 tbsp browning\n- 1 onion, sliced\n- 2 garlic cloves\n- Pimento berries, thyme\n- 1 tbsp soy sauce", "Instructions": "1. Press and cube tofu, pat dry\n2. Brown in oil until golden\n3. Add onion, garlic, pimento\n4. Stir in browning and soy sauce\n5. Simmer in 1/4 cup water 10 min", "Insulin Benefits": "Plant protein with complex Jamaican spices — no blood sugar spike, high satiety.", "Nutrition Notes": "~290 cal | 22g protein | 18g carbs | 4g fiber", "Tags": "Vegetarian, Jamaican, Plant-protein" },
+        { "Meal ID": "DN003", "Meal Name": "Herb-Crusted Turkey Breast", "Type": "Dinner", "Prep Time": "40 min", "Servings": "1", "Difficulty": "Medium", "Ingredients": "- 1 turkey breast\n- Fresh rosemary and thyme\n- 3 garlic cloves, minced\n- 1 tbsp olive oil\n- Salt and black pepper", "Instructions": "1. Preheat oven to 375°F\n2. Mix herbs, garlic, oil into paste\n3. Rub all over turkey breast\n4. Roast 30-35 min until cooked through\n5. Rest 5 min before slicing", "Insulin Benefits": "Very lean protein ideal for evening — supports overnight muscle repair without glucose spike.", "Nutrition Notes": "~320 cal | 48g protein | 5g carbs | 1g fiber", "Tags": "Lean-protein, Low-carb, High-protein" }
     ];
 
-    // DOM Elements - Initialized early
-    const elements = {
-        currentDate: document.getElementById('current-date'),
-        mealCount: document.getElementById('meal-count'),
-        totalMeals: document.getElementById('total-meals'),
-        avgRating: document.getElementById('avg-rating'),
-        
-        breakfastName: document.getElementById('breakfast-name'),
-        breakfastTime: document.getElementById('breakfast-time'),
-        breakfastTags: document.getElementById('breakfast-tags'),
-        breakfastBenefit: document.getElementById('breakfast-benefit'),
-        viewBreakfastBtn: document.getElementById('view-breakfast'),
-        logBreakfastBtn: document.getElementById('log-breakfast'),
-        
-        lunchName: document.getElementById('lunch-name'),
-        lunchTime: document.getElementById('lunch-time'),
-        lunchTags: document.getElementById('lunch-tags'),
-        lunchBenefit: document.getElementById('lunch-benefit'),
-        viewLunchBtn: document.getElementById('view-lunch'),
-        logLunchBtn: document.getElementById('log-lunch'),
-        
-        dinnerName: document.getElementById('dinner-name'),
-        dinnerTime: document.getElementById('dinner-time'),
-        dinnerTags: document.getElementById('dinner-tags'),
-        dinnerBenefit: document.getElementById('dinner-benefit'),
-        viewDinnerBtn: document.getElementById('view-dinner'),
-        logDinnerBtn: document.getElementById('log-dinner'),
-        
-        recipeModal: document.getElementById('recipe-modal'),
-        closeModalBtn: document.getElementById('close-modal'),
-        modalMealName: document.getElementById('modal-meal-name'),
-        modalPrepTime: document.getElementById('modal-prep-time'),
-        modalIngredients: document.getElementById('modal-ingredients'),
-        modalInstructions: document.getElementById('modal-instructions'),
-        modalBenefits: document.getElementById('modal-benefits'),
-        modalNutrition: document.getElementById('modal-nutrition'),
-        logModalMealBtn: document.getElementById('log-modal-meal'),
-        
-        refreshBtn: document.getElementById('refresh-meals'),
-        applySettingsBtn: document.getElementById('apply-settings'),
-        budgetSelect: document.getElementById('budget'),
-        calorieTargetInput: document.getElementById('calorie-target'),
-        toggleSettingsBtn: document.getElementById('toggle-settings'),
-        
-        notification: document.getElementById('notification'),
-        notificationText: document.getElementById('notification-text')
-    };
-
-    // Protein source definitions
     const PROTEINS = [
-        { id: 'chicken',  label: 'Chicken',   icon: '🍗', keywords: ['chicken'] },
-        { id: 'fish',     label: 'Fish',       icon: '🐟', keywords: ['fish', 'snapper', 'tilapia', 'cod', 'mackerel'] },
-        { id: 'eggs',     label: 'Eggs',       icon: '🥚', keywords: ['egg', 'eggs'] },
-        { id: 'tuna',     label: 'Tuna',       icon: '🫙', keywords: ['tuna'] },
-        { id: 'sardines', label: 'Sardines',   icon: '🐡', keywords: ['sardine', 'sardines'] },
-        { id: 'salmon',   label: 'Salmon',     icon: '🍣', keywords: ['salmon'] },
-        { id: 'shrimp',   label: 'Shrimp',     icon: '🦐', keywords: ['shrimp', 'prawn'] },
-        { id: 'turkey',   label: 'Turkey',     icon: '🦃', keywords: ['turkey'] },
-        { id: 'tofu',     label: 'Tofu',       icon: '🧆', keywords: ['tofu'] },
-        { id: 'beef',     label: 'Beef',       icon: '🥩', keywords: ['beef', 'steak', 'ground beef', 'mince'] },
-        { id: 'pork',     label: 'Pork',       icon: '🥓', keywords: ['pork', 'bacon'] },
-        { id: 'ackee',    label: 'Ackee',      icon: '🍳', keywords: ['ackee'] },
+        { id: 'chicken',  label: 'Chicken',  icon: '🍗', keywords: ['chicken'] },
+        { id: 'fish',     label: 'Fish',      icon: '🐟', keywords: ['fish', 'snapper', 'tilapia', 'cod', 'mackerel'] },
+        { id: 'eggs',     label: 'Eggs',      icon: '🥚', keywords: ['egg', 'eggs'] },
+        { id: 'tuna',     label: 'Tuna',      icon: '🫙', keywords: ['tuna'] },
+        { id: 'sardines', label: 'Sardines',  icon: '🐡', keywords: ['sardine', 'sardines'] },
+        { id: 'salmon',   label: 'Salmon',    icon: '🍣', keywords: ['salmon'] },
+        { id: 'shrimp',   label: 'Shrimp',    icon: '🦐', keywords: ['shrimp', 'prawn'] },
+        { id: 'turkey',   label: 'Turkey',    icon: '🦃', keywords: ['turkey'] },
+        { id: 'tofu',     label: 'Tofu',      icon: '🧆', keywords: ['tofu'] },
+        { id: 'beef',     label: 'Beef',      icon: '🥩', keywords: ['beef', 'steak', 'mince'] },
+        { id: 'ackee',    label: 'Ackee',     icon: '🍳', keywords: ['ackee'] },
+        { id: 'chickpea', label: 'Chickpeas', icon: '🫘', keywords: ['chickpea', 'chickpeas'] },
     ];
 
-    // State object
     const state = {
-        meals: [...EMBEDDED_MEALS], // Start with embedded data
+        meals: [...EMBEDDED_MEALS],
         todayMeals: { breakfast: null, lunch: null, dinner: null },
         mealLog: [],
-        settings: { budget: 'medium', calorieTarget: 500, proteinTarget: 35 },
-        currentModalMeal: null
+        settings: { budget: 'medium', carbTolerance: 'moderate', calorieTarget: 500, proteinTarget: 30, weightGoal: 'moderate', avoidGout: true, prioritizeHeart: true },
+        currentModalMeal: null,
+        customMealType: 'Breakfast',
     };
-    window.appState = state; // For debugging
 
-    // Core Functions
-    function updateUI() {
-        if (elements.currentDate) elements.currentDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-        
+    // ── INIT ──
+    function init() {
+        loadState();
+        selectMeals();
+        renderTodayMeals();
+        renderLogHistory();
+        updateStats();
+        initProteinChips();
+        bindNav();
+        bindTodayTab();
+        bindFindTab();
+        bindLogTab();
+        bindSettingsTab();
+        bindModals();
+        bindRangeInputs();
+        bindToggles();
+        fetchMeals();
+    }
+
+    // ── STATE ──
+    function loadState() {
+        try {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.mealLog) state.mealLog = parsed.mealLog;
+                if (parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
+            }
+        } catch (e) { /* ignore */ }
+        applySettingsToUI();
+    }
+
+    function saveState() {
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({ mealLog: state.mealLog, settings: state.settings }));
+    }
+
+    // ── MEAL SELECTION ──
+    function selectMeals() {
+        const seed = new Date().getDate();
+        ['Breakfast', 'Lunch', 'Dinner'].forEach(type => {
+            const pool = state.meals.filter(m => m.Type === type);
+            if (pool.length > 0) state.todayMeals[type.toLowerCase()] = pool[seed % pool.length];
+        });
+    }
+
+    function shuffleMeals() {
+        const offset = Math.floor(Math.random() * 97);
+        ['Breakfast', 'Lunch', 'Dinner'].forEach(type => {
+            const pool = state.meals.filter(m => m.Type === type);
+            if (pool.length > 0) state.todayMeals[type.toLowerCase()] = pool[(Date.now() + offset) % pool.length];
+        });
+        renderTodayMeals();
+        toast('Meals shuffled!');
+    }
+
+    // ── RENDER TODAY ──
+    function renderTodayMeals() {
         ['breakfast', 'lunch', 'dinner'].forEach(type => {
             const meal = state.todayMeals[type];
-            if (!meal || !elements[`${type}Name`]) return;
-            
-            elements[`${type}Name`].textContent = meal['Meal Name'];
-            elements[`${type}Time`].textContent = meal['Prep Time'] || '20 min';
-            elements[`${type}Benefit`].textContent = meal['Insulin Benefits'];
-            
-            const tagsCont = elements[`${type}Tags`];
-            if (tagsCont) {
-                tagsCont.innerHTML = '';
-                (meal.Tags || '').split(',').forEach(t => {
-                    const span = document.createElement('span');
-                    span.className = 'tag';
-                    span.textContent = t.trim();
-                    tagsCont.appendChild(span);
-                });
+            if (!meal) return;
+            setText(type + '-name', meal['Meal Name']);
+            setText(type + '-time', meal['Prep Time'] || '20 min');
+            setText(type + '-benefit', meal['Insulin Benefits']);
+            const tagsEl = document.getElementById(type + '-tags');
+            if (tagsEl) {
+                tagsEl.innerHTML = (meal.Tags || '').split(',').map(t =>
+                    `<span class="meal-tag">${t.trim()}</span>`).join('');
             }
         });
-
-        if (elements.totalMeals) elements.totalMeals.textContent = state.mealLog.length;
-        if (elements.mealCount) elements.mealCount.textContent = `${state.mealLog.length} meals logged`;
+        setText('current-date', new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }));
+        setText('meal-count', state.mealLog.length + ' meal' + (state.mealLog.length !== 1 ? 's' : '') + ' logged');
     }
 
-    function selectMeals() {
-        const day = new Date().getDate();
-        ['Breakfast', 'Lunch', 'Dinner'].forEach(type => {
-            const filtered = state.meals.filter(m => m.Type === type);
-            if (filtered.length > 0) {
-                const idx = day % filtered.length;
-                state.todayMeals[type.toLowerCase()] = filtered[idx];
-            }
-        });
-    }
-
-    function showRecipe(type, meal) {
-        if (!meal) meal = state.todayMeals[type];
+    // ── RECIPE MODAL ──
+    function openRecipeModal(meal) {
         if (!meal) return;
         state.currentModalMeal = meal;
-        
-        elements.modalMealName.textContent = meal['Meal Name'];
-        elements.modalPrepTime.textContent = meal['Prep Time'];
-        const servingsEl = document.getElementById('modal-servings');
-        const difficultyEl = document.getElementById('modal-difficulty');
-        if (servingsEl) servingsEl.textContent = meal['Servings'] || '1';
-        if (difficultyEl) difficultyEl.textContent = meal['Difficulty'] || 'Easy';
-        const ingredientText = meal.Ingredients || '';
-        const ingredientLines = ingredientText.includes('\n')
-            ? ingredientText.split('\n').filter(l => l.trim())
-            : ingredientText.split(',').map(i => i.trim()).filter(Boolean);
-        elements.modalIngredients.innerHTML = ingredientLines.map(i => `<p>• ${i.replace(/^[-•]\s*/, '')}</p>`).join('');
-        elements.modalInstructions.innerHTML = (meal.Instructions || 'Follow recipe steps.').split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('');
-        elements.modalBenefits.textContent = meal['Insulin Benefits'];
-        elements.modalNutrition.textContent = meal['Nutrition Notes'];
-        
-        elements.recipeModal.style.display = 'block';
+        setText('modal-meal-name', meal['Meal Name']);
+        setText('modal-prep-time', meal['Prep Time'] || '–');
+        setText('modal-servings', meal['Servings'] || '1');
+        setText('modal-difficulty', meal['Difficulty'] || 'Easy');
+
+        const ingText = meal.Ingredients || '';
+        const ingLines = ingText.includes('\n')
+            ? ingText.split('\n').filter(l => l.trim())
+            : ingText.split(',').map(s => s.trim()).filter(Boolean);
+        document.getElementById('modal-ingredients').innerHTML =
+            ingLines.map(l => `<p class="ing-line">• ${l.replace(/^[-•]\s*/, '')}</p>`).join('');
+
+        document.getElementById('modal-instructions').innerHTML =
+            (meal.Instructions || '').split('\n').filter(l => l.trim())
+                .map(l => `<p class="ing-line">${l}</p>`).join('');
+
+        setText('modal-benefits', meal['Insulin Benefits'] || '');
+        setText('modal-nutrition', meal['Nutrition Notes'] || '');
+
+        openModal('recipe-modal');
     }
 
-    function logMeal(mealOrType) {
-        const meal = typeof mealOrType === 'string' ? state.todayMeals[mealOrType] : mealOrType;
+    // ── LOG MEAL ──
+    function logMeal(meal) {
         if (!meal) return;
-        
-        state.mealLog.push({ id: Date.now(), mealId: meal['Meal ID'], name: meal['Meal Name'], date: new Date().toISOString() });
-        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.mealLog));
-        showNotification(`Logged: ${meal['Meal Name']}`);
-        updateUI();
+        state.mealLog.unshift({
+            id: Date.now(),
+            mealId: meal['Meal ID'] || 'custom',
+            name: meal['Meal Name'],
+            type: meal.Type || 'Meal',
+            date: new Date().toISOString(),
+        });
+        saveState();
+        renderLogHistory();
+        updateStats();
+        setText('meal-count', state.mealLog.length + ' meal' + (state.mealLog.length !== 1 ? 's' : '') + ' logged');
+        toast('Logged: ' + meal['Meal Name']);
     }
 
-    function showNotification(msg) {
-        if (!elements.notification) return;
-        elements.notificationText.textContent = msg;
-        elements.notification.classList.add('show');
-        setTimeout(() => elements.notification.classList.remove('show'), 3000);
-    }
+    // ── STATS ──
+    function updateStats() {
+        setText('total-meals', state.mealLog.length);
 
-    async function init() {
-        // 1. Initial Selection with Embedded Data
-        selectMeals();
-        updateUI();
-        
-        // 2. Setup Events
-        setupEvents();
-        initProteinFinder();
+        const now = new Date();
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - 7);
+        const weekCount = state.mealLog.filter(e => new Date(e.date) >= weekStart).length;
+        setText('week-meals', weekCount);
 
-        // 3. Load Persistent Data
-        const savedLog = localStorage.getItem(CONFIG.STORAGE_KEY);
-        if (savedLog) {
-            state.mealLog = JSON.parse(savedLog);
-            updateUI();
+        // Streak: consecutive days with at least one meal logged
+        const days = new Set(state.mealLog.map(e => e.date.split('T')[0]));
+        let streak = 0;
+        const d = new Date();
+        while (days.has(d.toISOString().split('T')[0])) {
+            streak++;
+            d.setDate(d.getDate() - 1);
         }
-
-        // 4. Try Network Fetch (Progressive Enhancement)
-        try {
-            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
-            const res = await fetch(url);
-            const text = await res.text();
-            const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-            const json = JSON.parse(jsonStr);
-            const rows = json.table.rows;
-            const headers = rows[0].c.map(c => c?.v || '');
-            
-            const newMeals = rows.slice(1).map(row => {
-                const meal = {};
-                row.c.forEach((cell, i) => { if (headers[i]) meal[headers[i]] = cell?.v || ''; });
-                return meal;
-            });
-
-            if (newMeals.length > 5) {
-                state.meals = newMeals;
-                selectMeals();
-                updateUI();
-                console.log("Loaded fresh data from Sheets");
-            }
-        } catch (e) {
-            console.warn("Sheets fetch skipped/failed, using local fallback");
-            try {
-                const res = await fetch(CONFIG.FALLBACK_DATA_URL);
-                const data = await res.json();
-                if (data.meals) {
-                    state.meals = data.meals;
-                    selectMeals();
-                    updateUI();
-                }
-            } catch (e2) {
-                console.error("All fetches failed, remaining on embedded data");
-            }
-        }
+        setText('streak-days', streak);
     }
 
-    function initProteinFinder() {
-        const container = document.getElementById('protein-chips');
-        if (!container) return;
-        container.innerHTML = '';
-        PROTEINS.forEach(p => {
-            const chip = document.createElement('button');
-            chip.className = 'protein-chip';
-            chip.dataset.id = p.id;
-            chip.innerHTML = `<span class="protein-icon">${p.icon}</span>${p.label}`;
-            chip.onclick = () => chip.classList.toggle('selected');
-            container.appendChild(chip);
+    // ── LOG HISTORY ──
+    function renderLogHistory() {
+        const el = document.getElementById('log-history');
+        if (!el) return;
+        if (state.mealLog.length === 0) {
+            el.innerHTML = '<p class="empty-log">No meals logged yet. Start by hitting "I Ate This" on Today\'s meals.</p>';
+            return;
+        }
+        el.innerHTML = state.mealLog.slice(0, 20).map(entry => {
+            const d = new Date(entry.date);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            return `<div class="log-entry">
+                <div class="log-entry-info">
+                    <div class="log-entry-name">${entry.name}</div>
+                    <div class="log-entry-meta">${dateStr} · ${timeStr}</div>
+                </div>
+                <span class="log-entry-type ${entry.type}">${entry.type}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ── PROTEIN CHIPS ──
+    function initProteinChips() {
+        const el = document.getElementById('protein-chips');
+        if (!el) return;
+        el.innerHTML = PROTEINS.map(p =>
+            `<button class="protein-chip" data-id="${p.id}">
+                <span class="protein-icon">${p.icon}</span>${p.label}
+            </button>`
+        ).join('');
+        el.querySelectorAll('.protein-chip').forEach(btn => {
+            btn.addEventListener('click', () => btn.classList.toggle('selected'));
         });
     }
 
-    function findMealsByProtein() {
-        const selected = Array.from(document.querySelectorAll('.protein-chip.selected'))
-            .map(el => el.dataset.id);
+    function getSelectedProteins() {
+        return Array.from(document.querySelectorAll('.protein-chip.selected')).map(b => b.dataset.id);
+    }
 
+    // ── FIND MEALS ──
+    function findMealsByProtein() {
+        const selected = getSelectedProteins();
         const resultEl = document.getElementById('protein-result');
         if (!resultEl) return;
-
         if (selected.length === 0) {
             resultEl.innerHTML = '<p class="protein-hint">Select at least one protein above.</p>';
-            resultEl.style.display = 'block';
             return;
         }
-
         const keywords = selected.flatMap(id => PROTEINS.find(p => p.id === id)?.keywords || []);
-
-        const matches = state.meals.filter(meal => {
-            const text = (meal.Ingredients + ' ' + meal['Meal Name']).toLowerCase();
+        const matches = state.meals.filter(m => {
+            const text = ((m.Ingredients || '') + ' ' + m['Meal Name']).toLowerCase();
             return keywords.some(kw => text.includes(kw));
         });
-
         if (matches.length === 0) {
-            resultEl.innerHTML = `<p class="protein-hint">No meals found for those proteins yet. Try a different combination.</p>`;
-            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<p class="protein-hint">No meals found. Try the AI generator instead!</p>';
             return;
         }
-
-        // Group by meal type, show up to one per type
-        const byType = { Breakfast: null, Lunch: null, Dinner: null };
+        const byType = {};
         matches.forEach(m => { if (!byType[m.Type]) byType[m.Type] = m; });
-
-        const cards = Object.entries(byType)
-            .filter(([, meal]) => meal)
-            .map(([type, meal]) => `
-                <div class="protein-match-card">
-                    <div class="match-type-badge ${type.toLowerCase()}">${type}</div>
-                    <h4>${meal['Meal Name']}</h4>
-                    <div class="match-meta">
-                        <span><i class="fas fa-clock"></i> ${meal['Prep Time'] || '20 min'}</span>
-                        <span><i class="fas fa-signal"></i> ${meal['Difficulty'] || 'Easy'}</span>
-                    </div>
-                    <p class="match-benefit">${meal['Insulin Benefits']}</p>
-                    <button class="btn-view match-recipe-btn" data-meal-id="${meal['Meal ID']}">
-                        <i class="fas fa-utensils"></i> View Recipe
-                    </button>
-                </div>
-            `).join('');
-
         resultEl.innerHTML = `
-            <p class="protein-found-note"><i class="fas fa-check-circle"></i> Found ${matches.length} meal${matches.length > 1 ? 's' : ''} matching your proteins</p>
-            <div class="protein-match-grid">${cards}</div>
-        `;
-        resultEl.style.display = 'block';
-
-        // Wire View Recipe buttons
-        resultEl.querySelectorAll('.match-recipe-btn').forEach(btn => {
-            btn.onclick = () => {
+            <p class="protein-found-note"><i class="fas fa-check-circle"></i> ${matches.length} match${matches.length > 1 ? 'es' : ''} found</p>
+            <div class="protein-match-grid">
+                ${Object.entries(byType).map(([type, meal]) => `
+                    <div class="protein-match-card">
+                        <div class="match-type-badge ${type.toLowerCase()}">${type}</div>
+                        <h4>${meal['Meal Name']}</h4>
+                        <div class="match-meta">
+                            <span><i class="fas fa-clock"></i>${meal['Prep Time'] || '20 min'}</span>
+                            <span><i class="fas fa-signal"></i>${meal['Difficulty'] || 'Easy'}</span>
+                        </div>
+                        <p class="match-benefit">${meal['Insulin Benefits']}</p>
+                        <button class="btn-view-match" data-meal-id="${meal['Meal ID']}">
+                            <i class="fas fa-utensils"></i> View Recipe
+                        </button>
+                    </div>`).join('')}
+            </div>`;
+        resultEl.querySelectorAll('.btn-view-match').forEach(btn => {
+            btn.addEventListener('click', () => {
                 const meal = state.meals.find(m => m['Meal ID'] === btn.dataset.mealId);
-                if (meal) showRecipe(null, meal);
-            };
+                if (meal) openRecipeModal(meal);
+            });
         });
     }
 
-    async function generateMealWithAI() {
-        const selected = Array.from(document.querySelectorAll('.protein-chip.selected'))
-            .map(el => el.dataset.id);
-
-        const resultEl = document.getElementById('protein-result');
+    // ── AI GENERATE ──
+    async function generateWithAI() {
+        const selected = getSelectedProteins();
         const btn = document.getElementById('generate-ai-btn');
+        const resultEl = document.getElementById('protein-result');
         if (!resultEl || !btn) return;
-
         if (selected.length === 0) {
-            resultEl.innerHTML = '<p class="protein-hint">Select at least one protein so the AI knows what you have.</p>';
-            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<p class="protein-hint">Select a protein first so the AI knows what to work with.</p>';
             return;
         }
-
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…';
 
-        let aiContainer = document.getElementById('ai-result-container');
-        if (!aiContainer) {
-            aiContainer = document.createElement('div');
-            aiContainer.id = 'ai-result-container';
-            resultEl.appendChild(aiContainer);
+        let aiEl = document.getElementById('ai-result-container');
+        if (!aiEl) {
+            aiEl = document.createElement('div');
+            aiEl.id = 'ai-result-container';
+            resultEl.appendChild(aiEl);
         }
-        resultEl.style.display = 'block';
-        aiContainer.innerHTML = '<div class="ai-loading"><i class="fas fa-spinner fa-spin"></i> Claude is building your meal...</div>';
+        aiEl.innerHTML = '<div class="ai-loading"><i class="fas fa-spinner fa-spin"></i> Claude is cooking something up…</div>';
 
         const preferences = {
-            carbTolerance: document.getElementById('carb-tolerance')?.value || 'moderate',
-            avoidGout: document.getElementById('avoid-gout')?.checked ?? true,
-            prioritizeHeart: document.getElementById('prioritize-heart')?.checked ?? true,
-            budget: document.getElementById('budget')?.value || 'medium',
-            calorieTarget: parseInt(document.getElementById('calorie-target')?.value) || 500,
+            carbTolerance: state.settings.carbTolerance,
+            avoidGout: state.settings.avoidGout,
+            prioritizeHeart: state.settings.prioritizeHeart,
+            budget: state.settings.budget,
+            calorieTarget: state.settings.calorieTarget,
         };
 
         try {
             const res = await fetch('/api/generate-meal', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ proteins: selected, preferences })
+                body: JSON.stringify({ proteins: selected, preferences }),
             });
-
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'API error');
-            }
-
+            if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'API error'); }
             const meal = await res.json();
             const mealType = (meal.Type || 'Lunch').toLowerCase();
+            state.meals.push(meal);
 
-            aiContainer.innerHTML = `
+            aiEl.innerHTML = `
                 <div class="ai-meal-card">
-                    <div class="ai-badge"><i class="fas fa-magic"></i> AI Generated for You</div>
+                    <div class="ai-badge"><i class="fas fa-magic"></i> AI Generated</div>
                     <div class="match-type-badge ${mealType}">${meal.Type || 'Meal'}</div>
                     <h4>${meal['Meal Name']}</h4>
                     <div class="match-meta">
-                        <span><i class="fas fa-clock"></i> ${meal['Prep Time'] || '25 min'}</span>
-                        <span><i class="fas fa-signal"></i> ${meal['Difficulty'] || 'Easy'}</span>
+                        <span><i class="fas fa-clock"></i>${meal['Prep Time'] || '25 min'}</span>
+                        <span><i class="fas fa-signal"></i>${meal['Difficulty'] || 'Easy'}</span>
                     </div>
                     <p class="match-benefit">${meal['Insulin Benefits']}</p>
-                    <p style="font-size:13px; color:#6d28d9; margin-top:4px;">${meal['Nutrition Notes']}</p>
-                    <button class="btn-view ai-view-btn" style="margin-top:12px; border-color:#d8b4fe; color:#7B2FBE; background:#f8f0ff;">
+                    <p class="ai-nutrition">${meal['Nutrition Notes']}</p>
+                    <button class="btn-view-match ai-view-btn">
                         <i class="fas fa-utensils"></i> View Full Recipe
                     </button>
-                </div>
-            `;
-
-            state.meals.push(meal);
-            aiContainer.querySelector('.ai-view-btn').onclick = () => showRecipe(null, meal);
-
+                </div>`;
+            aiEl.querySelector('.ai-view-btn').addEventListener('click', () => openRecipeModal(meal));
         } catch (err) {
-            aiContainer.innerHTML = `<p class="protein-hint" style="color:#e53e3e;"><i class="fas fa-exclamation-circle"></i> ${err.message}</p>`;
+            aiEl.innerHTML = `<p class="protein-hint" style="color:#f87171"><i class="fas fa-exclamation-circle"></i> ${err.message}</p>`;
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-magic"></i> Generate with AI';
         }
     }
 
-    function setupEvents() {
-        if (elements.viewBreakfastBtn) elements.viewBreakfastBtn.onclick = () => showRecipe('breakfast');
-        if (elements.viewLunchBtn) elements.viewLunchBtn.onclick = () => showRecipe('lunch');
-        if (elements.viewDinnerBtn) elements.viewDinnerBtn.onclick = () => showRecipe('dinner');
-        
-        if (elements.logBreakfastBtn) elements.logBreakfastBtn.onclick = () => logMeal('breakfast');
-        if (elements.logLunchBtn) elements.logLunchBtn.onclick = () => logMeal('lunch');
-        if (elements.logDinnerBtn) elements.logDinnerBtn.onclick = () => logMeal('dinner');
-        
-        if (elements.closeModalBtn) elements.closeModalBtn.onclick = () => elements.recipeModal.style.display = 'none';
-        
-        if (elements.logModalMealBtn) elements.logModalMealBtn.onclick = () => {
-            logMeal(state.currentModalMeal);
-            elements.recipeModal.style.display = 'none';
-        };
-        
-        if (elements.refreshBtn) elements.refreshBtn.onclick = () => {
-            const offset = Math.floor(Math.random() * 10);
-            ['Breakfast', 'Lunch', 'Dinner'].forEach(type => {
-                const filtered = state.meals.filter(m => m.Type === type);
-                if (filtered.length > 0) {
-                    const idx = (new Date().getSeconds() + offset) % filtered.length;
-                    state.todayMeals[type.toLowerCase()] = filtered[idx];
-                }
+    // ── SETTINGS ──
+    function applySettingsToUI() {
+        setSegment('seg-budget', state.settings.budget);
+        setSegment('seg-carbs', state.settings.carbTolerance);
+        const calEl = document.getElementById('calorie-target');
+        const proEl = document.getElementById('protein-target');
+        if (calEl) { calEl.value = state.settings.calorieTarget; setText('calorie-display', state.settings.calorieTarget + ' kcal'); }
+        if (proEl) { proEl.value = state.settings.proteinTarget; setText('protein-display', state.settings.proteinTarget + 'g'); }
+        const wgEl = document.getElementById('weight-loss-goal');
+        if (wgEl) wgEl.value = state.settings.weightGoal;
+        setToggle('toggle-gout', state.settings.avoidGout);
+        setToggle('toggle-heart', state.settings.prioritizeHeart);
+    }
+
+    function readSettingsFromUI() {
+        state.settings.budget = getSegmentValue('seg-budget') || 'medium';
+        state.settings.carbTolerance = getSegmentValue('seg-carbs') || 'moderate';
+        state.settings.calorieTarget = parseInt(document.getElementById('calorie-target')?.value) || 500;
+        state.settings.proteinTarget = parseInt(document.getElementById('protein-target')?.value) || 30;
+        state.settings.weightGoal = document.getElementById('weight-loss-goal')?.value || 'moderate';
+        state.settings.avoidGout = document.getElementById('avoid-gout')?.checked ?? true;
+        state.settings.prioritizeHeart = document.getElementById('prioritize-heart')?.checked ?? true;
+    }
+
+    // ── BINDINGS ──
+    function bindNav() {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const pane = document.getElementById('tab-' + btn.dataset.tab);
+                if (pane) pane.classList.add('active');
             });
-            updateUI();
-            showNotification('New suggestions randomized!');
-        };
+        });
+    }
 
-        if (elements.toggleSettingsBtn) elements.toggleSettingsBtn.onclick = () => {
-            const grid = document.getElementById('settings-grid');
-            const btn = elements.toggleSettingsBtn;
-            if (grid) {
-                const hidden = grid.style.display === 'none';
-                grid.style.display = hidden ? 'grid' : 'none';
-                btn.innerHTML = hidden ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Show';
-            }
-        };
+    function bindTodayTab() {
+        on('view-breakfast', 'click', () => openRecipeModal(state.todayMeals.breakfast));
+        on('view-lunch',     'click', () => openRecipeModal(state.todayMeals.lunch));
+        on('view-dinner',    'click', () => openRecipeModal(state.todayMeals.dinner));
+        on('log-breakfast',  'click', () => logMeal(state.todayMeals.breakfast));
+        on('log-lunch',      'click', () => logMeal(state.todayMeals.lunch));
+        on('log-dinner',     'click', () => logMeal(state.todayMeals.dinner));
+        on('refresh-meals',  'click', shuffleMeals);
+    }
 
-        if (elements.applySettingsBtn) elements.applySettingsBtn.onclick = () => {
-            const budget = elements.budgetSelect?.value || 'medium';
-            const calorie = parseInt(elements.calorieTargetInput?.value) || 500;
-            state.settings.budget = budget;
-            state.settings.calorieTarget = calorie;
+    function bindFindTab() {
+        on('find-meal-btn',    'click', findMealsByProtein);
+        on('generate-ai-btn', 'click', generateWithAI);
+    }
+
+    function bindLogTab() {
+        on('log-manual', 'click', () => openModal('custom-meal-modal'));
+        on('export-data', 'click', exportLog);
+        document.querySelectorAll('#seg-meal-type .seg-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#seg-meal-type .seg-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.customMealType = btn.dataset.val;
+            });
+        });
+        on('save-custom-meal', 'click', saveCustomMeal);
+        on('close-custom-modal', 'click', () => closeModal('custom-meal-modal'));
+    }
+
+    function bindSettingsTab() {
+        document.querySelectorAll('#seg-budget .seg-btn, #seg-carbs .seg-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const group = btn.closest('.seg-control');
+                group.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        on('apply-settings', 'click', () => {
+            readSettingsFromUI();
+            saveState();
             selectMeals();
-            updateUI();
-            showNotification('Settings applied! Meals updated.');
-        };
-
-        const findBtn = document.getElementById('find-meal-btn');
-        if (findBtn) findBtn.onclick = findMealsByProtein;
-
-        const aiBtn = document.getElementById('generate-ai-btn');
-        if (aiBtn) aiBtn.onclick = generateMealWithAI;
+            renderTodayMeals();
+            toast('Settings saved!');
+        });
+        on('reset-data', 'click', () => {
+            if (confirm('Reset all logged meals and settings? This cannot be undone.')) {
+                state.mealLog = [];
+                state.settings = { budget: 'medium', carbTolerance: 'moderate', calorieTarget: 500, proteinTarget: 30, weightGoal: 'moderate', avoidGout: true, prioritizeHeart: true };
+                saveState();
+                applySettingsToUI();
+                renderLogHistory();
+                updateStats();
+                toast('All data reset.');
+            }
+        });
     }
 
-    init();
-}
-            });
-            updateUI();
-            showNotification('New suggestions randomized!');
-        };
-
-        if (elements.toggleSettingsBtn) elements.toggleSettingsBtn.onclick = () => {
-            const grid = document.getElementById('settings-grid');
-            if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
-        };
+    function bindModals() {
+        on('close-modal', 'click', () => closeModal('recipe-modal'));
+        on('log-modal-meal', 'click', () => { logMeal(state.currentModalMeal); closeModal('recipe-modal'); });
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(overlay.id); });
+        });
     }
 
-    init();
-}
+    function bindRangeInputs() {
+        const calEl = document.getElementById('calorie-target');
+        if (calEl) calEl.addEventListener('input', () => setText('calorie-display', calEl.value + ' kcal'));
+        const proEl = document.getElementById('protein-target');
+        if (proEl) proEl.addEventListener('input', () => setText('protein-display', proEl.value + 'g'));
+    }
 
-// Robust Loader
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}
+    function bindToggles() {
+        bindToggle('toggle-gout',  'avoid-gout');
+        bindToggle('toggle-heart', 'prioritize-heart');
+    }
+
+    function bindToggle(trackId, checkboxId) {
+        const track = document.getElementById(trackId)?.querySelector('.toggle-track');
+        const cb    = document.getElementById(checkboxId);
+        if (!track || !cb) return;
+        track.addEventListener('click', () => {
+            cb.checked = !cb.checked;
+            track.classList.toggle('active', cb.checked);
+        });
+    }
+
+    // ── CUSTOM MEAL ──
+    function saveCustomMeal() {
+        const name = document.getElementById('custom-meal-name')?.value.trim();
+        if (!name) { toast('Please enter a meal name.'); return; }
+        const notes = document.getElementById('custom-meal-notes')?.value.trim();
+        logMeal({ 'Meal Name': name, Type: state.customMealType, 'Meal ID': 'custom-' + Date.now(), 'Insulin Benefits': notes || '' });
+        document.getElementById('custom-meal-name').value = '';
+        document.getElementById('custom-meal-notes').value = '';
+        closeModal('custom-meal-modal');
+    }
+
+    // ── EXPORT ──
+    function exportLog() {
+        if (state.mealLog.length === 0) { toast('No meals to export yet.'); return; }
+        const csv = ['Name,Type,Date'].concat(
+            state.mealLog.map(e => `"${e.name}","${e.type}","${new Date(e.date).toLocaleDateString()}"`)
+        ).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'meal-log.csv';
+        a.click();
+        toast('Log exported!');
+    }
+
+    // ── FETCH FROM SHEETS ──
+    async function fetchMeals() {
+        try {
+            const url = `https://docs.google.com/spreadsheets/d/${CONFIG.GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+            const res  = await fetch(url);
+            const text = await res.text();
+            const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+            const rows    = json.table.rows;
+            const headers = rows[0].c.map(c => c?.v || '');
+            const meals   = rows.slice(1).map(row => {
+                const m = {};
+                row.c.forEach((cell, i) => { if (headers[i]) m[headers[i]] = cell?.v || ''; });
+                return m;
+            }).filter(m => m['Meal Name']);
+            if (meals.length > 5) {
+                state.meals = meals;
+                selectMeals();
+                renderTodayMeals();
+            }
+        } catch (e) {
+            try {
+                const res  = await fetch(CONFIG.FALLBACK_DATA_URL);
+                const data = await res.json();
+                if (data.meals?.length > 5) {
+                    state.meals = data.meals;
+                    selectMeals();
+                    renderTodayMeals();
+                }
+            } catch (e2) { /* stay on embedded */ }
+        }
+    }
+
+    // ── UTILITIES ──
+    function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+    function on(id, evt, fn)   { const el = document.getElementById(id); if (el) el.addEventListener(evt, fn); }
+
+    function openModal(id)  { const el = document.getElementById(id); if (el) el.classList.add('open'); }
+    function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('open'); }
+
+    function setSegment(groupId, value) {
+        document.querySelectorAll(`#${groupId} .seg-btn`).forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.val === value);
+        });
+    }
+    function getSegmentValue(groupId) {
+        return document.querySelector(`#${groupId} .seg-btn.active`)?.dataset.val || null;
+    }
+    function setToggle(trackId, active) {
+        const track = document.getElementById(trackId)?.querySelector('.toggle-track');
+        if (track) track.classList.toggle('active', active);
+    }
+
+    let toastTimer;
+    function toast(msg) {
+        const el = document.getElementById('toast');
+        const tx = document.getElementById('toast-text');
+        if (!el || !tx) return;
+        tx.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ── START ──
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Insulin-Smart Meal Hub - v1.1 enhanced deployment -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,326 +8,328 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <meta name="theme-color" content="#2E86AB">
-    <meta name="description" content="Daily insulin-sensitive meal suggestions for breakfast, lunch, and dinner">
+    <meta name="theme-color" content="#050c18">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-heartbeat"></i>
-                    <h1>Insulin-Smart <span>Meal Hub</span></h1>
+<div class="app">
+
+    <!-- ── HEADER ── -->
+    <header class="app-header">
+        <div class="header-logo">
+            <div class="logo-icon"><i class="fas fa-seedling"></i></div>
+            <div>
+                <div class="logo-title">Insulin-Smart</div>
+                <div class="logo-sub">Meal Hub</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-date" id="current-date">Loading…</div>
+            <div class="header-streak" id="meal-count">0 logged</div>
+        </div>
+    </header>
+
+    <!-- ── MAIN ── -->
+    <main class="app-main">
+
+        <!-- TODAY TAB -->
+        <section class="tab-pane active" id="tab-today">
+            <div class="section-label">Today's Plan</div>
+
+            <div class="meal-stack" id="meal-stack">
+                <div class="meal-card-v2 breakfast" id="card-breakfast">
+                    <div class="meal-card-header">
+                        <div class="meal-type-pill"><i class="fas fa-coffee"></i> Breakfast</div>
+                        <div class="meal-prep-time"><i class="fas fa-clock"></i> <span id="breakfast-time">–</span></div>
+                    </div>
+                    <div class="meal-card-body">
+                        <h3 id="breakfast-name">Loading…</h3>
+                        <p id="breakfast-benefit" class="meal-benefit-text"></p>
+                        <div class="meal-tags-row" id="breakfast-tags"></div>
+                    </div>
+                    <div class="meal-card-footer">
+                        <button class="btn-recipe" id="view-breakfast"><i class="fas fa-utensils"></i> Recipe</button>
+                        <button class="btn-ate" id="log-breakfast"><i class="fas fa-check"></i> I Ate This</button>
+                    </div>
                 </div>
-                <div class="date-display">
-                    <div id="current-date">Loading...</div>
-                    <div class="meal-count" id="meal-count">0 meals logged</div>
+
+                <div class="meal-card-v2 lunch" id="card-lunch">
+                    <div class="meal-card-header">
+                        <div class="meal-type-pill"><i class="fas fa-sun"></i> Lunch</div>
+                        <div class="meal-prep-time"><i class="fas fa-clock"></i> <span id="lunch-time">–</span></div>
+                    </div>
+                    <div class="meal-card-body">
+                        <h3 id="lunch-name">Loading…</h3>
+                        <p id="lunch-benefit" class="meal-benefit-text"></p>
+                        <div class="meal-tags-row" id="lunch-tags"></div>
+                    </div>
+                    <div class="meal-card-footer">
+                        <button class="btn-recipe" id="view-lunch"><i class="fas fa-utensils"></i> Recipe</button>
+                        <button class="btn-ate" id="log-lunch"><i class="fas fa-check"></i> I Ate This</button>
+                    </div>
+                </div>
+
+                <div class="meal-card-v2 dinner" id="card-dinner">
+                    <div class="meal-card-header">
+                        <div class="meal-type-pill"><i class="fas fa-moon"></i> Dinner</div>
+                        <div class="meal-prep-time"><i class="fas fa-clock"></i> <span id="dinner-time">–</span></div>
+                    </div>
+                    <div class="meal-card-body">
+                        <h3 id="dinner-name">Loading…</h3>
+                        <p id="dinner-benefit" class="meal-benefit-text"></p>
+                        <div class="meal-tags-row" id="dinner-tags"></div>
+                    </div>
+                    <div class="meal-card-footer">
+                        <button class="btn-recipe" id="view-dinner"><i class="fas fa-utensils"></i> Recipe</button>
+                        <button class="btn-ate" id="log-dinner"><i class="fas fa-check"></i> I Ate This</button>
+                    </div>
                 </div>
             </div>
-            <div class="user-message">
-                <p><i class="fas fa-check-circle"></i> Tailored for your insulin sensitivity journey</p>
+
+            <button class="btn-shuffle" id="refresh-meals">
+                <i class="fas fa-shuffle"></i> Shuffle Meals
+            </button>
+        </section>
+
+        <!-- FIND TAB -->
+        <section class="tab-pane" id="tab-find">
+            <div class="section-label">Protein Finder</div>
+            <p class="section-sub">What's in your fridge right now?</p>
+
+            <div class="protein-chips" id="protein-chips"></div>
+
+            <div class="find-btn-row">
+                <button class="btn-find" id="find-meal-btn">
+                    <i class="fas fa-search"></i> Find Meals
+                </button>
+                <button class="btn-ai" id="generate-ai-btn">
+                    <i class="fas fa-magic"></i> Generate with AI
+                </button>
             </div>
-        </header>
 
-        <main>
-            <section class="settings-panel" id="settings-panel">
-                <div class="settings-header">
-                    <h3><i class="fas fa-sliders-h"></i> Customize Your Meal Plan</h3>
-                    <button class="btn-view" id="toggle-settings">
-                        <i class="fas fa-chevron-up"></i> Hide
-                    </button>
-                </div>
-                <div class="settings-grid" id="settings-grid">
-                    <div class="setting-item">
-                        <label for="budget">Budget</label>
-                        <select id="budget">
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="calorie-target">Calorie Target (kcal)</label>
-                        <input type="number" id="calorie-target" min="300" max="800" step="50" value="500">
-                        <div class="range-value">500 kcal per meal</div>
-                    </div>
-                    <div class="setting-item">
-                        <label for="protein-target">Protein Target (g)</label>
-                        <input type="number" id="protein-target" min="20" max="60" step="5" value="30">
-                        <div class="range-value">30g protein per meal</div>
-                    </div>
-                    <div class="setting-item">
-                        <label for="carb-tolerance">Carb Tolerance</label>
-                        <select id="carb-tolerance">
-                            <option value="low">Low (&lt;30g)</option>
-                            <option value="moderate" selected>Moderate (30-50g)</option>
-                            <option value="high">High (&gt;50g)</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="weight-loss-goal">Weight Loss Goal</label>
-                        <select id="weight-loss-goal">
-                            <option value="none">None</option>
-                            <option value="mild">Mild</option>
-                            <option value="moderate" selected>Moderate</option>
-                            <option value="aggressive">Aggressive</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="ingredients-on-hand">Ingredients On Hand</label>
-                        <input type="text" id="ingredients-on-hand" 
-                               placeholder="chicken, eggs, tuna, pumpkin..."
-                               value="chicken, eggs, tuna, sardines, salmon, ackee, pumpkin, sweet potato, callaloo, cabbage">
-                    </div>
-                    <div class="setting-item">
-                        <label for="avoid-gout">
-                            <input type="checkbox" id="avoid-gout" checked> Avoid Gout Triggers
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label for="prioritize-heart">
-                            <input type="checkbox" id="prioritize-heart" checked> Prioritize Heart Health
-                        </label>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 16px;">
-                    <button class="btn-log" id="apply-settings">
-                        <i class="fas fa-check"></i> Apply Settings & Refresh Meals
-                    </button>
-                </div>
-            </section>
+            <div id="protein-result"></div>
+        </section>
 
-            <section class="protein-finder" id="protein-finder">
-                <div class="protein-finder-header">
-                    <h3><i class="fas fa-drumstick-bite"></i> What Protein Do You Have?</h3>
-                    <p>Select what's in your fridge and we'll find your best meal match</p>
-                </div>
-                <div class="protein-chips" id="protein-chips"></div>
-                <div style="text-align:center; margin-top: 20px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-                    <button class="btn-find-meal" id="find-meal-btn">
-                        <i class="fas fa-search"></i> Find My Meal
-                    </button>
-                    <button class="btn-generate-ai" id="generate-ai-btn">
-                        <i class="fas fa-magic"></i> Generate with AI
-                    </button>
-                </div>
-                <div class="protein-result" id="protein-result"></div>
-            </section>
+        <!-- LOG TAB -->
+        <section class="tab-pane" id="tab-log">
+            <div class="section-label">Your Journey</div>
 
-            <section class="today-meals">
-                <h2><i class="fas fa-calendar-day"></i> Today's Suggestions</h2>
-                <div class="meal-cards">
-                    <div class="meal-card breakfast">
-                        <div class="meal-header">
-                            <span class="meal-type"><i class="fas fa-coffee"></i> Breakfast</span>
-                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="breakfast-time">- min</span></span>
-                        </div>
-                        <h3 id="breakfast-name">Loading meal...</h3>
-                        <div class="meal-tags" id="breakfast-tags">
-                            <span class="tag">High-protein</span>
-                            <span class="tag">Low-carb</span>
-                        </div>
-                        <p class="meal-benefit" id="breakfast-benefit">Kickstarts metabolism with steady energy release.</p>
-                        <div class="meal-actions">
-                            <button class="btn-view" id="view-breakfast">
-                                <i class="fas fa-utensils"></i> View Recipe
-                            </button>
-                            <button class="btn-log" id="log-breakfast">
-                                <i class="fas fa-check"></i> I Ate This
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="meal-card lunch">
-                        <div class="meal-header">
-                            <span class="meal-type"><i class="fas fa-sun"></i> Lunch</span>
-                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="lunch-time">- min</span></span>
-                        </div>
-                        <h3 id="lunch-name">Loading meal...</h3>
-                        <div class="meal-tags" id="lunch-tags">
-                            <span class="tag">High-protein</span>
-                            <span class="tag">Low-carb</span>
-                        </div>
-                        <p class="meal-benefit" id="lunch-benefit">Designed to stabilize blood sugar and improve insulin sensitivity.</p>
-                        <div class="meal-actions">
-                            <button class="btn-view" id="view-lunch">
-                                <i class="fas fa-utensils"></i> View Recipe
-                            </button>
-                            <button class="btn-log" id="log-lunch">
-                                <i class="fas fa-check"></i> I Ate This
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="meal-card dinner">
-                        <div class="meal-header">
-                            <span class="meal-type"><i class="fas fa-moon"></i> Dinner</span>
-                            <span class="prep-time"><i class="fas fa-clock"></i> <span id="dinner-time">- min</span></span>
-                        </div>
-                        <h3 id="dinner-name">Loading meal...</h3>
-                        <div class="meal-tags" id="dinner-tags">
-                            <span class="tag">Omega-3</span>
-                            <span class="tag">High-fiber</span>
-                        </div>
-                        <p class="meal-benefit" id="dinner-benefit">Supports overnight fasting glucose stability.</p>
-                        <div class="meal-actions">
-                            <button class="btn-view" id="view-dinner">
-                                <i class="fas fa-utensils"></i> View Recipe
-                            </button>
-                            <button class="btn-log" id="log-dinner">
-                                <i class="fas fa-check"></i> I Ate This
-                            </button>
-                        </div>
-                    </div>
+            <div class="stats-row">
+                <div class="stat-pill">
+                    <div class="stat-num" id="total-meals">0</div>
+                    <div class="stat-lbl">Logged</div>
                 </div>
-                
-                <div class="refresh-section">
-                    <button class="btn-refresh" id="refresh-meals">
-                        <i class="fas fa-redo"></i> Get New Suggestions
-                    </button>
-                    <p class="refresh-note">Based on your available ingredients and insulin sensitivity goals</p>
+                <div class="stat-pill">
+                    <div class="stat-num" id="streak-days">0</div>
+                    <div class="stat-lbl">Day Streak</div>
                 </div>
-            </section>
-
-            <section class="recipe-modal" id="recipe-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 id="modal-meal-name">Recipe Details</h2>
-                        <button class="btn-close" id="close-modal">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="recipe-info">
-                            <div class="info-item">
-                                <i class="fas fa-clock"></i>
-                                <span>Prep: <strong id="modal-prep-time">- min</strong></span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-utensil-spoon"></i>
-                                <span>Servings: <strong id="modal-servings">-</strong></span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-signal"></i>
-                                <span>Difficulty: <strong id="modal-difficulty">-</strong></span>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3><i class="fas fa-shopping-basket"></i> Ingredients</h3>
-                            <div class="ingredients-list" id="modal-ingredients">
-                                <p>Loading ingredients...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3><i class="fas fa-list-ol"></i> Instructions</h3>
-                            <div class="instructions-list" id="modal-instructions">
-                                <p>Loading instructions...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3><i class="fas fa-heartbeat"></i> Insulin Benefits</h3>
-                            <div class="benefits-content" id="modal-benefits">
-                                <p>Loading benefits...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3><i class="fas fa-chart-bar"></i> Nutrition Notes</h3>
-                            <div class="nutrition-content" id="modal-nutrition">
-                                <p>Loading nutrition info...</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn-log-modal" id="log-modal-meal">
-                            <i class="fas fa-check-circle"></i> Log This Meal
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="stats-section">
-                <h2><i class="fas fa-chart-line"></i> Your Insulin Journey</h2>
-                <div class="stats-cards">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-apple-alt"></i>
-                        </div>
-                        <div class="stat-value" id="total-meals">0</div>
-                        <div class="stat-label">Meals Logged</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="stat-value" id="avg-rating">0.0</div>
-                        <div class="stat-label">Avg. Rating</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-value" id="avg-prep">-</div>
-                        <div class="stat-label">Avg. Prep</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stat-value" id="top-meal">-</div>
-                        <div class="stat-label">Top Meal</div>
-                    </div>
-                </div>
-                
-                <div class="quick-links">
-                    <button class="link-btn" id="view-all">
-                        <i class="fas fa-book-open"></i> Browse All Recipes
-                    </button>
-                    <button class="link-btn" id="log-manual">
-                        <i class="fas fa-pen"></i> Log Custom Meal
-                    </button>
-                    <button class="link-btn" id="export-data">
-                        <i class="fas fa-download"></i> Export Ebook Data
-                    </button>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <div class="footer-content">
-                <p><i class="fas fa-info-circle"></i> Meals are designed for insulin sensitivity using your available ingredients: chicken, eggs, tuna, sardines, salmon, fish, ackee, peas, beans, nuts, pumpkin, sweet potato.</p>
-                <p class="footer-note">Data is stored locally on your device. For ebook analytics, export your meal logs.</p>
-                <div class="footer-links">
-                    <a href="#" id="how-it-works"><i class="fas fa-question-circle"></i> How It Works</a>
-                    <a href="#" id="add-recipe"><i class="fas fa-plus-circle"></i> Add Recipe</a>
-                    <a href="#" id="reset-data"><i class="fas fa-redo"></i> Reset Data</a>
+                <div class="stat-pill">
+                    <div class="stat-num" id="week-meals">0</div>
+                    <div class="stat-lbl">This Week</div>
                 </div>
             </div>
-        </footer>
-    </div>
 
-    <div class="notification" id="notification">
-        <div class="notification-content">
-            <i class="fas fa-check" id="notification-icon"></i>
-            <span id="notification-text">Meal logged successfully!</span>
+            <button class="btn-log-custom" id="log-manual">
+                <i class="fas fa-plus"></i> Log a Meal
+            </button>
+
+            <div class="log-history" id="log-history">
+                <p class="empty-log">No meals logged yet. Start by hitting "I Ate This" on Today's meals.</p>
+            </div>
+
+            <button class="btn-export" id="export-data">
+                <i class="fas fa-download"></i> Export Log
+            </button>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section class="tab-pane" id="tab-settings">
+            <div class="section-label">Your Profile</div>
+
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>Budget</label>
+                    <div class="seg-control" id="seg-budget">
+                        <button class="seg-btn" data-val="low">Low</button>
+                        <button class="seg-btn active" data-val="medium">Medium</button>
+                        <button class="seg-btn" data-val="high">High</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Carb Tolerance</label>
+                    <div class="seg-control" id="seg-carbs">
+                        <button class="seg-btn" data-val="low">&lt;30g</button>
+                        <button class="seg-btn active" data-val="moderate">30–50g</button>
+                        <button class="seg-btn" data-val="high">&gt;50g</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Calorie Target per Meal</label>
+                    <div class="range-row">
+                        <input type="range" id="calorie-target" min="300" max="800" step="50" value="500">
+                        <span class="range-display" id="calorie-display">500 kcal</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Protein Target per Meal</label>
+                    <div class="range-row">
+                        <input type="range" id="protein-target" min="20" max="60" step="5" value="30">
+                        <span class="range-display" id="protein-display">30g</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Weight Goal</label>
+                    <select id="weight-loss-goal" class="styled-select">
+                        <option value="none">Maintain</option>
+                        <option value="mild">Mild loss</option>
+                        <option value="moderate" selected>Moderate loss</option>
+                        <option value="aggressive">Aggressive loss</option>
+                    </select>
+                </div>
+
+                <div class="toggle-row">
+                    <div class="toggle-item">
+                        <label>Avoid Gout Triggers</label>
+                        <div class="toggle-switch" id="toggle-gout">
+                            <input type="checkbox" id="avoid-gout" checked hidden>
+                            <span class="toggle-track active"></span>
+                        </div>
+                    </div>
+                    <div class="toggle-item">
+                        <label>Heart Health Priority</label>
+                        <div class="toggle-switch" id="toggle-heart">
+                            <input type="checkbox" id="prioritize-heart" checked hidden>
+                            <span class="toggle-track active"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-save-settings" id="apply-settings">
+                <i class="fas fa-check"></i> Save Settings
+            </button>
+
+            <button class="btn-reset" id="reset-data">
+                <i class="fas fa-trash"></i> Reset All Data
+            </button>
+        </section>
+
+    </main>
+
+    <!-- ── BOTTOM NAV ── -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-tab="today">
+            <i class="fas fa-calendar-day"></i>
+            <span>Today</span>
+        </button>
+        <button class="nav-btn" data-tab="find">
+            <i class="fas fa-search"></i>
+            <span>Find</span>
+        </button>
+        <button class="nav-btn" data-tab="log">
+            <i class="fas fa-book-open"></i>
+            <span>Log</span>
+        </button>
+        <button class="nav-btn" data-tab="settings">
+            <i class="fas fa-sliders-h"></i>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+</div>
+
+<!-- ── RECIPE MODAL (bottom sheet) ── -->
+<div class="modal-overlay" id="recipe-modal">
+    <div class="modal-sheet">
+        <div class="modal-drag-bar"></div>
+        <div class="modal-header">
+            <h2 id="modal-meal-name">Recipe</h2>
+            <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-scroll">
+            <div class="modal-meta-row">
+                <div class="modal-meta-pill"><i class="fas fa-clock"></i> <span id="modal-prep-time">–</span></div>
+                <div class="modal-meta-pill"><i class="fas fa-users"></i> <span id="modal-servings">1</span> serving</div>
+                <div class="modal-meta-pill"><i class="fas fa-signal"></i> <span id="modal-difficulty">Easy</span></div>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-shopping-basket"></i> Ingredients</h4>
+                <div id="modal-ingredients"></div>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-list-ol"></i> Instructions</h4>
+                <div id="modal-instructions"></div>
+            </div>
+            <div class="modal-section highlight-section">
+                <h4><i class="fas fa-heartbeat"></i> Insulin Benefits</h4>
+                <p id="modal-benefits"></p>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-chart-bar"></i> Nutrition</h4>
+                <p id="modal-nutrition"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-log-modal" id="log-modal-meal">
+                <i class="fas fa-check-circle"></i> Log This Meal
+            </button>
         </div>
     </div>
+</div>
 
-    <script src="app.js?v=1.2.0"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(r => console.log('SW registered:', r.scope))
-                .catch(e => console.warn('SW registration failed:', e));
-        }
-    </script>
+<!-- ── LOG CUSTOM MEAL MODAL ── -->
+<div class="modal-overlay" id="custom-meal-modal">
+    <div class="modal-sheet">
+        <div class="modal-drag-bar"></div>
+        <div class="modal-header">
+            <h2>Log a Meal</h2>
+            <button class="modal-close" id="close-custom-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-scroll">
+            <div class="form-group">
+                <label>Meal Name</label>
+                <input type="text" id="custom-meal-name" class="text-input" placeholder="e.g. Jerk chicken with rice">
+            </div>
+            <div class="form-group">
+                <label>Meal Type</label>
+                <div class="seg-control" id="seg-meal-type">
+                    <button class="seg-btn active" data-val="Breakfast">Breakfast</button>
+                    <button class="seg-btn" data-val="Lunch">Lunch</button>
+                    <button class="seg-btn" data-val="Dinner">Dinner</button>
+                    <button class="seg-btn" data-val="Snack">Snack</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes (optional)</label>
+                <textarea id="custom-meal-notes" class="text-input" rows="3" placeholder="How did it taste? How did you feel?"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-log-modal" id="save-custom-meal">
+                <i class="fas fa-plus-circle"></i> Save to Log
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toast-text">Done!</span>
+</div>
+
+<script src="app.js?v=2.0.0"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+</script>
 </body>
 </html>
