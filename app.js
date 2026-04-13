@@ -307,6 +307,83 @@ function initApp() {
         });
     }
 
+    async function generateMealWithAI() {
+        const selected = Array.from(document.querySelectorAll('.protein-chip.selected'))
+            .map(el => el.dataset.id);
+
+        const resultEl = document.getElementById('protein-result');
+        const btn = document.getElementById('generate-ai-btn');
+        if (!resultEl || !btn) return;
+
+        if (selected.length === 0) {
+            resultEl.innerHTML = '<p class="protein-hint">Select at least one protein so the AI knows what you have.</p>';
+            resultEl.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+        let aiContainer = document.getElementById('ai-result-container');
+        if (!aiContainer) {
+            aiContainer = document.createElement('div');
+            aiContainer.id = 'ai-result-container';
+            resultEl.appendChild(aiContainer);
+        }
+        resultEl.style.display = 'block';
+        aiContainer.innerHTML = '<div class="ai-loading"><i class="fas fa-spinner fa-spin"></i> Claude is building your meal...</div>';
+
+        const preferences = {
+            carbTolerance: document.getElementById('carb-tolerance')?.value || 'moderate',
+            avoidGout: document.getElementById('avoid-gout')?.checked ?? true,
+            prioritizeHeart: document.getElementById('prioritize-heart')?.checked ?? true,
+            budget: document.getElementById('budget')?.value || 'medium',
+            calorieTarget: parseInt(document.getElementById('calorie-target')?.value) || 500,
+        };
+
+        try {
+            const res = await fetch('/api/generate-meal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ proteins: selected, preferences })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'API error');
+            }
+
+            const meal = await res.json();
+            const mealType = (meal.Type || 'Lunch').toLowerCase();
+
+            aiContainer.innerHTML = `
+                <div class="ai-meal-card">
+                    <div class="ai-badge"><i class="fas fa-magic"></i> AI Generated for You</div>
+                    <div class="match-type-badge ${mealType}">${meal.Type || 'Meal'}</div>
+                    <h4>${meal['Meal Name']}</h4>
+                    <div class="match-meta">
+                        <span><i class="fas fa-clock"></i> ${meal['Prep Time'] || '25 min'}</span>
+                        <span><i class="fas fa-signal"></i> ${meal['Difficulty'] || 'Easy'}</span>
+                    </div>
+                    <p class="match-benefit">${meal['Insulin Benefits']}</p>
+                    <p style="font-size:13px; color:#6d28d9; margin-top:4px;">${meal['Nutrition Notes']}</p>
+                    <button class="btn-view ai-view-btn" style="margin-top:12px; border-color:#d8b4fe; color:#7B2FBE; background:#f8f0ff;">
+                        <i class="fas fa-utensils"></i> View Full Recipe
+                    </button>
+                </div>
+            `;
+
+            state.meals.push(meal);
+            aiContainer.querySelector('.ai-view-btn').onclick = () => showRecipe(null, meal);
+
+        } catch (err) {
+            aiContainer.innerHTML = `<p class="protein-hint" style="color:#e53e3e;"><i class="fas fa-exclamation-circle"></i> ${err.message}</p>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate with AI';
+        }
+    }
+
     function setupEvents() {
         if (elements.viewBreakfastBtn) elements.viewBreakfastBtn.onclick = () => showRecipe('breakfast');
         if (elements.viewLunchBtn) elements.viewLunchBtn.onclick = () => showRecipe('lunch');
@@ -358,6 +435,9 @@ function initApp() {
 
         const findBtn = document.getElementById('find-meal-btn');
         if (findBtn) findBtn.onclick = findMealsByProtein;
+
+        const aiBtn = document.getElementById('generate-ai-btn');
+        if (aiBtn) aiBtn.onclick = generateMealWithAI;
     }
 
     init();

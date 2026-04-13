@@ -109,9 +109,12 @@
                     <p>Select what's in your fridge and we'll find your best meal match</p>
                 </div>
                 <div class="protein-chips" id="protein-chips"></div>
-                <div style="text-align:center; margin-top: 20px;">
+                <div style="text-align:center; margin-top: 20px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
                     <button class="btn-find-meal" id="find-meal-btn">
                         <i class="fas fa-search"></i> Find My Meal
+                    </button>
+                    <button class="btn-generate-ai" id="generate-ai-btn">
+                        <i class="fas fa-magic"></i> Generate with AI
                     </button>
                 </div>
                 <div class="protein-result" id="protein-result"></div>
@@ -319,6 +322,13 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.1.5"></script>
+    <script src="app.js?v=1.2.0"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(r => console.log('SW registered:', r.scope))
+                .catch(e => console.warn('SW registration failed:', e));
+        }
+    </script>
 </body>
 </html>
