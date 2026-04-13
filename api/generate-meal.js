@@ -1,5 +1,6 @@
 // Vercel Serverless Function — AI Meal Generator
 // Requires: ANTHROPIC_API_KEY environment variable set in Vercel dashboard
+// Model: claude-haiku-4-5-20251001 (Haiku — fast and cheap)
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -77,7 +78,7 @@ Respond with ONLY a valid JSON object, no markdown, no explanation:
         const data = await response.json();
         const text = data.content?.[0]?.text || '';
 
-        // Extract JSON from the response (handles any accidental markdown wrapping)
+        // Extract JSON — handles any accidental markdown wrapping
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             return res.status(502).json({ error: 'Could not parse meal from AI response', raw: text });
