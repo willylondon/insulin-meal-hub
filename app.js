@@ -224,8 +224,6 @@ function initApp() {
         };
         
         if (elements.refreshBtn) elements.refreshBtn.onclick = () => {
-            const currentDay = new Date().getDate();
-            // Offset for manual refresh
             const offset = Math.floor(Math.random() * 10);
             ['Breakfast', 'Lunch', 'Dinner'].forEach(type => {
                 const filtered = state.meals.filter(m => m.Type === type);
@@ -243,6 +241,21 @@ function initApp() {
             if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
         };
     }
+
+    init();
+}
+            });
+            updateUI();
+            showNotification('New suggestions randomized!');
+        };
+
+        if (elements.toggleSettingsBtn) elements.toggleSettingsBtn.onclick = () => {
+            const grid = document.getElementById('settings-grid');
+            if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+        };
+    }
+
+    init();
 }
 
 // Robust Loader
