@@ -72,6 +72,22 @@ function initApp() {
         notificationText: document.getElementById('notification-text')
     };
 
+    // Protein source definitions
+    const PROTEINS = [
+        { id: 'chicken',  label: 'Chicken',   icon: '🍗', keywords: ['chicken'] },
+        { id: 'fish',     label: 'Fish',       icon: '🐟', keywords: ['fish', 'snapper', 'tilapia', 'cod', 'mackerel'] },
+        { id: 'eggs',     label: 'Eggs',       icon: '🥚', keywords: ['egg', 'eggs'] },
+        { id: 'tuna',     label: 'Tuna',       icon: '🫙', keywords: ['tuna'] },
+        { id: 'sardines', label: 'Sardines',   icon: '🐡', keywords: ['sardine', 'sardines'] },
+        { id: 'salmon',   label: 'Salmon',     icon: '🍣', keywords: ['salmon'] },
+        { id: 'shrimp',   label: 'Shrimp',     icon: '🦐', keywords: ['shrimp', 'prawn'] },
+        { id: 'turkey',   label: 'Turkey',     icon: '🦃', keywords: ['turkey'] },
+        { id: 'tofu',     label: 'Tofu',       icon: '🧆', keywords: ['tofu'] },
+        { id: 'beef',     label: 'Beef',       icon: '🥩', keywords: ['beef', 'steak', 'ground beef', 'mince'] },
+        { id: 'pork',     label: 'Pork',       icon: '🥓', keywords: ['pork', 'bacon'] },
+        { id: 'ackee',    label: 'Ackee',      icon: '🍳', keywords: ['ackee'] },
+    ];
+
     // State object
     const state = {
         meals: [...EMBEDDED_MEALS], // Start with embedded data
@@ -90,7 +106,6 @@ function initApp() {
             const meal = state.todayMeals[type];
             if (!meal || !elements[`${type}Name`]) return;
             
-            elements[`${type}Name Barb`] = meal['Meal Name']; // Reference
             elements[`${type}Name`].textContent = meal['Meal Name'];
             elements[`${type}Time`].textContent = meal['Prep Time'] || '20 min';
             elements[`${type}Benefit`].textContent = meal['Insulin Benefits'];
@@ -122,15 +137,23 @@ function initApp() {
         });
     }
 
-    function showRecipe(type) {
-        const meal = state.todayMeals[type];
+    function showRecipe(type, meal) {
+        if (!meal) meal = state.todayMeals[type];
         if (!meal) return;
         state.currentModalMeal = meal;
         
         elements.modalMealName.textContent = meal['Meal Name'];
         elements.modalPrepTime.textContent = meal['Prep Time'];
-        elements.modalIngredients.innerHTML = (meal.Ingredients || '').split(',').map(i => `<p>• ${i.trim()}</p>`).join('');
-        elements.modalInstructions.innerHTML = meal.Instructions || 'Follow recipe steps.';
+        const servingsEl = document.getElementById('modal-servings');
+        const difficultyEl = document.getElementById('modal-difficulty');
+        if (servingsEl) servingsEl.textContent = meal['Servings'] || '1';
+        if (difficultyEl) difficultyEl.textContent = meal['Difficulty'] || 'Easy';
+        const ingredientText = meal.Ingredients || '';
+        const ingredientLines = ingredientText.includes('\n')
+            ? ingredientText.split('\n').filter(l => l.trim())
+            : ingredientText.split(',').map(i => i.trim()).filter(Boolean);
+        elements.modalIngredients.innerHTML = ingredientLines.map(i => `<p>• ${i.replace(/^[-•]\s*/, '')}</p>`).join('');
+        elements.modalInstructions.innerHTML = (meal.Instructions || 'Follow recipe steps.').split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('');
         elements.modalBenefits.textContent = meal['Insulin Benefits'];
         elements.modalNutrition.textContent = meal['Nutrition Notes'];
         
@@ -161,6 +184,7 @@ function initApp() {
         
         // 2. Setup Events
         setupEvents();
+        initProteinFinder();
 
         // 3. Load Persistent Data
         const savedLog = localStorage.getItem(CONFIG.STORAGE_KEY);
@@ -207,6 +231,82 @@ function initApp() {
         }
     }
 
+    function initProteinFinder() {
+        const container = document.getElementById('protein-chips');
+        if (!container) return;
+        container.innerHTML = '';
+        PROTEINS.forEach(p => {
+            const chip = document.createElement('button');
+            chip.className = 'protein-chip';
+            chip.dataset.id = p.id;
+            chip.innerHTML = `<span class="protein-icon">${p.icon}</span>${p.label}`;
+            chip.onclick = () => chip.classList.toggle('selected');
+            container.appendChild(chip);
+        });
+    }
+
+    function findMealsByProtein() {
+        const selected = Array.from(document.querySelectorAll('.protein-chip.selected'))
+            .map(el => el.dataset.id);
+
+        const resultEl = document.getElementById('protein-result');
+        if (!resultEl) return;
+
+        if (selected.length === 0) {
+            resultEl.innerHTML = '<p class="protein-hint">Select at least one protein above.</p>';
+            resultEl.style.display = 'block';
+            return;
+        }
+
+        const keywords = selected.flatMap(id => PROTEINS.find(p => p.id === id)?.keywords || []);
+
+        const matches = state.meals.filter(meal => {
+            const text = (meal.Ingredients + ' ' + meal['Meal Name']).toLowerCase();
+            return keywords.some(kw => text.includes(kw));
+        });
+
+        if (matches.length === 0) {
+            resultEl.innerHTML = `<p class="protein-hint">No meals found for those proteins yet. Try a different combination.</p>`;
+            resultEl.style.display = 'block';
+            return;
+        }
+
+        // Group by meal type, show up to one per type
+        const byType = { Breakfast: null, Lunch: null, Dinner: null };
+        matches.forEach(m => { if (!byType[m.Type]) byType[m.Type] = m; });
+
+        const cards = Object.entries(byType)
+            .filter(([, meal]) => meal)
+            .map(([type, meal]) => `
+                <div class="protein-match-card">
+                    <div class="match-type-badge ${type.toLowerCase()}">${type}</div>
+                    <h4>${meal['Meal Name']}</h4>
+                    <div class="match-meta">
+                        <span><i class="fas fa-clock"></i> ${meal['Prep Time'] || '20 min'}</span>
+                        <span><i class="fas fa-signal"></i> ${meal['Difficulty'] || 'Easy'}</span>
+                    </div>
+                    <p class="match-benefit">${meal['Insulin Benefits']}</p>
+                    <button class="btn-view match-recipe-btn" data-meal-id="${meal['Meal ID']}">
+                        <i class="fas fa-utensils"></i> View Recipe
+                    </button>
+                </div>
+            `).join('');
+
+        resultEl.innerHTML = `
+            <p class="protein-found-note"><i class="fas fa-check-circle"></i> Found ${matches.length} meal${matches.length > 1 ? 's' : ''} matching your proteins</p>
+            <div class="protein-match-grid">${cards}</div>
+        `;
+        resultEl.style.display = 'block';
+
+        // Wire View Recipe buttons
+        resultEl.querySelectorAll('.match-recipe-btn').forEach(btn => {
+            btn.onclick = () => {
+                const meal = state.meals.find(m => m['Meal ID'] === btn.dataset.mealId);
+                if (meal) showRecipe(null, meal);
+            };
+        });
+    }
+
     function setupEvents() {
         if (elements.viewBreakfastBtn) elements.viewBreakfastBtn.onclick = () => showRecipe('breakfast');
         if (elements.viewLunchBtn) elements.viewLunchBtn.onclick = () => showRecipe('lunch');
@@ -238,8 +338,26 @@ function initApp() {
 
         if (elements.toggleSettingsBtn) elements.toggleSettingsBtn.onclick = () => {
             const grid = document.getElementById('settings-grid');
-            if (grid) grid.style.display = grid.style.display === 'none' ? 'grid' : 'none';
+            const btn = elements.toggleSettingsBtn;
+            if (grid) {
+                const hidden = grid.style.display === 'none';
+                grid.style.display = hidden ? 'grid' : 'none';
+                btn.innerHTML = hidden ? '<i class="fas fa-chevron-up"></i> Hide' : '<i class="fas fa-chevron-down"></i> Show';
+            }
         };
+
+        if (elements.applySettingsBtn) elements.applySettingsBtn.onclick = () => {
+            const budget = elements.budgetSelect?.value || 'medium';
+            const calorie = parseInt(elements.calorieTargetInput?.value) || 500;
+            state.settings.budget = budget;
+            state.settings.calorieTarget = calorie;
+            selectMeals();
+            updateUI();
+            showNotification('Settings applied! Meals updated.');
+        };
+
+        const findBtn = document.getElementById('find-meal-btn');
+        if (findBtn) findBtn.onclick = findMealsByProtein;
     }
 
     init();

@@ -229,6 +229,171 @@ footer {
     font-size: 14px;
 }
 
+/* Protein Finder */
+.protein-finder {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.protein-finder-header h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: var(--primary-dark);
+}
+
+.protein-finder-header p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.protein-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.protein-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 50px;
+    border: 2px solid #d0dde8;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.protein-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.protein-chip.selected {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(46, 134, 171, 0.35);
+}
+
+.protein-icon { font-size: 16px; }
+
+.btn-find-meal {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 14px 36px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-find-meal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 134, 171, 0.4);
+}
+
+.protein-result {
+    display: none;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.protein-hint {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 14px;
+    padding: 16px;
+}
+
+.protein-found-note {
+    font-size: 14px;
+    color: var(--secondary-dark);
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.protein-match-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.protein-match-card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.match-type-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: white;
+    align-self: flex-start;
+}
+
+.match-type-badge.breakfast { background: var(--breakfast-grad); }
+.match-type-badge.lunch { background: var(--lunch-grad); }
+.match-type-badge.dinner { background: var(--dinner-grad); }
+
+.protein-match-card h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    margin: 0;
+}
+
+.match-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.match-meta i { margin-right: 4px; color: var(--primary); }
+
+.match-benefit {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.5;
+    flex: 1;
+}
+
+.match-recipe-btn {
+    margin-top: 4px;
+    font-size: 13px;
+    padding: 10px 16px;
+}
+
 /* Animations */
 .loading {
     display: inline-block;
