@@ -1,72 +1,60 @@
-# Deployment Guide
+# Deployment and release guide
 
-The app is a static PWA plus one Vercel serverless function (`api/generate-meal.js`) that calls the Anthropic API. It is designed for **Vercel**. Other static hosts can serve the recipes and meal log, but the AI generator will not work there.
+This static PWA has one Vercel function for optional Anthropic generation. Static hosts support the recipe browser and local log only. Use Node 24 LTS; CI tests that runtime. No build command is needed.
 
-## What the app is (and isn't)
+## Nutrition and food safety
 
-- Recipe ideas and an on-device meal log.
-- **Not** a medical device. It gives no medical advice and does not calculate insulin or medication doses.
-- Recipes have **not** been reviewed by a dietitian, clinician or food-safety specialist. Nutrition values are withheld (`"nutrition": null` in `meals.json`) until per-serving figures are calculated from weighed ingredients and reviewed.
+All 36 built-in recipes retain `nutrition: null`. **Numeric target filtering is disabled**, including for data claiming `verified: true`. AI carbohydrate, calorie and protein inputs only request estimates; passing the estimate checks does not prove actual nutrient content. Ingredient exclusions still apply to Today, Find and generated recipes, but keyword screening is not a clinical assessment.
 
-Do not put real health information (lab results, diagnoses, medications) in this repository or its docs. Use clearly made-up examples if you need one.
+Do not populate verified values by asking a model or adding a reviewer name. Enabling trustworthy nutrition requires weighed edible ingredients, brand/product and preparation state, food-composition record IDs and version (for example USDA FoodData Central), cooked yield and serving weight, deterministic unit/portion calculations, uncertainty, and independent qualified review. The current recipes do not contain enough information to do that reliably. Implement and test that provenance pipeline before enabling nutrient filtering.
 
-## Deploy to Vercel
+Food-safety screening checks canned ackee, affirmative food temperatures for poultry/ground meat/fish, whole-cut rest time and common contradictory instructions. These are conservative lexical checks, not proof of safe handling, allergen safety or clinical suitability. They cannot understand every wording. Recipe cooking endpoints follow [FoodSafety.gov](https://www.foodsafety.gov/food-safety-charts/safe-minimum-internal-temperatures); ackee restrictions follow [FDA guidance](https://www.fda.gov/food/natural-toxins-food/hypoglycin-and-ackee-fruit). Recipes still need qualified review.
 
-1. Import the GitHub repository in Vercel. No build command is needed; Vercel installs `@anthropic-ai/sdk` for the function from `package.json`.
-2. Set environment variables (Project → Settings → Environment Variables):
+Do not commit personal health profiles or credentials. A historical-data cleanup is a separate coordinated operation; changing current files cannot remove copies in Git history.
 
-   | Variable | Required | Purpose |
-   |---|---|---|
-   | `ANTHROPIC_API_KEY` | for AI | Server-side API key. Never exposed to the browser. |
-   | `AI_GENERATION_ENABLED` | for AI | Must be `true` or the endpoint returns 503. Set to anything else to switch AI off instantly. |
-   | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | for AI in production | Shared rate-limit store (Upstash Redis from the Vercel Marketplace; `KV_REST_API_URL` / `KV_REST_API_TOKEN` also work). **In production the endpoint refuses to call the AI without it.** |
-   | `AI_LIMIT_PER_IP_10MIN` | no | Requests per visitor per 10 minutes (default 5). |
-   | `AI_LIMIT_PER_IP_DAY` | no | Requests per visitor per day (default 20). |
-   | `AI_LIMIT_GLOBAL_DAY` | no | Total requests per day for the whole app (default 200). This is the main cost cap. |
-   | `ALLOWED_ORIGINS` | no | Extra origins allowed to call the API, comma-separated (e.g. a custom domain). The deployment's own host is always allowed. |
-   | `ANTHROPIC_MODEL` | no | Override the model (default `claude-haiku-4-5-20251001`). |
-   | `AI_ALLOW_MEMORY_RATE_LIMIT` | no | `true` lets production run with per-instance in-memory limits. Not recommended: limits then don't hold across instances. |
+## Production configuration — fail closed
 
-3. Also set a **monthly spend limit and usage alerts** in the Anthropic Console. The app's limits bound request counts; the Console limit is the hard backstop on cost.
-4. Deploy, then check:
-   - The app loads, shows today's meals, and works offline after the first visit.
-   - Response headers include `Content-Security-Policy` and `X-Content-Type-Options`.
-   - In a preview deployment, a cross-site `POST /api/generate-meal` (no matching `Origin`) returns 403, and repeated requests eventually return 429.
+Keep generation disabled unless the owner intentionally enables it after reviewing cost and data processing. This code change does not configure accounts, add secrets or enable AI.
 
-## How the AI endpoint is protected
+| Variable | Contract |
+|---|---|
+| `AI_GENERATION_ENABLED` | Exactly `true` to permit the remaining checks; otherwise 503 without a provider call. |
+| `VERCEL_ENV` | Must be `production`. Preview and unknown deployments cannot generate, even if secrets were inherited. |
+| `ANTHROPIC_API_KEY` | Server-only credential; never commit or send to the browser. |
+| `ALLOWED_ORIGINS` | Required comma-separated exact HTTPS origins, e.g. `https://insulin-meal-hub.vercel.app`. No paths, wildcards, credentials or trailing slashes. Request Host/forwarded Host/Referer do not establish trust. |
+| `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | One complete shared-store pair; alternatively use `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Do not configure both pairs or partial pairs. URL must be an HTTPS origin. Unavailable/malformed stores fail closed. |
+| `AI_LIMIT_PER_IP_10MIN` | Default 5. If set, canonical nonnegative safe integer string; malformed values fail closed. |
+| `AI_LIMIT_PER_IP_DAY` | Default 20; same validation. |
+| `AI_LIMIT_GLOBAL_DAY` | Default 200; same validation. Zero prevents any provider calls. |
+| `ANTHROPIC_MODEL` | Optional model override. Review model pricing before setting. |
 
-In order, before any paid call is made:
+The old `AI_ALLOW_MEMORY_RATE_LIMIT` bypass no longer permits production use. Missing store/origin/environment configuration produces 503 rather than a paid request. Origin checks are browser protections, not authentication; scripts can forge Origin. Shared global/IP limits bound request counts, not dollars. IP hashes are pseudonymous, not anonymous. Verify trusted proxy handling on the deployed platform; forwarded IP headers must be platform-controlled. Concurrency is bounded per instance, and the shared global daily count bounds admitted calls across instances. Set appropriate provider-account budgets/alerts separately and verify their actual enforcement.
 
-1. Switched off unless `AI_GENERATION_ENABLED=true`.
-2. The request's `Origin` must be the app itself (or `ALLOWED_ORIGINS`). This stops other websites from using it through visitors' browsers. It does **not** stop scripts that fake the header; the rate limits handle those.
-3. JSON body of at most 2,000 characters, with every field checked against a fixed list or range.
-4. Per-visitor and global daily limits (visitor IPs are stored only as truncated SHA-256 hashes).
-5. At most 4 concurrent calls per instance, a 25 s provider timeout, and `max_tokens` 2,000.
+Provider retries are disabled: an admitted request makes at most one SDK attempt. Timeout is 25 seconds; output is capped at 2,000 tokens. The JSON body is bounded to 2,000 characters and validated before generation. Output validation rejects unexpected fields, nonfinite quantities, fiber above total carbohydrate, unsupported verification claims and known unsafe cooking omissions. Returned nutrients remain unverified. No code test certifies medical safety.
 
-The AI's answer must match a strict JSON schema and then pass the same checks as the built-in recipes: your carb limit and calorie target, gout and heart exclusions, the selected protein, and the food-safety rules (canned ackee only, cooking temperatures for poultry and pork). If any check fails, the recipe is withheld rather than shown. Errors returned to the browser never include provider responses; server logs carry a request ID.
-
-## Recipe data
-
-- `meals.json` is the single source of recipes. `test/meals-data.test.js` checks it on every run: no duplicate IDs, no fresh ackee, cooking temperatures for raw poultry and pork, no unverified nutrition.
-- To add nutrition, calculate per-serving values from weighed ingredients, have them reviewed, then set `"nutrition": { "calories": …, "protein": …, "carbs": …, "fiber": …, "verified": true, "source": "who reviewed it" }`. Only verified nutrition is used to apply carb limits to the built-in recipes.
-- The old Google Sheet is **off** (`USE_REMOTE_SHEET: false` in `app.js`) because it still holds the previous recipes. To use it again, re-import `meals-for-sheet.csv` (run `node scripts/export-sheet-csv.mjs`), check the sheet's sharing settings, then set the flag to `true`. Sheet rows that fail the safety checks are dropped automatically, and sheet nutrition is never treated as verified.
-
-## Releasing an update
-
-Bump `VERSION` in `sw.js` on each release. Same-origin files are fetched network-first, so installed apps pick up new code on their next online visit; the version bump refreshes the offline copy.
-
-## Local development
+## Local development and tests
 
 ```bash
-npm install
-npm run check      # syntax check + tests
-npx vercel dev     # app + API at http://localhost:3000
+npm ci --ignore-scripts
+npm run check
+npm audit --omit=dev --audit-level=high
+npm start
 ```
 
-`npm start` serves the static files only (no API).
+`npm start` serves static files only. Tests mock the provider and Redis and do not require credentials or network calls. For intentionally configured local API development, memory limits require `NODE_ENV=development` and `AI_LOCAL_DEVELOPMENT=true`, with no `VERCEL`, `VERCEL_ENV` or `VERCEL_URL` markers. Configure an exact loopback HTTP origin in `ALLOWED_ORIGINS`. This is not a staging/preview bypass, and setting it alone does not enable generation. Never use real health data in tests.
 
-## Privacy summary
+## Recipe updates
 
-- Meal log, notes and settings: stored only in the browser (`localStorage`). Not sent anywhere.
-- AI generator (only when used, after the in-app notice is accepted): selected proteins, meal type, carb level, calorie and protein targets, budget, and the gout/heart choices go to the Vercel function and to Anthropic.
-- Check the current data-retention terms of Vercel and Anthropic for your account and describe them accurately to users.
+`meals.json` is the source of truth; `node scripts/export-sheet-csv.mjs` regenerates the local CSV only. Tests check IDs, schemas, missing/unknown nutrition, food-safety screens. The remote sheet remains off. Do not switch it on until its content, edit permissions and privacy are reviewed. Legacy sheet nutrition is discarded; remote fields cannot self-certify verification.
+
+## Installed-app upgrades
+
+Bump the worker version for every release. Core same-origin assets install independently of optional fonts/icons. Online requests bypass HTTP cache; a four-second network deadline uses available offline copies. Cache writes are tracked for the fetch event lifetime, and only this app's cache namespace is cleaned. Failed essential precache leaves the old worker in control. Server failures can use known-good cached assets; uncached offline resources return an explicit 503.
+
+An open tab may retain loaded JavaScript until reload. Test upgrades from an installed prior release, first-controlled offline navigation, failed/slow network, and storage quota failures. Do not claim a fix has reached every installed device merely because deployment succeeded.
+
+## Release verification and privacy
+
+Before enabling paid generation, verify production origins, environment scoping, durable store response handling and budgets with a mocked provider in an isolated test environment. Never use real paid requests merely to check configuration. Public GET checks can confirm security headers and method rejection, but cannot prove POST protection or provider retention.
+
+Meal names, notes and settings remain in browser storage. Generation, when explicitly used after consent, sends selected proteins and preferences to Vercel and Anthropic. Document actual account retention/region settings before enabling it. Reset removes local state, not provider or platform logs. Do not claim regulatory exemption or compliance without appropriate assessment.

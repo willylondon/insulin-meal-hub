@@ -1,6 +1,6 @@
 {
   "name": "insulin-smart-meal-hub",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
   "description": "Mobile web app with Jamaican-style recipe suggestions and a local meal log",
   "type": "module",
@@ -19,7 +19,7 @@
   "author": "Lifestyle Hikers",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.134.0"

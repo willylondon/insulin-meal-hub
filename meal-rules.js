@@ -23,11 +23,11 @@ export const PROTEINS = [
 export const PROTEIN_IDS = PROTEINS.map(p => p.id);
 
 // One definition of each carb level, shared by the settings UI, the
-// curated-meal filter and the AI prompt/validator. Grams of carbohydrate
+// AI prompt/validator. Numeric recipe filtering is disabled. Grams of carbohydrate
 // per serving.
 export const CARB_LEVELS = {
-    low:      { max: 30, label: 'Under 30g' },
-    moderate: { max: 50, label: '30–50g' },
+    low:      { max: 30, label: 'Up to 30g' },
+    moderate: { max: 50, label: 'Up to 50g' },
     high:     { max: 60, label: 'Up to 60g' },
 };
 
@@ -88,24 +88,24 @@ function toList(value, maxItems, maxLength) {
 }
 
 function finiteInRange(value, min, max) {
-    const n = Number(value);
-    return Number.isFinite(n) && n >= min && n <= max ? n : null;
+    return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max ? value : null;
 }
 
-// Nutrition is only trusted when it is structured, numeric and marked as
-// reviewed. Anything else is treated as unknown.
+// Numeric nutrition is an estimate only. A self-reported verified flag or
+// source string cannot establish provenance. Reviewed target filtering is
+// deliberately disabled until an audited food-composition pipeline exists.
 export function normalizeNutrition(raw) {
-    if (!raw || typeof raw !== 'object') return null;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const n = {
         calories: finiteInRange(raw.calories, 0, 3000),
         protein: finiteInRange(raw.protein, 0, 300),
         carbs: finiteInRange(raw.carbs, 0, 400),
         fiber: finiteInRange(raw.fiber, 0, 100),
     };
-    if (Object.values(n).some(v => v === null)) return null;
+    if (Object.values(n).some(v => v === null) || n.fiber > n.carbs) return null;
     return {
         ...n,
-        verified: raw.verified === true,
+        verified: false,
         source: cleanString(raw.source, 200),
     };
 }
@@ -195,10 +195,7 @@ export function exclusionReasons(meal, settings) {
     if (gout.length) reasons.push(`Contains a common gout trigger (${gout.join(', ')})`);
     const heart = settings.prioritizeHeart ? matchedTerms(meal, HEART_EXCLUSIONS) : [];
     if (heart.length) reasons.push(`Contains red or processed meat (${heart.join(', ')})`);
-    const n = meal.nutrition;
-    if (n && n.verified && n.carbs > CARB_LEVELS[settings.carbTolerance].max) {
-        reasons.push(`About ${n.carbs}g carbs per serving, above your ${CARB_LEVELS[settings.carbTolerance].max}g limit`);
-    }
+    // No numeric recipe filtering: no supported reviewed nutrition source.
     return reasons;
 }
 
@@ -208,9 +205,7 @@ export function cautions(meal, settings) {
         const found = matchedTerms(meal, HEART_CAUTIONS);
         if (found.length) out.push(`Contains saturated fat sources (${found.join(', ')})`);
     }
-    if (!meal.nutrition || !meal.nutrition.verified) {
-        out.push('Carbs and calories for this recipe have not been checked, so your carb and calorie targets could not be applied.');
-    }
+    out.push('Nutrition target filtering is unavailable. Carbohydrate, calorie and protein requests are used only for unverified AI estimates.');
     return out;
 }
 
@@ -226,35 +221,89 @@ export function filterMeals(meals, settings) {
 }
 
 // ── Food safety ──
-// Checks that recipes carry the safety information the audit found missing.
-// Used on curated data (tests), remote sheet data and AI output.
+// Conservative text screens, NOT verification that a recipe or food is safe.
+// Unsupported/ambiguous preparation must be reviewed rather than inferred.
+// References: FDA Hypoglycin A and Ackee Fruit; FoodSafety.gov safe minimum
+// internal temperatures (checked 2026-10-15). Safety notes cannot substitute
+// for an actionable cooking endpoint in the recipe instructions.
 
-const POULTRY = ['chicken', 'turkey'];
-const POULTRY_TEMP = /165\s*°?\s*F|74\s*°?\s*C/i;
-const PORK_TEMP = /145\s*°?\s*F|63\s*°?\s*C/i;
+const POULTRY_WORDS = /\b(?:chicken|turkey|duck|goose|poultry)\b/i;
+const FISH_WORDS = /\b(?:fish|saltfish|snapper|parrotfish|tilapia|cod|mahi(?:[ -]mahi)?|salmon|tuna|sardines?|trout|haddock|mackerel)\b/i;
+const MEAT_WORDS = /\b(?:pork|beef|veal|goat|lamb|mutton|oxtail)\b/i;
+const GROUND_WORDS = /\b(?:ground|minced?|burger|sausage|meatballs?)\b/i;
+const BAD_PREPARATION = /\b(?:raw|uncooked|undercooked|partially[ -]cooked|part[ -]cooked|half[ -]cooked|par[ -]?cooked|not\s+(?:fully\s+)?cooked)\b/i;
+
+function preparedIngredient(line) {
+    // "uncooked", "not cooked" and "cook before serving" are not cooked.
+    return !BAD_PREPARATION.test(line) && /\b(?:fully[ -])?cooked\s+(?:chicken|turkey|duck|goose|poultry|fish|saltfish|snapper|salmon|tuna|pork|beef|lamb)\b/i.test(line);
+}
+
+function cannedIngredient(line) {
+    return !/\b(?:uncanned|not\s+canned|home[ -]canned|raw)\b/i.test(line)
+        && /\b(?:canned|can\s+(?:of\s+)?)(?:\s+\w+){0,2}\s*(?:ackee|fish|saltfish|snapper|salmon|tuna|sardines?)\b|\b(?:ackee|fish|salmon|tuna|sardines?)\s*\(?(?:commercially\s+)?canned\b/i.test(line);
+}
+
+function hasCookingEndpoint(instructions, fahrenheit, celsius, subject) {
+    return instructions.some(step => {
+        // A preheated oven, an isolated number, a negated instruction, or an
+        // endpoint below the minimum must not count as a food temperature.
+        return step.split(/[.;\n]/).some(clause => {
+            if (subject && !subject.test(clause) && (POULTRY_WORDS.test(clause) || FISH_WORDS.test(clause) || MEAT_WORDS.test(clause))) return false;
+            if (/\b(?:do\s+not|don't|never|no\s+need|need\s+not|below|under|less\s+than|instead\s+of)\b/i.test(clause)) return false;
+            if (!/\b(?:reach(?:es)?|reads?|registers?|internal|centre|center|thickest|thermometer|cook\w*\s+(?:until|to)|heat\w*\s+to)\b/i.test(clause)) return false;
+            if (/\b(?:oven|preheat|oil|water|pan)\b/i.test(clause) && !/\b(?:internal|thermometer|thickest|centre|center)\b/i.test(clause)) return false;
+            const temperatures = [...clause.matchAll(/(?<![\d.])(\d+(?:\.\d+)?)\s*°?\s*([FC])\b/gi)];
+            return temperatures.length > 0 && temperatures.every(([, number, unit]) => {
+                const n = Number(number);
+                // A cooking-appliance temperature is not a food endpoint.
+                return unit.toUpperCase() === 'F' ? n >= fahrenheit && n <= 212 : n >= celsius && n <= 100;
+            });
+        });
+    });
+}
+
+function hasRest(instructions) {
+    return instructions.some(step => /\brest\b/i.test(step)
+        && !/\b(?:not|don't|no\s+need|skip|without|less\s+than|under)\b/i.test(step)
+        && !/\b[0-2]\s*(?:[-–]|to)\s*\d+\s*min/i.test(step)
+        && /\b(?:[3-9]|[1-9]\d+)\s*(?:min(?:ute)?s?)\b/i.test(step));
+}
 
 export function safetyIssues(meal) {
     const issues = [];
-    const ingredientText = meal.ingredients.join('\n').toLowerCase();
-    // Safety notes are excluded: they legitimately warn against fresh ackee.
-    const allText = [meal.name, ...meal.ingredients, ...meal.instructions].join('\n').toLowerCase();
-    const instructionText = meal.instructions.join('\n');
-
-    for (const line of meal.ingredients) {
-        const l = line.toLowerCase();
-        if (l.includes('ackee') && (!l.includes('canned') || l.includes('fresh'))) {
+    const ingredients = meal.ingredients || [];
+    const instructions = meal.instructions || [];
+    const instructionText = instructions.join('\n');
+    for (const line of ingredients) {
+        if (/\backee\b/i.test(line) && (!cannedIngredient(line)
+            || /\b(?:fresh|raw|unripe)\s+(?:or\s+canned\s+)?ackee\b|\backee\s*\(?(?:fresh|raw|unripe)\b|\bif\s+fresh\b/i.test(line))) {
             issues.push('Ackee must be commercially canned; fresh ackee preparation is not allowed.');
         }
     }
-    if (/fresh\s+ackee|if fresh/i.test(allText) && allText.includes('ackee')) {
+    if (/\b(?:fresh|raw|unripe)\s+ackee\b|\bif\s+fresh\b/i.test(instructionText)
+        && /\backee\b/i.test([meal.name, ...ingredients].join(' '))) {
         issues.push('Recipe refers to preparing fresh ackee.');
     }
-    const rawPoultry = meal.ingredients.some(l => POULTRY.some(p => hasWord(l, p)) && !/\bcooked\b/i.test(l));
-    if (rawPoultry && !POULTRY_TEMP.test(instructionText)) {
-        issues.push('Raw poultry must be cooked to 165°F (74°C); the instructions do not say so.');
+    // Do not classify fish sauce or chicken stock as raw animal flesh.
+    const animalIngredients = ingredients.map(line => line.replace(/\b(?:chicken|turkey|beef|fish|pork)\s+(?:broth|stock|sauce)\b/gi, 'seasoning'));
+    const poultry = animalIngredients.filter(line => POULTRY_WORDS.test(line));
+    const reheatedPoultry = poultry.length && /\b(?:reheat|bake|roast|fry|cook|heat)\w*\b/i.test(instructionText);
+    if ((poultry.some(line => !preparedIngredient(line)) || reheatedPoultry)
+        && !hasCookingEndpoint(instructions, 165, 74, POULTRY_WORDS)) {
+        issues.push('Raw or reheated poultry must reach 165°F (74°C) in the food; add a clear cooking endpoint.');
     }
-    if (/\bpork\b/.test(ingredientText) && !PORK_TEMP.test(instructionText)) {
-        issues.push('Pork must be cooked to at least 145°F (63°C); the instructions do not say so.');
+    const meat = animalIngredients.filter(line => (MEAT_WORDS.test(line) || (/\bsteak\b/i.test(line) && !FISH_WORDS.test(line))) && !preparedIngredient(line));
+    // Unspecified sausage/mince is treated as ground meat, never as a whole cut.
+    const ground = meat.some(line => GROUND_WORDS.test(line)) || animalIngredients.some(line => /\b(?:ground\s+meat|minced\s+meat|meatballs?|sausage|burgers?)\b/i.test(line) && !POULTRY_WORDS.test(line) && !/\b(?:plant|vegan|vegetarian|tofu)\b/i.test(line));
+    if (ground && !hasCookingEndpoint(instructions, 160, 71, MEAT_WORDS)) {
+        issues.push('Ground meat must reach 160°F (71°C); ground poultry needs 165°F (74°C).');
+    }
+    if (meat.some(line => !GROUND_WORDS.test(line)) && (!hasCookingEndpoint(instructions, 145, 63, MEAT_WORDS) || !hasRest(instructions))) {
+        issues.push('Whole meat cuts must reach 145°F (63°C) and rest at least 3 minutes before serving.');
+    }
+    const rawFish = animalIngredients.some(line => FISH_WORDS.test(line) && !cannedIngredient(line) && !preparedIngredient(line));
+    if (rawFish && !hasCookingEndpoint(instructions, 145, 63, FISH_WORDS)) {
+        issues.push('Fish must reach 145°F (63°C) in the food; soaking or warming alone is not a cooking endpoint.');
     }
     return [...new Set(issues)];
 }

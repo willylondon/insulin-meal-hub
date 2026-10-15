@@ -6,8 +6,8 @@
 // Rate limiting (see DEPLOYMENT.md):
 //   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL / KV_REST_API_TOKEN)
 //   AI_LIMIT_PER_IP_10MIN (default 5), AI_LIMIT_PER_IP_DAY (default 20), AI_LIMIT_GLOBAL_DAY (default 200)
-//   AI_ALLOW_MEMORY_RATE_LIMIT=true  allow per-instance limits in production (not recommended)
-// Optional: ALLOWED_ORIGINS (comma-separated), ANTHROPIC_MODEL
+//   AI_LOCAL_DEVELOPMENT=true permits memory limits only with NODE_ENV=development and no deployment marker
+// Required: ALLOWED_ORIGINS (exact comma-separated origins); optional: ANTHROPIC_MODEL
 
 import Anthropic from '@anthropic-ai/sdk';
 import { createHash, randomUUID } from 'node:crypto';
@@ -137,8 +137,9 @@ const isNumber = (v, min, max) => typeof v === 'number' && Number.isFinite(v) &&
 // Returns { meal } or { problems }. Fails closed: anything unexpected is a problem.
 export function validateGeneratedMeal(raw, request) {
     const problems = [];
-    if (!raw || typeof raw !== 'object') return { problems: ['The response was not a recipe.'] };
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { problems: ['The response was not a recipe.'] };
 
+    if (Object.keys(raw).some(key => !Object.hasOwn(RECIPE_SCHEMA.properties, key))) problems.push('Unexpected recipe fields.');
     if (!isString(raw.name, 3, 100)) problems.push('Missing or invalid recipe name.');
     if (!MEAL_TYPES.includes(raw.type)) problems.push('Missing or invalid meal type.');
     else if (request.mealType !== 'any' && raw.type !== request.mealType) problems.push(`Recipe is a ${raw.type}, not a ${request.mealType}.`);
@@ -154,11 +155,16 @@ export function validateGeneratedMeal(raw, request) {
     if (!Array.isArray(raw.tags) || raw.tags.length > 6 || !raw.tags.every(t => isString(t, 1, 30))) problems.push('Tags are malformed.');
 
     const n = raw.nutritionPerServing;
-    const nutritionOk = n && typeof n === 'object'
+    const nutritionOk = n && typeof n === 'object' && !Array.isArray(n)
+        && Object.keys(n).every(key => ['calories', 'protein', 'carbs', 'fiber'].includes(key))
         && isNumber(n.calories, 50, 1500) && isNumber(n.protein, 0, 150)
-        && isNumber(n.carbs, 0, 200) && isNumber(n.fiber, 0, 60);
+        && isNumber(n.carbs, 0, 200) && isNumber(n.fiber, 0, 60) && n.fiber <= n.carbs;
     if (!nutritionOk) problems.push('Nutrition estimate is missing or out of range.');
     if (problems.length) return { problems };
+    const recipeText = [raw.name, ...raw.ingredients, ...raw.instructions, ...raw.tags].join(' ');
+    if (/\b(?:verified|certified|clinically\s+(?:proven|tested|approved)|medically\s+approved)\b/i.test(recipeText)) {
+        return { problems: ['Recipe contains an unsupported verification or clinical claim.'] };
+    }
 
     const { preferences } = request;
     const carbMax = CARB_LEVELS[preferences.carbTolerance].max;
@@ -196,30 +202,36 @@ function clientIp(req) {
     return first || req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
 }
 
-function requestOriginAllowed(req, env) {
-    const origin = req.headers.origin || (() => {
-        try { return new URL(req.headers.referer).origin; } catch { return null; }
-    })();
-    if (!origin) return false;
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const allowed = new Set((env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean));
-    if (host) {
-        allowed.add(`https://${host}`);
-        if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) allowed.add(`http://${host}`);
-    }
-    return allowed.has(origin);
+export function isLocalDevelopment(env) {
+    return env.AI_LOCAL_DEVELOPMENT === 'true' && env.NODE_ENV === 'development'
+        && !env.VERCEL && !env.VERCEL_ENV && !env.VERCEL_URL;
+}
+
+function configuredOrigins(env) {
+    const entries = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim());
+    if (!entries.length || entries.some(origin => {
+        try {
+            const url = new URL(origin);
+            const local = isLocalDevelopment(env) && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+            return url.origin !== origin || url.username || url.password || (url.protocol !== 'https:' && !(local && url.protocol === 'http:'));
+        } catch { return true; }
+    })) throw new Error('Invalid allowed origins configuration');
+    return new Set(entries);
 }
 
 const hashKey = value => createHash('sha256').update(value).digest('hex').slice(0, 32);
 const intEnv = (value, fallback) => {
-    const n = Number.parseInt(value, 10);
-    return Number.isInteger(n) && n >= 0 ? n : fallback;
+    if (value === undefined) return fallback;
+    if (typeof value !== 'string' || !/^(0|[1-9]\d*)$/.test(value) || !Number.isSafeInteger(Number(value))) {
+        throw new Error('Invalid request budget configuration');
+    }
+    return Number(value);
 };
 
 export function createHandler({
     env = process.env,
     limiter = createRateLimiter({ env }),
-    createClient = apiKey => new Anthropic({ apiKey, timeout: PROVIDER_TIMEOUT_MS, maxRetries: 1 }),
+    createClient = apiKey => new Anthropic({ apiKey, timeout: PROVIDER_TIMEOUT_MS, maxRetries: 0 }),
     log = console,
 } = {}) {
     let inFlight = 0;
@@ -242,7 +254,19 @@ export function createHandler({
             log.error(`[${requestId}] ANTHROPIC_API_KEY is not set`);
             return fail(503, 'AI recipe generation is not available right now.');
         }
-        if (!requestOriginAllowed(req, env)) {
+        let limits, origins;
+        try {
+            // Only production or explicitly local development may use paid generation.
+            // Preview and unknown deployment environments fail closed.
+            if (env.VERCEL_ENV !== 'production' && !isLocalDevelopment(env)) throw new Error('Unsupported environment');
+            origins = configuredOrigins(env);
+            limits = [intEnv(env.AI_LIMIT_PER_IP_10MIN, 5), intEnv(env.AI_LIMIT_PER_IP_DAY, 20), intEnv(env.AI_LIMIT_GLOBAL_DAY, 200)];
+            if (limiter.configurationError || (!limiter.durable && !isLocalDevelopment(env))) throw new Error('Shared limiter required');
+        } catch {
+            log.error(`[${requestId}] Invalid generation configuration`);
+            return fail(503, 'AI recipe generation is not available right now.');
+        }
+        if (typeof req.headers.origin !== 'string' || !origins.has(req.headers.origin)) {
             return fail(403, 'Requests must come from the Meal Hub app.');
         }
         if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('application/json')) {
@@ -262,21 +286,17 @@ export function createHandler({
         if (errors) return fail(400, 'The request was not valid.', { details: errors });
 
         // Rate limits are checked (and counted) before any paid provider call.
-        const productionLike = env.VERCEL_ENV === 'production';
-        if (!limiter.durable && productionLike && env.AI_ALLOW_MEMORY_RATE_LIMIT !== 'true') {
-            log.error(`[${requestId}] No shared rate-limit store configured; refusing to call the provider`);
-            return fail(503, 'AI recipe generation is not available right now.');
-        }
         try {
             const ip = hashKey(clientIp(req));
             const day = new Date().toISOString().slice(0, 10);
             const checks = [
-                [`ai:ip10:${ip}:${Math.floor(Date.now() / 600000)}`, 600, intEnv(env.AI_LIMIT_PER_IP_10MIN, 5)],
-                [`ai:ipday:${ip}:${day}`, 86400, intEnv(env.AI_LIMIT_PER_IP_DAY, 20)],
-                [`ai:global:${day}`, 86400, intEnv(env.AI_LIMIT_GLOBAL_DAY, 200)],
+                [`ai:ip10:${ip}:${Math.floor(Date.now() / 600000)}`, 600, limits[0]],
+                [`ai:ipday:${ip}:${day}`, 86400, limits[1]],
+                [`ai:global:${day}`, 86400, limits[2]],
             ];
             for (const [key, window, limit] of checks) {
                 const count = await limiter.hit(key, window);
+                if (!Number.isSafeInteger(count) || count < 1) throw new Error('Invalid limiter count');
                 if (count > limit) {
                     res.setHeader('Retry-After', String(window));
                     return fail(429, key.startsWith('ai:global')
@@ -285,7 +305,7 @@ export function createHandler({
                 }
             }
         } catch (err) {
-            log.error(`[${requestId}] Rate limit check failed: ${err.message}`);
+            log.error(`[${requestId}] Rate limit check failed`);
             return fail(503, 'AI recipe generation is not available right now.');
         }
 

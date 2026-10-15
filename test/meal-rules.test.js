@@ -40,11 +40,12 @@ test('settings change which meals are suggested (A03)', () => {
     assert.deepEqual(relaxed.allowed.map(m => m.id), ['S', 'P', 'V']);
 });
 
-test('carb limit applies only to verified nutrition', () => {
+test('self-reported verified nutrition never enables unsupported filtering', () => {
     const verified = meal({ nutrition: { calories: 500, protein: 30, carbs: 45, fiber: 8, verified: true, source: 'review' } });
     const unverified = meal({ nutrition: { calories: 500, protein: 30, carbs: 45, fiber: 8 } });
     const low = { ...DEFAULT_SETTINGS, carbTolerance: 'low' };
-    assert.equal(exclusionReasons(verified, low).length, 1);
+    assert.equal(verified.nutrition.verified, false);
+    assert.equal(exclusionReasons(verified, low).length, 0);
     assert.equal(exclusionReasons(unverified, low).length, 0);
     assert.equal(exclusionReasons(verified, { ...DEFAULT_SETTINGS, carbTolerance: 'moderate' }).length, 0);
 });

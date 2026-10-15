@@ -204,33 +204,33 @@
                     </div>
                 </fieldset>
 
-                <p class="settings-note">
+                <p class="settings-note" id="ai-target-note">
                     <i class="fas fa-circle-info" aria-hidden="true"></i>
-                    The settings below are sent to the AI generator. They are not applied to the built-in recipes yet,
-                    because those recipes don't have checked nutrition values.
+                    Nutrition target filtering is unavailable. The requests below only guide unverified AI estimates;
+                    they do not guarantee nutrient amounts or filter the built-in recipes. Budget is also an AI request only.
                 </p>
 
                 <fieldset class="form-group">
-                    <legend>Carbs per meal</legend>
-                    <div class="seg-control" id="seg-carbs">
-                        <input type="radio" name="carbTolerance" id="carbs-low" value="low"><label for="carbs-low">Under 30g</label>
-                        <input type="radio" name="carbTolerance" id="carbs-moderate" value="moderate"><label for="carbs-moderate">30–50g</label>
+                    <legend>AI carbohydrate estimate request</legend>
+                    <div class="seg-control" id="seg-carbs" aria-describedby="ai-target-note">
+                        <input type="radio" name="carbTolerance" id="carbs-low" value="low"><label for="carbs-low">Up to 30g</label>
+                        <input type="radio" name="carbTolerance" id="carbs-moderate" value="moderate"><label for="carbs-moderate">Up to 50g</label>
                         <input type="radio" name="carbTolerance" id="carbs-high" value="high"><label for="carbs-high">Up to 60g</label>
                     </div>
                 </fieldset>
 
                 <div class="form-group">
-                    <label for="calorie-target">Calorie target per meal</label>
+                    <label for="calorie-target">AI calorie estimate request per serving</label>
                     <div class="range-row">
-                        <input type="range" id="calorie-target" name="calorieTarget" min="300" max="800" step="50" value="500" aria-describedby="calorie-display">
+                        <input type="range" id="calorie-target" name="calorieTarget" min="300" max="800" step="50" value="500" aria-describedby="calorie-display ai-target-note">
                         <output class="range-display" id="calorie-display" for="calorie-target">500 kcal</output>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="protein-target">Protein target per meal</label>
+                    <label for="protein-target">AI protein estimate request per serving</label>
                     <div class="range-row">
-                        <input type="range" id="protein-target" name="proteinTarget" min="20" max="60" step="5" value="30" aria-describedby="protein-display">
+                        <input type="range" id="protein-target" name="proteinTarget" min="20" max="60" step="5" value="30" aria-describedby="protein-display ai-target-note">
                         <output class="range-display" id="protein-display" for="protein-target">30g</output>
                     </div>
                 </div>
@@ -255,8 +255,8 @@
 
             <section class="about" aria-labelledby="about-heading">
                 <h2 id="about-heading">About &amp; privacy</h2>
-                <p><strong>What this app is:</strong> a collection of Jamaican-style recipe ideas and a simple meal log. It is not a medical device, gives no medical advice and does not calculate insulin or medication doses.</p>
-                <p><strong>Recipes:</strong> not yet reviewed by a dietitian, clinician or food-safety specialist. Nutrition figures are withheld until they have been checked. Follow the cooking temperatures in each recipe and use a food thermometer.</p>
+                <p><strong>What this app is:</strong> a collection of Jamaican-style recipe ideas and a simple meal log. It is intended for general recipe ideas, gives no medical advice and does not calculate insulin or medication doses.</p>
+                <p><strong>Recipes:</strong> not yet reviewed by a dietitian, clinician or food-safety specialist. Built-in recipes have no verified nutrition figures. Any AI nutrition figures are unverified estimates and do not filter recipes. Follow the cooking temperatures in each recipe and use a food thermometer.</p>
                 <p><strong>Your data:</strong> your meal log, notes and settings are stored only in this browser on this device. Anyone using this browser profile can see them. "Reset All Data" deletes them from this device.</p>
                 <p><strong>AI generator:</strong> only when you use it, your selected proteins, meal type and diet settings are sent to our server (hosted on Vercel) and to Anthropic to write a recipe. Your log and notes are never sent. The providers may keep request logs under their own policies.</p>
             </section>

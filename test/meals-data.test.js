@@ -40,12 +40,8 @@ test('recipes with ackee carry the ackee safety note', () => {
 
 test('no unverified or placeholder nutrition is presented as fact (A04)', () => {
     for (const raw of data.meals) {
-        if (raw.nutrition === null) continue;
-        assert.equal(raw.nutrition.verified, true, `${raw.id} has unverified nutrition`);
-        assert.ok(raw.nutrition.source, `${raw.id} nutrition has no source`);
+        assert.equal(raw.nutrition, null, `${raw.id}: reviewed nutrition pipeline is not implemented`);
     }
-    const verified = data.meals.filter(m => m.nutrition).map(m => JSON.stringify(m.nutrition));
-    assert.equal(new Set(verified).size, verified.length, 'identical nutrition copied across recipes');
 });
 
 test('recipes make no absolute blood-sugar claims (A10)', () => {

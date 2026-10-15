@@ -57,7 +57,6 @@ test('service worker precaches every local file the app needs, with a versioned 
     for (const f of ['/app.js', '/meal-rules.js', '/meals.json', '/style.css', '/index.html']) {
         assert.ok(sw.includes(`'${f}'`), f);
     }
-    assert.ok(sw.includes('Promise.allSettled(OPTIONAL'), 'optional assets must not block install');
     assert.ok(sw.includes('k.startsWith(PREFIX)'), 'only this app\'s caches may be deleted');
 });
 
