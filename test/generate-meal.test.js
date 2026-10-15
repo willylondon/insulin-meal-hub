@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createHandler, validateRequest, validateGeneratedMeal } from '../api/generate-meal.js';
 import { createRateLimiter } from '../api/_lib/rate-limit.js';
 
-const ENV = { AI_GENERATION_ENABLED: 'true', ANTHROPIC_API_KEY: 'test-key' };
+const ENV = { AI_GENERATION_ENABLED: 'true', ANTHROPIC_API_KEY: 'test-key', NODE_ENV: 'development', AI_LOCAL_DEVELOPMENT: 'true', ALLOWED_ORIGINS: 'https://meals.example.com' };
 const silent = { error() {}, warn() {}, log() {} };
 
 const goodBody = () => ({
@@ -190,4 +190,81 @@ test('provider errors are not leaked to the client (A08)', async () => {
     const res2 = await call({ createClient: fakeClient(truncated) });
     assert.equal(res2.statusCode, 502);
     assert.ok(!('raw' in res2.body));
+});
+
+test('unknown and preview deployments never call the provider; production cannot bypass shared limits', async () => {
+    for (const patch of [
+        { NODE_ENV: 'production', AI_LOCAL_DEVELOPMENT: undefined },
+        { VERCEL_ENV: 'preview' }, { VERCEL: '1' }, { VERCEL_URL: 'preview.example' },
+        { VERCEL_ENV: 'production', AI_ALLOW_MEMORY_RATE_LIMIT: 'true' },
+    ]) {
+        const calls = [];
+        const res = await call({ env: { ...ENV, ...patch }, createClient: fakeClient(modelReply(goodRecipe()), calls) });
+        assert.equal(res.statusCode, 503);
+        assert.equal(calls.length, 0);
+    }
+    const calls = [];
+    const res = await call({ env: { ...ENV, VERCEL_ENV: 'production' }, limiter: { durable: true, async hit() { return 1; } }, createClient: fakeClient(modelReply(goodRecipe()), calls) });
+    assert.equal(res.statusCode, 200);
+    assert.equal(calls.length, 1);
+});
+
+test('origins require explicit exact configuration and cannot be supplied through request host headers', async () => {
+    const calls = [];
+    const createClient = fakeClient(modelReply(goodRecipe()), calls);
+    for (const origin of [undefined, '*', 'https://meals.example.com/', 'https://meals.example.com/path', 'http://meals.example.com', 'https://meals.example.com,']) {
+        assert.equal((await call({ env: { ...ENV, ALLOWED_ORIGINS: origin }, createClient })).statusCode, 503);
+    }
+    assert.equal((await call({ createClient }, { headers: { host: 'evil.example', 'x-forwarded-host': 'evil.example', origin: 'https://evil.example' } })).statusCode, 403);
+    assert.equal((await call({ createClient }, { headers: { origin: undefined, referer: 'https://meals.example.com/' } })).statusCode, 403);
+    assert.equal(calls.length, 0);
+});
+
+test('malformed budgets fail closed and zero budget permits no provider calls', async () => {
+    for (const key of ['AI_LIMIT_PER_IP_10MIN', 'AI_LIMIT_PER_IP_DAY', 'AI_LIMIT_GLOBAL_DAY']) {
+        for (const value of ['', '2junk', '-1', '1.5', ' 5', '1e3', '9007199254740992']) {
+            const calls = [];
+            assert.equal((await call({ env: { ...ENV, [key]: value }, createClient: fakeClient(modelReply(goodRecipe()), calls) })).statusCode, 503);
+            assert.equal(calls.length, 0);
+        }
+        const calls = [];
+        assert.equal((await call({ env: { ...ENV, [key]: '0' }, createClient: fakeClient(modelReply(goodRecipe()), calls) })).statusCode, 429);
+        assert.equal(calls.length, 0);
+    }
+});
+
+test('partial or ambiguous Redis configuration never falls back to memory', async () => {
+    for (const env of [
+        { UPSTASH_REDIS_REST_URL: 'https://redis.example' },
+        { KV_REST_API_TOKEN: 't' },
+        { UPSTASH_REDIS_REST_URL: 'https://redis.example', KV_REST_API_TOKEN: 't' },
+        { UPSTASH_REDIS_REST_URL: 'http://redis.example', UPSTASH_REDIS_REST_TOKEN: 't' },
+        { UPSTASH_REDIS_REST_URL: 'https://redis.example', UPSTASH_REDIS_REST_TOKEN: 't', KV_REST_API_URL: 'https://other.example', KV_REST_API_TOKEN: 't' },
+    ]) {
+        const limiter = createRateLimiter({ env, fetchImpl: () => assert.fail('Network must not be called') });
+        assert.equal(limiter.configurationError, true);
+        const calls = [];
+        assert.equal((await call({ limiter, createClient: fakeClient(modelReply(goodRecipe()), calls) })).statusCode, 503);
+        assert.equal(calls.length, 0);
+    }
+});
+
+test('Redis count and expiry command responses must both be valid', async () => {
+    for (const data of [null, [], [{ result: null }, { result: 1 }], [{ result: '1' }, { result: 1 }], [{ result: 0 }, { result: 1 }], [{ result: 1.5 }, { result: 1 }], [{ result: 1 }, { error: 'expiry failed' }], [{ result: 1 }], [{ error: 'increment failed' }, { result: 1 }]]) {
+        const limiter = createRateLimiter({ env: { KV_REST_API_URL: 'https://kv.example', KV_REST_API_TOKEN: 't' }, fetchImpl: async () => ({ ok: true, json: async () => data }) });
+        await assert.rejects(limiter.hit('test', 60));
+    }
+});
+
+test('unexpected AI fields, verified claims, nonfinite or inconsistent nutrition are withheld', () => {
+    const request = validateRequest(goodBody()).value;
+    for (const raw of [
+        { ...goodRecipe(), verified: true },
+        { ...goodRecipe(), tags: ['Clinically proven'] },
+        { ...goodRecipe(), name: 'Verified nutrition chicken' },
+        { ...goodRecipe(), nutritionPerServing: { ...goodRecipe().nutritionPerServing, verified: true } },
+        { ...goodRecipe(), nutritionPerServing: { ...goodRecipe().nutritionPerServing, calories: Infinity } },
+        { ...goodRecipe(), nutritionPerServing: { ...goodRecipe().nutritionPerServing, fiber: 16 } },
+        { ...goodRecipe(), nutritionPerServing: { ...goodRecipe().nutritionPerServing, protein: '40' } },
+    ]) assert.ok(validateGeneratedMeal(raw, request).problems);
 });

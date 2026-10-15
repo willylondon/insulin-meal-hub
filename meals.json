@@ -225,6 +225,7 @@
         "Black pepper"
       ],
       "instructions": [
+        "After desalting according to the product instructions, cook the saltfish until a food thermometer reads 145°F (63°C) in the thickest part; then flake it.",
         "Toast bread",
         "Mix avocado with lime juice",
         "Spread on toast",
@@ -314,7 +315,7 @@
       ],
       "instructions": [
         "Drain the canned ackee gently so it keeps its shape.",
-        "Soak the saltfish overnight (or boil it for 15–20 min), then rinse thoroughly and flake to reduce the salt.",
+        "Desalt the saltfish according to the product instructions, then cook until a food thermometer in the thickest part reads 145°F (63°C). Rinse as directed and flake; soaking alone does not cook fish.",
         "In a bowl, combine greens, cucumber, avocado.",
         "Heat olive oil in pan, sauté garlic 30 sec, add ackee and saltfish, warm through (2-3 min).",
         "Place ackee-saltfish mix over greens.",
@@ -354,7 +355,7 @@
         "Stir in chicken, callaloo, bell pepper, scallion.",
         "Spray muffin tin with olive oil.",
         "Pour mixture into 6 muffin cups.",
-        "Bake 18–20 min until set and a thermometer in the centre reads 160°F (71°C).",
+        "Bake 18–20 min until set and a thermometer in the centre reads 165°F (74°C).",
         "Cool 5 min before removing."
       ],
       "tags": [
@@ -637,7 +638,7 @@
         "Season fish with salt and thyme",
         "Place in pot with okra and pumpkin",
         "Add scallion and scotch bonnet",
-        "Steam over medium heat 15–20 min until the fish is opaque and flakes easily (145°F / 63°C)"
+        "Steam over medium heat 15–20 min until a food thermometer in the thickest part of the fish reads 145°F (63°C)"
       ],
       "tags": [
         "Jamaican",
@@ -793,7 +794,7 @@
       "instructions": [
         "Bring water to boil in large pot.",
         "Add fish, pumpkin, okra, carrot, scallion, thyme, and whole scotch bonnet.",
-        "Simmer 20–25 min until the fish is opaque and flakes easily (145°F / 63°C).",
+        "Simmer 20–25 min until a food thermometer in the thickest part of the fish reads 145°F (63°C).",
         "Remove scotch bonnet.",
         "Add lime juice, season with salt and pepper.",
         "Serve hot."
@@ -827,7 +828,8 @@
         "Marinate goat meat with curry powder 30 min.",
         "Heat oil, brown meat on all sides.",
         "Add onion, garlic, ginger, sauté 5 min.",
-        "Add water and simmer 1.5–2 hours until the meat is very tender (at least 160°F / 71°C).",
+        "Add water and simmer 1.5–2 hours until the meat is very tender and a food thermometer in the thickest part reads at least 160°F (71°C).",
+        "Let the meat rest for at least 3 minutes before serving.",
         "Serve over cauliflower rice."
       ],
       "tags": [
@@ -859,7 +861,7 @@
         "Season fish with Jamaican seasoning.",
         "Arrange vegetables in steamer basket.",
         "Place fish on top.",
-        "Steam 15–20 min until the fish is opaque and flakes easily (145°F / 63°C).",
+        "Steam 15–20 min until a food thermometer in the thickest part of the fish reads 145°F (63°C).",
         "Drizzle with olive oil before serving."
       ],
       "tags": [
@@ -1016,7 +1018,8 @@
         "Brown oxtail in pot.",
         "Add onion, carrots, garlic, sauté 5 min.",
         "Add broth, browning sauce, thyme, pimento, scotch bonnet.",
-        "Simmer 2.5–3 hours until the meat is very tender (at least 160°F / 71°C).",
+        "Simmer 2.5–3 hours until the meat is very tender and a food thermometer in the thickest part reads at least 160°F (71°C).",
+        "Let the meat rest for at least 3 minutes before serving.",
         "Remove scotch bonnet before serving."
       ],
       "tags": [

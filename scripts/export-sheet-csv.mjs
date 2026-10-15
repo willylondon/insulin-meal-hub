@@ -1,5 +1,5 @@
 // Writes meals-for-sheet.csv from meals.json, in the column layout the
-// Google Sheet uses, so the sheet can be refreshed from the reviewed dataset.
+// Google Sheet uses, so the sheet can be refreshed from the canonical dataset (not clinically reviewed).
 // Usage: node scripts/export-sheet-csv.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 import { csvCell } from '../meal-rules.js';

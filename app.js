@@ -207,7 +207,7 @@ function renderFilterSummary() {
     const hidden = parts.length
         ? `Hiding recipes with ${parts.join(' and ')} (${excluded.length} of ${state.meals.length} hidden).`
         : `Showing all ${state.meals.length} recipes.`;
-    setText('filter-summary', `${hidden} Your carb and calorie targets aren't applied to these recipes yet because their nutrition hasn't been checked.`);
+    setText('filter-summary', `${hidden} Nutrition target filtering is unavailable. Carb, calorie and protein requests only guide unverified AI estimates.`);
 }
 
 // ── RECIPE MODAL ──
@@ -229,7 +229,7 @@ function openRecipeModal(meal) {
 
     setText('modal-nutrition', nutritionText(meal));
 
-    const notes = cautions(meal, state.settings).filter(c => !c.startsWith('Carbs and calories'));
+    const notes = cautions(meal, state.settings);
     document.getElementById('modal-cautions-section').hidden = notes.length === 0;
     replaceChildren('modal-cautions', notes.map(t => el('li', { text: t })));
 
@@ -240,9 +240,7 @@ function nutritionText(meal) {
     const n = meal.nutrition;
     if (!n) return 'Not available yet. Nutrition for this recipe has not been checked, so it is not shown. Do not use this app to work out insulin doses.';
     const figures = `About ${Math.round(n.calories)} kcal · ${Math.round(n.protein)}g protein · ${Math.round(n.carbs)}g carbs · ${Math.round(n.fiber)}g fiber per serving.`;
-    return n.verified
-        ? `${figures} Source: ${n.source || 'reviewed'}.`
-        : `${figures} AI estimate, not verified. Do not use it to work out insulin doses.`;
+    return `${figures} ${meal.source === 'ai' ? 'AI estimate' : 'Estimate'}, not verified. Not used for recipe filtering. Do not use it to work out insulin doses.`;
 }
 
 // ── LOG MEAL ──
@@ -505,6 +503,9 @@ function bindNav() {
                 pane.hidden = false;
                 pane.classList.add('active');
                 document.getElementById('main')?.scrollTo(0, 0);
+                const heading = pane.querySelector('h1');
+                heading?.setAttribute('tabindex', '-1');
+                heading?.focus();
             }
         });
     });
