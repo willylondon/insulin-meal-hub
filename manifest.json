@@ -1,22 +1,14 @@
 {
   "name": "Insulin-Smart Meal Hub",
   "short_name": "MealHub",
-  "description": "Daily insulin-sensitive meal suggestions for lunch and dinner",
-  "start_url": ".",
+  "description": "Jamaican-style recipe ideas and a private, on-device meal log",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#2E86AB",
-  "theme_color": "#2E86AB",
-  "orientation": "portrait-primary",
+  "background_color": "#050c18",
+  "theme_color": "#050c18",
   "icons": [
-    {
-      "src": "icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "icon-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
+    { "src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
   ]
 }

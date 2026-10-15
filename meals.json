@@ -1,0 +1,1116 @@
+{
+  "schemaVersion": 2,
+  "updated": "2026-10-14",
+  "reviewStatus": "unreviewed",
+  "reviewNote": "Recipes have not been reviewed by a dietitian, clinician or food-safety specialist. Nutrition is withheld (null) until per-serving values are calculated from weighed ingredients and reviewed; set nutrition.verified=true only after that review.",
+  "meals": [
+    {
+      "id": "BF001",
+      "name": "Jamaican Ackee & Scrambled Eggs",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 cup canned ackee, drained",
+        "2 eggs",
+        "1/4 bell pepper, diced",
+        "1 scallion, chopped",
+        "1 tsp olive oil",
+        "Pinch of black pepper"
+      ],
+      "instructions": [
+        "Heat olive oil in pan",
+        "Sauté bell pepper and scallion 2 min",
+        "Gently fold in the drained canned ackee and heat through for 2–3 min",
+        "Push to the side and scramble the eggs until firm",
+        "Mix together, season with pepper"
+      ],
+      "tags": [
+        "Jamaican",
+        "Eggs",
+        "Vegetarian"
+      ],
+      "safetyNotes": [
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF002",
+      "name": "Callaloo & Sweet Potato Hash",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 cups callaloo, chopped",
+        "1 small sweet potato, diced",
+        "1/4 onion, diced",
+        "1 garlic clove, minced",
+        "1 tsp coconut oil",
+        "1/4 tsp thyme"
+      ],
+      "instructions": [
+        "Steam sweet potato 10 min until tender",
+        "Heat coconut oil, sauté onion and garlic",
+        "Add callaloo, cook 5 min",
+        "Add sweet potato, mix well",
+        "Season with thyme"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF003",
+      "name": "Coconut Chia Pudding with Mango",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/4 cup chia seeds",
+        "1 cup coconut milk",
+        "1/2 mango, diced",
+        "1 tbsp shredded coconut",
+        "1 tsp vanilla extract",
+        "Pinch of nutmeg"
+      ],
+      "instructions": [
+        "Mix chia seeds with coconut milk",
+        "Refrigerate overnight",
+        "Top with mango and coconut",
+        "Drizzle with vanilla extract"
+      ],
+      "tags": [
+        "Vegan",
+        "Make-ahead"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF004",
+      "name": "Jerk Spiced Tofu Scramble",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 block firm tofu, crumbled",
+        "1 tsp jerk seasoning",
+        "1/4 bell pepper, diced",
+        "2 mushrooms, sliced",
+        "1 tsp olive oil",
+        "1 tbsp nutritional yeast"
+      ],
+      "instructions": [
+        "Press tofu to remove excess water",
+        "Heat oil, sauté vegetables",
+        "Add tofu and jerk seasoning",
+        "Cook 8-10 min until golden",
+        "Stir in nutritional yeast"
+      ],
+      "tags": [
+        "Vegan",
+        "Tofu"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF005",
+      "name": "Green Banana Porridge with Cinnamon",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 green banana, grated",
+        "1 cup almond milk",
+        "1/2 tsp cinnamon",
+        "1 tbsp ground flaxseed",
+        "1 tsp vanilla extract",
+        "Pinch of salt"
+      ],
+      "instructions": [
+        "Grate green banana",
+        "Bring almond milk to simmer",
+        "Whisk in banana, cook 10 min",
+        "Add cinnamon and flaxseed",
+        "Stir until thickened"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF006",
+      "name": "Protein Pumpkin Pancakes",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/2 cup pumpkin puree",
+        "2 eggs",
+        "1/4 cup almond flour",
+        "1 tsp baking powder",
+        "1/2 tsp cinnamon",
+        "1 tsp coconut oil"
+      ],
+      "instructions": [
+        "Mix all ingredients in bowl",
+        "Heat coconut oil in pan",
+        "Pour batter, cook about 3 min per side until set in the centre",
+        "Serve warm"
+      ],
+      "tags": [
+        "Vegetarian",
+        "Eggs"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF007",
+      "name": "Jamaican Breakfast Bowl (Yam, Banana, Ackee)",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/2 yam, boiled and sliced",
+        "1 green banana, boiled",
+        "1/2 cup canned ackee, drained",
+        "1/4 avocado, sliced",
+        "1 tsp olive oil",
+        "Pinch of black pepper"
+      ],
+      "instructions": [
+        "Boil yam and banana until tender",
+        "Gently heat the drained canned ackee in a pan for 2–3 min",
+        "Arrange on plate with avocado",
+        "Drizzle with olive oil"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF008",
+      "name": "Avocado & Saltfish on Toast",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 slice whole grain bread",
+        "1/4 avocado, mashed",
+        "1/4 cup saltfish, soaked overnight (or boiled 15–20 min), rinsed and flaked",
+        "1 tsp lime juice",
+        "1 tomato slice",
+        "Black pepper"
+      ],
+      "instructions": [
+        "Toast bread",
+        "Mix avocado with lime juice",
+        "Spread on toast",
+        "Top with the flaked saltfish and tomato",
+        "Season with pepper"
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF009",
+      "name": "Tropical Fruit & Yogurt Parfait",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/2 cup Greek yogurt",
+        "1/4 cup pineapple chunks",
+        "1/4 cup papaya cubes",
+        "1 tbsp chopped nuts",
+        "1 tsp honey (optional)",
+        "1 tsp chia seeds"
+      ],
+      "instructions": [
+        "Layer yogurt and fruits in glass",
+        "Top with nuts and chia seeds",
+        "Drizzle with honey if desired"
+      ],
+      "tags": [
+        "Vegetarian",
+        "No-cook"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF010",
+      "name": "Jamaican Cornmeal Porridge",
+      "type": "Breakfast",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/4 cup cornmeal",
+        "1 cup almond milk",
+        "1 cinnamon stick",
+        "1/4 tsp nutmeg",
+        "1 tsp vanilla extract",
+        "1 tbsp ground flaxseed"
+      ],
+      "instructions": [
+        "Mix cornmeal with cold milk",
+        "Bring to boil, add cinnamon",
+        "Simmer 15 min, stirring",
+        "Remove cinnamon, add flavorings"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH001",
+      "name": "Ackee & Saltfish Salad",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 cup canned ackee, drained",
+        "½ cup saltfish (soaked overnight, flaked)",
+        "2 cups mixed greens",
+        "¼ avocado, sliced",
+        "½ cucumber, diced",
+        "1 tbsp olive oil",
+        "1 tbsp lemon juice",
+        "1 garlic clove, minced",
+        "Black pepper to taste",
+        "1 scallion, chopped"
+      ],
+      "instructions": [
+        "Drain the canned ackee gently so it keeps its shape.",
+        "Soak the saltfish overnight (or boil it for 15–20 min), then rinse thoroughly and flake to reduce the salt.",
+        "In a bowl, combine greens, cucumber, avocado.",
+        "Heat olive oil in pan, sauté garlic 30 sec, add ackee and saltfish, warm through (2-3 min).",
+        "Place ackee-saltfish mix over greens.",
+        "Whisk lemon juice, olive oil, pepper for dressing, drizzle.",
+        "Garnish with scallion."
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH002",
+      "name": "Chicken & Callaloo Egg Muffins",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 eggs",
+        "½ cup cooked chicken, shredded (cooked to 165°F / 74°C)",
+        "1 cup callaloo (or spinach), chopped",
+        "¼ bell pepper, diced",
+        "1 scallion, chopped",
+        "2 tbsp coconut milk",
+        "¼ tsp turmeric",
+        "Pinch of black pepper",
+        "Olive oil spray"
+      ],
+      "instructions": [
+        "Preheat oven to 350°F (175°C).",
+        "Whisk eggs with coconut milk, turmeric, pepper.",
+        "Stir in chicken, callaloo, bell pepper, scallion.",
+        "Spray muffin tin with olive oil.",
+        "Pour mixture into 6 muffin cups.",
+        "Bake 18–20 min until set and a thermometer in the centre reads 160°F (71°C).",
+        "Cool 5 min before removing."
+      ],
+      "tags": [
+        "Chicken",
+        "Eggs",
+        "Make-ahead"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH003",
+      "name": "Sardine & Vegetable Skillet",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 can sardines in olive oil",
+        "1 cup mixed vegetables (zucchini, bell pepper, onion)",
+        "1 tsp Jamaican seasoning",
+        "1 garlic clove, minced",
+        "1 tbsp olive oil",
+        "1 tsp lime juice",
+        "½ tsp thyme",
+        "Black pepper"
+      ],
+      "instructions": [
+        "Heat olive oil in large skillet.",
+        "Sauté garlic and vegetables 5-7 min until tender.",
+        "Add sardines with their oil, break into chunks.",
+        "Season with Jamaican seasoning, thyme, pepper.",
+        "Cook 3-4 min until heated through.",
+        "Drizzle with lime juice before serving."
+      ],
+      "tags": [
+        "Fish",
+        "Quick"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH004",
+      "name": "Jerk Chicken & Cabbage Stir-fry",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 chicken breast, sliced",
+        "2 cups cabbage, shredded",
+        "1 carrot, julienned",
+        "1 tbsp jerk seasoning",
+        "1 tbsp olive oil",
+        "1 garlic clove, minced",
+        "1 tsp ginger, grated",
+        "2 tbsp water"
+      ],
+      "instructions": [
+        "Season chicken with jerk seasoning.",
+        "Heat oil in wok or large pan.",
+        "Stir-fry chicken 5–6 min until no longer pink and it reaches 165°F (74°C).",
+        "Remove chicken, add more oil if needed.",
+        "Stir-fry cabbage and carrot 3-4 min.",
+        "Return chicken to pan, add water, cook 2 min.",
+        "Serve hot."
+      ],
+      "tags": [
+        "Jamaican",
+        "Chicken"
+      ],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH005",
+      "name": "Ackee & Tofu Scramble",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 cup canned ackee, drained",
+        "½ block firm tofu",
+        "¼ onion, diced",
+        "1 tomato, diced",
+        "1 tsp turmeric",
+        "1 tbsp olive oil",
+        "1 tsp thyme",
+        "Black pepper"
+      ],
+      "instructions": [
+        "Press tofu to remove excess water, crumble.",
+        "Heat oil, sauté onion until translucent.",
+        "Add tomato, cook 2 min.",
+        "Add ackee and tofu, gently stir.",
+        "Season with turmeric, thyme, pepper.",
+        "Cook 5-7 min until heated through."
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH006",
+      "name": "Callaloo & Egg White Frittata",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "4 egg whites",
+        "1 cup callaloo, chopped",
+        "¼ bell pepper, diced",
+        "1 tbsp nutritional yeast",
+        "1 tsp olive oil",
+        "Pinch of black pepper",
+        "1 garlic clove, minced"
+      ],
+      "instructions": [
+        "Preheat oven to 375°F (190°C).",
+        "Sauté callaloo, bell pepper, garlic in oil 3 min.",
+        "Whisk egg whites with nutritional yeast, pepper.",
+        "Pour over vegetables in oven-safe dish.",
+        "Bake 12–15 min until set and the centre reads 160°F (71°C).",
+        "Let cool 5 min before slicing."
+      ],
+      "tags": [
+        "Vegetarian",
+        "Eggs"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH007",
+      "name": "Protein Power Bowl: Beans & Greens",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "½ cup black beans, cooked",
+        "2 cups mixed greens",
+        "¼ avocado, diced",
+        "¼ cup corn kernels",
+        "1 tbsp pumpkin seeds",
+        "1 tbsp olive oil",
+        "1 tbsp lime juice",
+        "½ tsp cumin"
+      ],
+      "instructions": [
+        "Arrange greens in bowl.",
+        "Top with beans, corn, avocado.",
+        "Sprinkle pumpkin seeds.",
+        "Whisk olive oil, lime juice, cumin for dressing.",
+        "Drizzle over bowl."
+      ],
+      "tags": [
+        "Vegan",
+        "No-cook"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH008",
+      "name": "Green Smoothie Bowl (Post-workout)",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 banana, frozen",
+        "1 cup spinach",
+        "½ cup Greek yogurt",
+        "¼ cup almond milk",
+        "1 scoop protein powder",
+        "1 tbsp chia seeds",
+        "½ cup mixed berries"
+      ],
+      "instructions": [
+        "Blend all ingredients until smooth.",
+        "Pour into bowl.",
+        "Top with additional berries and seeds.",
+        "Enjoy immediately."
+      ],
+      "tags": [
+        "Vegetarian",
+        "No-cook"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH009",
+      "name": "Jamaican Chicken Salad Wrap",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 whole grain tortilla",
+        "½ cup cooked chicken, shredded (cooked to 165°F / 74°C and chilled)",
+        "1 cup mixed greens",
+        "¼ avocado, sliced",
+        "2 tbsp Greek yogurt",
+        "1 tsp jerk seasoning",
+        "1 tsp lime juice"
+      ],
+      "instructions": [
+        "Mix chicken with jerk seasoning and lime juice.",
+        "Warm tortilla if desired.",
+        "Spread Greek yogurt on tortilla.",
+        "Layer greens, chicken, avocado.",
+        "Roll tightly and slice."
+      ],
+      "tags": [
+        "Jamaican",
+        "Chicken"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH010",
+      "name": "Pumpkin & Lentil Soup",
+      "type": "Lunch",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 cups pumpkin, cubed",
+        "½ cup red lentils",
+        "1 carrot, diced",
+        "1 celery stalk, diced",
+        "1 onion, diced",
+        "2 cups vegetable broth",
+        "1 tsp thyme",
+        "1 tsp turmeric"
+      ],
+      "instructions": [
+        "Sauté onion, carrot, celery in pot 5 min.",
+        "Add pumpkin, lentils, broth, and spices.",
+        "Bring to boil, then simmer 20-25 min.",
+        "Blend partially for creamier texture.",
+        "Season to taste."
+      ],
+      "tags": [
+        "Vegan",
+        "Make-ahead"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH011",
+      "name": "Steamed Fish with Okra & Pumpkin",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 snapper fillet (about 6 oz / 170 g)",
+        "6 okras, sliced",
+        "1 cup pumpkin, cubed",
+        "2 scallions",
+        "Thyme, scotch bonnet",
+        "Salt, black pepper"
+      ],
+      "instructions": [
+        "Season fish with salt and thyme",
+        "Place in pot with okra and pumpkin",
+        "Add scallion and scotch bonnet",
+        "Steam over medium heat 15–20 min until the fish is opaque and flakes easily (145°F / 63°C)"
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH012",
+      "name": "Jerk Chicken over Spinach Salad",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 chicken breast",
+        "2 tbsp jerk seasoning",
+        "3 cups spinach",
+        "1/2 avocado",
+        "Cherry tomatoes",
+        "Lime juice and olive oil"
+      ],
+      "instructions": [
+        "Coat chicken with jerk seasoning",
+        "Grill or pan-fry about 6 min per side until it reaches 165°F (74°C) in the thickest part",
+        "Slice and place over spinach",
+        "Add avocado and tomatoes",
+        "Dress with lime juice and olive oil"
+      ],
+      "tags": [
+        "Jamaican",
+        "Chicken"
+      ],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH013",
+      "name": "Curried Chickpea & Callaloo",
+      "type": "Lunch",
+      "prepTime": "15 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 can chickpeas, drained and rinsed",
+        "2 cups callaloo",
+        "1 tbsp curry powder",
+        "1/4 onion",
+        "1 garlic clove",
+        "1 tsp coconut oil"
+      ],
+      "instructions": [
+        "Sauté onion and garlic in oil",
+        "Add curry powder, toast 1 min",
+        "Add chickpeas, coat well",
+        "Add callaloo, cook 5 min",
+        "Season and serve"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN001",
+      "name": "Jamaican Salmon with Pumpkin & Greens",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 salmon fillet (150-200g)",
+        "½ cup pumpkin, cubed",
+        "1 cup bok choy or callaloo",
+        "½ cup green beans",
+        "1 tsp olive oil",
+        "1 tsp Jamaican jerk seasoning (low-sodium)",
+        "1 garlic clove, minced",
+        "½ tsp thyme",
+        "½ lemon wedge",
+        "Pinch of black pepper"
+      ],
+      "instructions": [
+        "Preheat oven to 400°F (200°C).",
+        "Rub salmon with jerk seasoning, thyme, black pepper.",
+        "Place salmon on a baking sheet and bake 12–15 min until it flakes easily and reaches 145°F (63°C).",
+        "Steam pumpkin cubes 10-12 min until tender.",
+        "Heat olive oil in pan, sauté garlic 30 sec, add bok choy and green beans, cook 4-5 min until vibrant.",
+        "Plate salmon with pumpkin and greens.",
+        "Squeeze lemon over everything."
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN002",
+      "name": "Tuna & Avocado Stuffed Sweet Potato",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 medium sweet potato",
+        "1 can tuna in water, drained",
+        "¼ avocado, mashed",
+        "1 tbsp Greek yogurt",
+        "1 tsp lime juice",
+        "½ tsp paprika",
+        "1 scallion, chopped",
+        "Black pepper"
+      ],
+      "instructions": [
+        "Bake sweet potato at 400°F (200°C) for 45–50 min until tender.",
+        "Let cool slightly, then slice open.",
+        "Mix tuna with avocado, Greek yogurt, lime juice, paprika.",
+        "Stuff sweet potato with tuna mixture.",
+        "Garnish with scallion and pepper."
+      ],
+      "tags": [
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN003",
+      "name": "Fish Tea with Pumpkin & Okra",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 whole fish (snapper or parrotfish), cleaned",
+        "4 cups water",
+        "1 cup pumpkin, cubed",
+        "½ cup okra, sliced",
+        "1 carrot, sliced",
+        "1 scallion, chopped",
+        "1 tsp thyme",
+        "1 scotch bonnet pepper (whole)",
+        "1 lime, juiced",
+        "Salt and pepper"
+      ],
+      "instructions": [
+        "Bring water to boil in large pot.",
+        "Add fish, pumpkin, okra, carrot, scallion, thyme, and whole scotch bonnet.",
+        "Simmer 20–25 min until the fish is opaque and flakes easily (145°F / 63°C).",
+        "Remove scotch bonnet.",
+        "Add lime juice, season with salt and pepper.",
+        "Serve hot."
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN004",
+      "name": "Curry Goat with Cauliflower Rice",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 3,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 lb goat meat, trimmed",
+        "2 tbsp curry powder",
+        "1 onion, sliced",
+        "2 garlic cloves, minced",
+        "1 tsp ginger, grated",
+        "1 cup cauliflower rice",
+        "1 cup water",
+        "1 tbsp olive oil",
+        "1 tsp thyme"
+      ],
+      "instructions": [
+        "Marinate goat meat with curry powder 30 min.",
+        "Heat oil, brown meat on all sides.",
+        "Add onion, garlic, ginger, sauté 5 min.",
+        "Add water and simmer 1.5–2 hours until the meat is very tender (at least 160°F / 71°C).",
+        "Serve over cauliflower rice."
+      ],
+      "tags": [
+        "Jamaican",
+        "Goat"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN005",
+      "name": "Steamed Fish with Cho-Cho & Carrots",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 fish fillets (snapper or mahi mahi)",
+        "1 cho-cho, sliced",
+        "1 carrot, sliced",
+        "1 bell pepper, sliced",
+        "1 tsp olive oil",
+        "1 tsp Jamaican seasoning",
+        "1 garlic clove, minced",
+        "½ cup water",
+        "1 tsp thyme"
+      ],
+      "instructions": [
+        "Season fish with Jamaican seasoning.",
+        "Arrange vegetables in steamer basket.",
+        "Place fish on top.",
+        "Steam 15–20 min until the fish is opaque and flakes easily (145°F / 63°C).",
+        "Drizzle with olive oil before serving."
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN006",
+      "name": "Oven-Roasted Chicken with Root Vegetables",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 chicken thighs, skinless",
+        "1 sweet potato, cubed",
+        "1 carrot, sliced",
+        "1 onion, quartered",
+        "2 tbsp olive oil",
+        "1 tbsp jerk seasoning",
+        "1 tsp rosemary",
+        "Black pepper"
+      ],
+      "instructions": [
+        "Preheat oven to 400°F (200°C).",
+        "Toss vegetables with oil and seasoning.",
+        "Arrange chicken and vegetables on baking sheet.",
+        "Roast 35–40 min until the chicken reaches 165°F (74°C) in the thickest part.",
+        "Serve hot."
+      ],
+      "tags": [
+        "Jamaican",
+        "Chicken"
+      ],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN007",
+      "name": "Stuffed Bell Peppers with Ground Turkey",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 bell peppers, halved",
+        "½ lb ground turkey",
+        "½ cup cauliflower rice",
+        "¼ onion, diced",
+        "1 garlic clove, minced",
+        "1 tsp Jamaican seasoning",
+        "½ cup tomato sauce",
+        "1 tbsp olive oil"
+      ],
+      "instructions": [
+        "Preheat oven to 375°F (190°C).",
+        "Sauté turkey, onion and garlic until no pink remains and the turkey reaches 165°F (74°C).",
+        "Mix with cauliflower rice and tomato sauce.",
+        "Stuff bell pepper halves.",
+        "Bake 25-30 min until peppers are tender."
+      ],
+      "tags": [
+        "Turkey"
+      ],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN008",
+      "name": "Jerk Pork with Roasted Vegetables",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 3,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 lb (450 g) pork loin, trimmed",
+        "2 tbsp jerk marinade",
+        "2 cups mixed vegetables (carrots, zucchini, onion)",
+        "1 tbsp olive oil",
+        "1 tsp thyme",
+        "1 garlic clove, minced"
+      ],
+      "instructions": [
+        "Marinate pork in jerk marinade 1 hour.",
+        "Preheat oven to 400°F (200°C).",
+        "Roast pork 25–30 min until it reaches 145°F (63°C) in the centre.",
+        "Toss vegetables with oil and thyme, roast alongside.",
+        "Rest pork at least 3 min before slicing."
+      ],
+      "tags": [
+        "Jamaican",
+        "Pork"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN009",
+      "name": "Callaloo & Saltfish Patties",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 2,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 cups callaloo, chopped",
+        "½ cup saltfish, soaked overnight (or boiled 15–20 min), rinsed and flaked",
+        "1 egg",
+        "2 tbsp almond flour",
+        "1 tbsp olive oil",
+        "1 tsp thyme",
+        "Black pepper",
+        "1 scallion, chopped"
+      ],
+      "instructions": [
+        "Steam callaloo until wilted, squeeze out excess water.",
+        "Mix with saltfish, egg, almond flour, thyme, scallion.",
+        "Form into patties.",
+        "Heat oil and cook patties 3–4 min per side until golden and firm in the centre (160°F / 71°C).",
+        "Drain on paper towels."
+      ],
+      "tags": [
+        "Jamaican",
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN010",
+      "name": "Jamaican Oxtail Stew (Lean)",
+      "type": "Dinner",
+      "prepTime": "15-20 min",
+      "servings": 3,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 lb oxtail, trimmed of fat",
+        "1 onion, chopped",
+        "2 carrots, chopped",
+        "2 garlic cloves, minced",
+        "2 cups beef broth (low-sodium)",
+        "1 tbsp browning sauce",
+        "1 tsp thyme",
+        "2 pimento berries",
+        "1 scotch bonnet pepper (whole)"
+      ],
+      "instructions": [
+        "Brown oxtail in pot.",
+        "Add onion, carrots, garlic, sauté 5 min.",
+        "Add broth, browning sauce, thyme, pimento, scotch bonnet.",
+        "Simmer 2.5–3 hours until the meat is very tender (at least 160°F / 71°C).",
+        "Remove scotch bonnet before serving."
+      ],
+      "tags": [
+        "Jamaican",
+        "Beef"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN011",
+      "name": "Grilled Snapper with Steamed Veg",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 snapper fillet",
+        "Broccoli florets",
+        "Sliced carrots",
+        "Lemon juice",
+        "Olive oil, garlic",
+        "Fresh thyme"
+      ],
+      "instructions": [
+        "Marinate fillet in lemon, garlic and thyme",
+        "Grill about 5 min per side until opaque and it reaches 145°F (63°C)",
+        "Steam broccoli and carrots 8 min",
+        "Plate with a drizzle of olive oil"
+      ],
+      "tags": [
+        "Fish"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN012",
+      "name": "Jamaican Brown Stew Tofu",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 2,
+      "difficulty": "Medium",
+      "ingredients": [
+        "1 block firm tofu, cubed",
+        "1 tbsp browning",
+        "1 onion, sliced",
+        "2 garlic cloves",
+        "Pimento berries, thyme",
+        "1 tbsp soy sauce"
+      ],
+      "instructions": [
+        "Press and cube tofu, pat dry",
+        "Brown in oil until golden",
+        "Add onion, garlic, pimento",
+        "Stir in browning and soy sauce",
+        "Simmer in 1/4 cup water 10 min"
+      ],
+      "tags": [
+        "Jamaican",
+        "Vegan",
+        "Tofu"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "DN013",
+      "name": "Herb-Crusted Turkey Breast",
+      "type": "Dinner",
+      "prepTime": "45 min",
+      "servings": 3,
+      "difficulty": "Medium",
+      "ingredients": [
+        "1 boneless turkey breast (about 1 lb / 450 g)",
+        "Fresh rosemary and thyme",
+        "3 garlic cloves, minced",
+        "1 tbsp olive oil",
+        "Salt and black pepper"
+      ],
+      "instructions": [
+        "Preheat oven to 375°F (190°C)",
+        "Mix herbs, garlic and oil into a paste",
+        "Rub all over the turkey breast",
+        "Roast until the thickest part reaches 165°F (74°C), about 30–40 min for a 1 lb breast (longer for larger cuts)",
+        "Rest 5 min before slicing"
+      ],
+      "tags": [
+        "Turkey"
+      ],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
+      "nutrition": null
+    }
+  ]
+}

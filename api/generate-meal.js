@@ -1,95 +1,346 @@
-// Vercel Serverless Function — AI Meal Generator
-// Requires: ANTHROPIC_API_KEY environment variable set in Vercel dashboard
-// Model: claude-haiku-4-5-20251001 (Haiku — fast and cheap)
+// Vercel Serverless Function — AI recipe generator
+//
+// Required environment:
+//   ANTHROPIC_API_KEY           server-side key (never sent to the browser)
+//   AI_GENERATION_ENABLED=true  generation is off unless this is set
+// Rate limiting (see DEPLOYMENT.md):
+//   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL / KV_REST_API_TOKEN)
+//   AI_LIMIT_PER_IP_10MIN (default 5), AI_LIMIT_PER_IP_DAY (default 20), AI_LIMIT_GLOBAL_DAY (default 200)
+//   AI_ALLOW_MEMORY_RATE_LIMIT=true  allow per-instance limits in production (not recommended)
+// Optional: ALLOWED_ORIGINS (comma-separated), ANTHROPIC_MODEL
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+import Anthropic from '@anthropic-ai/sdk';
+import { createHash, randomUUID } from 'node:crypto';
+import { createRateLimiter } from './_lib/rate-limit.js';
+import {
+    CARB_LEVELS, DIFFICULTIES, MEAL_TYPES, PROTEINS, PROTEIN_IDS, BUDGETS,
+    CALORIE_RANGE, PROTEIN_RANGE, exclusionReasons, mealMatchesProteins,
+    normalizeMeal, safetyIssues,
+} from '../meal-rules.js';
+
+const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
+const MAX_BODY_CHARS = 2000;
+const MAX_CONCURRENT = 4;
+const PROVIDER_TIMEOUT_MS = 25000;
+const CALORIE_TOLERANCE = 200;
+
+// ── Request validation ──
+
+export function validateRequest(body) {
+    const errors = [];
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return { errors: ['Request body must be a JSON object.'] };
     }
+    const { proteins, mealType = 'any', preferences } = body;
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-        return res.status(500).json({ error: 'API key not configured. Add ANTHROPIC_API_KEY in Vercel environment variables.' });
+    if (!Array.isArray(proteins) || proteins.length < 1 || proteins.length > 5) {
+        errors.push('proteins must be a list of 1 to 5 items.');
+    } else if (!proteins.every(p => PROTEIN_IDS.includes(p))) {
+        errors.push('proteins contains an unknown value.');
     }
+    if (mealType !== 'any' && !MEAL_TYPES.includes(mealType)) errors.push('mealType is not recognised.');
 
-    const { proteins = [], preferences = {}, mealType = 'any' } = req.body || {};
-
-    const proteinList = proteins.length > 0 ? proteins.join(', ') : 'any available protein';
-    const carbLevel = preferences.carbTolerance === 'low' ? 'very low carb (under 30g)'
-        : preferences.carbTolerance === 'high' ? 'moderate carb (up to 60g)'
-        : 'moderate carb (30-50g)';
-    const restrictions = [
-        preferences.avoidGout ? 'avoid gout triggers (no organ meats, shellfish, red meat, high-purine foods)' : '',
-        preferences.prioritizeHeart ? 'heart-healthy (lean proteins, healthy fats, no saturated fat)' : '',
-    ].filter(Boolean).join('; ');
-    const mealTypeGuide = mealType === 'any' ? 'Choose the most appropriate meal type (Breakfast, Lunch, or Dinner)'
-        : `This must be a ${mealType} meal`;
-
-    const prompt = `You are a nutrition expert creating insulin-smart Jamaican meals for someone managing blood sugar levels.
-
-Create ONE meal recipe using these available proteins: ${proteinList}
-${mealType !== 'any' ? `Meal type: ${mealType}` : ''}
-Carb target: ${carbLevel}
-Calorie target: approximately ${preferences.calorieTarget || 500} kcal
-${restrictions ? `Dietary restrictions: ${restrictions}` : ''}
-Budget: ${preferences.budget || 'medium'}
-
-Requirements:
-- Use Jamaican ingredients and cooking styles where possible (callaloo, pumpkin, ackee, scotch bonnet, scallion, thyme, etc.)
-- Prioritize insulin sensitivity: low glycemic index, high fiber, adequate protein
-- ${mealTypeGuide}
-- Keep it practical and easy to make at home
-
-Respond with ONLY a valid JSON object, no markdown, no explanation:
-{
-  "Meal Name": "...",
-  "Type": "Breakfast|Lunch|Dinner",
-  "Prep Time": "X min",
-  "Servings": "1",
-  "Difficulty": "Easy|Medium|Hard",
-  "Ingredients": "- ingredient 1\\n- ingredient 2\\n- ingredient 3",
-  "Instructions": "1. Step one\\n2. Step two\\n3. Step three",
-  "Insulin Benefits": "One sentence on why this is good for blood sugar.",
-  "Nutrition Notes": "~X calories | Xg protein | Xg carbs | Xg fiber",
-  "Tags": "Tag1, Tag2, Tag3",
-  "Meal ID": "AI-001"
-}`;
-
-    try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
+    const p = preferences;
+    if (!p || typeof p !== 'object' || Array.isArray(p)) {
+        errors.push('preferences must be an object.');
+    } else {
+        if (!Object.hasOwn(CARB_LEVELS, p.carbTolerance)) errors.push('preferences.carbTolerance is not recognised.');
+        if (typeof p.avoidGout !== 'boolean') errors.push('preferences.avoidGout must be true or false.');
+        if (typeof p.prioritizeHeart !== 'boolean') errors.push('preferences.prioritizeHeart must be true or false.');
+        if (!BUDGETS.includes(p.budget)) errors.push('preferences.budget is not recognised.');
+        if (!Number.isInteger(p.calorieTarget) || p.calorieTarget < CALORIE_RANGE.min || p.calorieTarget > CALORIE_RANGE.max) {
+            errors.push(`preferences.calorieTarget must be a whole number from ${CALORIE_RANGE.min} to ${CALORIE_RANGE.max}.`);
+        }
+        if (!Number.isInteger(p.proteinTarget) || p.proteinTarget < PROTEIN_RANGE.min || p.proteinTarget > PROTEIN_RANGE.max) {
+            errors.push(`preferences.proteinTarget must be a whole number from ${PROTEIN_RANGE.min} to ${PROTEIN_RANGE.max}.`);
+        }
+    }
+    if (errors.length) return { errors };
+    return {
+        value: {
+            proteins: [...new Set(proteins)],
+            mealType,
+            preferences: {
+                carbTolerance: p.carbTolerance,
+                avoidGout: p.avoidGout,
+                prioritizeHeart: p.prioritizeHeart,
+                budget: p.budget,
+                calorieTarget: p.calorieTarget,
+                proteinTarget: p.proteinTarget,
             },
-            body: JSON.stringify({
-                model: 'claude-haiku-4-5-20251001',
-                max_tokens: 1024,
-                messages: [{ role: 'user', content: prompt }]
-            })
-        });
-
-        if (!response.ok) {
-            const err = await response.text();
-            return res.status(502).json({ error: 'Claude API error', detail: err });
-        }
-
-        const data = await response.json();
-        const text = data.content?.[0]?.text || '';
-
-        // Extract JSON — handles any accidental markdown wrapping
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            return res.status(502).json({ error: 'Could not parse meal from AI response', raw: text });
-        }
-
-        const meal = JSON.parse(jsonMatch[0]);
-        meal['Meal ID'] = 'AI-' + Date.now();
-
-        return res.status(200).json(meal);
-
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
-    }
+        },
+    };
 }
+
+// ── Prompt ──
+
+const RECIPE_SCHEMA = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['name', 'type', 'prepTime', 'servings', 'difficulty', 'ingredients', 'instructions', 'tags', 'nutritionPerServing'],
+    properties: {
+        name: { type: 'string' },
+        type: { type: 'string', enum: MEAL_TYPES },
+        prepTime: { type: 'string' },
+        servings: { type: 'integer' },
+        difficulty: { type: 'string', enum: DIFFICULTIES },
+        ingredients: { type: 'array', items: { type: 'string' } },
+        instructions: { type: 'array', items: { type: 'string' } },
+        tags: { type: 'array', items: { type: 'string' } },
+        nutritionPerServing: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['calories', 'protein', 'carbs', 'fiber'],
+            properties: {
+                calories: { type: 'number' },
+                protein: { type: 'number' },
+                carbs: { type: 'number' },
+                fiber: { type: 'number' },
+            },
+        },
+    },
+};
+
+const SYSTEM_PROMPT = `You write practical home recipes in a Jamaican style for an app used by people who are watching their carbohydrate intake.
+
+Rules:
+- Use only commercially canned ackee (drained). Never include fresh ackee or instructions for preparing it.
+- Raw chicken or turkey must be cooked to 165°F (74°C); say so in the instructions. Pork must reach 145°F (63°C), ground meat 160°F (71°C), fish 145°F (63°C).
+- Respect every dietary restriction you are given; if an ingredient might break one, leave it out.
+- Give quantities for every ingredient so the nutrition estimate is per serving.
+- nutritionPerServing is your best estimate in kcal and grams per serving. It will be shown as an unverified estimate.
+- Do not make health or medical claims, and do not mention insulin doses.
+- Ingredients and instructions are plain strings without numbering or bullet characters.`;
+
+export function buildPrompt({ proteins, mealType, preferences }) {
+    const labels = proteins.map(id => PROTEINS.find(p => p.id === id).label.toLowerCase());
+    const carb = CARB_LEVELS[preferences.carbTolerance];
+    const restrictions = [];
+    if (preferences.avoidGout) restrictions.push('avoid common gout triggers: shellfish, organ meats, red meat, sardines, anchovies, herring, mackerel and tuna');
+    if (preferences.prioritizeHeart) restrictions.push('heart-healthy: no red or processed meat, keep saturated fat (coconut, butter, cheese) low');
+    return [
+        `Create one recipe using at least one of these proteins: ${labels.join(', ')}.`,
+        mealType === 'any' ? 'Choose the most suitable meal type (Breakfast, Lunch or Dinner).' : `It must be a ${mealType} recipe.`,
+        `Carbohydrate: no more than ${carb.max}g per serving.`,
+        `Calories: about ${preferences.calorieTarget} kcal per serving (within ${CALORIE_TOLERANCE} kcal).`,
+        `Protein: aim for about ${preferences.proteinTarget}g per serving.`,
+        `Budget: ${preferences.budget}.`,
+        restrictions.length ? `Dietary restrictions: ${restrictions.join('; ')}.` : 'No extra dietary restrictions.',
+    ].join('\n');
+}
+
+// ── Output validation ──
+
+const isString = (v, min, max) => typeof v === 'string' && v.trim().length >= min && v.length <= max;
+const isNumber = (v, min, max) => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
+
+// Returns { meal } or { problems }. Fails closed: anything unexpected is a problem.
+export function validateGeneratedMeal(raw, request) {
+    const problems = [];
+    if (!raw || typeof raw !== 'object') return { problems: ['The response was not a recipe.'] };
+
+    if (!isString(raw.name, 3, 100)) problems.push('Missing or invalid recipe name.');
+    if (!MEAL_TYPES.includes(raw.type)) problems.push('Missing or invalid meal type.');
+    else if (request.mealType !== 'any' && raw.type !== request.mealType) problems.push(`Recipe is a ${raw.type}, not a ${request.mealType}.`);
+    if (!isString(raw.prepTime, 1, 30)) problems.push('Missing or invalid prep time.');
+    if (!Number.isInteger(raw.servings) || raw.servings < 1 || raw.servings > 6) problems.push('Servings must be 1 to 6.');
+    if (!DIFFICULTIES.includes(raw.difficulty)) problems.push('Missing or invalid difficulty.');
+    if (!Array.isArray(raw.ingredients) || raw.ingredients.length < 3 || raw.ingredients.length > 25 || !raw.ingredients.every(i => isString(i, 2, 160))) {
+        problems.push('Ingredients list is missing or malformed.');
+    }
+    if (!Array.isArray(raw.instructions) || raw.instructions.length < 2 || raw.instructions.length > 20 || !raw.instructions.every(i => isString(i, 3, 400))) {
+        problems.push('Instructions are missing or malformed.');
+    }
+    if (!Array.isArray(raw.tags) || raw.tags.length > 6 || !raw.tags.every(t => isString(t, 1, 30))) problems.push('Tags are malformed.');
+
+    const n = raw.nutritionPerServing;
+    const nutritionOk = n && typeof n === 'object'
+        && isNumber(n.calories, 50, 1500) && isNumber(n.protein, 0, 150)
+        && isNumber(n.carbs, 0, 200) && isNumber(n.fiber, 0, 60);
+    if (!nutritionOk) problems.push('Nutrition estimate is missing or out of range.');
+    if (problems.length) return { problems };
+
+    const { preferences } = request;
+    const carbMax = CARB_LEVELS[preferences.carbTolerance].max;
+    if (n.carbs > carbMax) problems.push(`Estimated ${n.carbs}g carbs per serving is above your ${carbMax}g limit.`);
+    if (Math.abs(n.calories - preferences.calorieTarget) > CALORIE_TOLERANCE) {
+        problems.push(`Estimated ${n.calories} kcal per serving is too far from your ${preferences.calorieTarget} kcal target.`);
+    }
+
+    const meal = normalizeMeal({
+        id: 'AI-' + Date.now(),
+        name: raw.name,
+        type: raw.type,
+        prepTime: raw.prepTime,
+        servings: raw.servings,
+        difficulty: raw.difficulty,
+        ingredients: raw.ingredients,
+        instructions: raw.instructions,
+        tags: raw.tags,
+        nutrition: { ...n, verified: false, source: 'AI estimate (unverified)' },
+        source: 'ai',
+    });
+    if (!meal) return { problems: ['The recipe could not be read.'] };
+
+    problems.push(...exclusionReasons(meal, preferences));
+    problems.push(...safetyIssues(meal));
+    if (!mealMatchesProteins(meal, request.proteins)) problems.push('Recipe does not use any of the selected proteins.');
+    return problems.length ? { problems } : { meal };
+}
+
+// ── Handler ──
+
+function clientIp(req) {
+    const fwd = req.headers['x-forwarded-for'];
+    const first = typeof fwd === 'string' ? fwd.split(',')[0].trim() : '';
+    return first || req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown';
+}
+
+function requestOriginAllowed(req, env) {
+    const origin = req.headers.origin || (() => {
+        try { return new URL(req.headers.referer).origin; } catch { return null; }
+    })();
+    if (!origin) return false;
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const allowed = new Set((env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean));
+    if (host) {
+        allowed.add(`https://${host}`);
+        if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) allowed.add(`http://${host}`);
+    }
+    return allowed.has(origin);
+}
+
+const hashKey = value => createHash('sha256').update(value).digest('hex').slice(0, 32);
+const intEnv = (value, fallback) => {
+    const n = Number.parseInt(value, 10);
+    return Number.isInteger(n) && n >= 0 ? n : fallback;
+};
+
+export function createHandler({
+    env = process.env,
+    limiter = createRateLimiter({ env }),
+    createClient = apiKey => new Anthropic({ apiKey, timeout: PROVIDER_TIMEOUT_MS, maxRetries: 1 }),
+    log = console,
+} = {}) {
+    let inFlight = 0;
+
+    return async function handler(req, res) {
+        const requestId = randomUUID();
+        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('X-Request-Id', requestId);
+        const fail = (status, error, extra = {}) => res.status(status).json({ error, requestId, ...extra });
+
+        if (req.method !== 'POST') {
+            res.setHeader('Allow', 'POST');
+            return fail(405, 'Method not allowed.');
+        }
+        if (env.AI_GENERATION_ENABLED !== 'true') {
+            return fail(503, 'AI recipe generation is turned off.');
+        }
+        const apiKey = env.ANTHROPIC_API_KEY;
+        if (!apiKey) {
+            log.error(`[${requestId}] ANTHROPIC_API_KEY is not set`);
+            return fail(503, 'AI recipe generation is not available right now.');
+        }
+        if (!requestOriginAllowed(req, env)) {
+            return fail(403, 'Requests must come from the Meal Hub app.');
+        }
+        if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('application/json')) {
+            return fail(415, 'Send the request as JSON.');
+        }
+
+        let body = req.body;
+        if (typeof body === 'string') {
+            if (body.length > MAX_BODY_CHARS) return fail(413, 'Request is too large.');
+            try { body = JSON.parse(body); } catch { return fail(400, 'Request body is not valid JSON.'); }
+        }
+        let bodySize;
+        try { bodySize = JSON.stringify(body ?? null).length; } catch { return fail(400, 'Request body is not valid JSON.'); }
+        if (bodySize > MAX_BODY_CHARS) return fail(413, 'Request is too large.');
+
+        const { value: request, errors } = validateRequest(body);
+        if (errors) return fail(400, 'The request was not valid.', { details: errors });
+
+        // Rate limits are checked (and counted) before any paid provider call.
+        const productionLike = env.VERCEL_ENV === 'production';
+        if (!limiter.durable && productionLike && env.AI_ALLOW_MEMORY_RATE_LIMIT !== 'true') {
+            log.error(`[${requestId}] No shared rate-limit store configured; refusing to call the provider`);
+            return fail(503, 'AI recipe generation is not available right now.');
+        }
+        try {
+            const ip = hashKey(clientIp(req));
+            const day = new Date().toISOString().slice(0, 10);
+            const checks = [
+                [`ai:ip10:${ip}:${Math.floor(Date.now() / 600000)}`, 600, intEnv(env.AI_LIMIT_PER_IP_10MIN, 5)],
+                [`ai:ipday:${ip}:${day}`, 86400, intEnv(env.AI_LIMIT_PER_IP_DAY, 20)],
+                [`ai:global:${day}`, 86400, intEnv(env.AI_LIMIT_GLOBAL_DAY, 200)],
+            ];
+            for (const [key, window, limit] of checks) {
+                const count = await limiter.hit(key, window);
+                if (count > limit) {
+                    res.setHeader('Retry-After', String(window));
+                    return fail(429, key.startsWith('ai:global')
+                        ? 'The daily AI recipe limit has been reached. Please try again tomorrow.'
+                        : 'You have generated a lot of recipes recently. Please wait a while and try again.');
+                }
+            }
+        } catch (err) {
+            log.error(`[${requestId}] Rate limit check failed: ${err.message}`);
+            return fail(503, 'AI recipe generation is not available right now.');
+        }
+
+        if (inFlight >= MAX_CONCURRENT) {
+            res.setHeader('Retry-After', '10');
+            return fail(503, 'The AI generator is busy. Please try again in a moment.');
+        }
+        inFlight++;
+        try {
+            const client = createClient(apiKey);
+            const response = await client.messages.create({
+                model: env.ANTHROPIC_MODEL || DEFAULT_MODEL,
+                // A single recipe is well under 1,000 tokens; the cap bounds cost per call.
+                max_tokens: 2000,
+                system: SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: buildPrompt(request) }],
+                output_config: { format: { type: 'json_schema', schema: RECIPE_SCHEMA } },
+            });
+
+            if (response.stop_reason !== 'end_turn') {
+                log.warn(`[${requestId}] Generation stopped with ${response.stop_reason}`);
+                return fail(502, 'The AI could not produce a recipe this time. Please try again.');
+            }
+            const text = response.content.find(b => b.type === 'text')?.text;
+            let raw;
+            try { raw = JSON.parse(text); } catch {
+                log.warn(`[${requestId}] Model output was not valid JSON`);
+                return fail(502, 'The AI could not produce a recipe this time. Please try again.');
+            }
+
+            const { meal, problems } = validateGeneratedMeal(raw, request);
+            if (problems) {
+                log.warn(`[${requestId}] Generated recipe withheld: ${problems.join(' | ')}`);
+                return fail(422, 'The AI suggestion did not meet your settings or our safety checks, so it was not shown. Please try again.', { reasons: problems });
+            }
+            return res.status(200).json({ meal, requestId });
+        } catch (err) {
+            if (err instanceof Anthropic.APIConnectionTimeoutError) {
+                log.error(`[${requestId}] Provider timed out`);
+                return fail(504, 'The AI took too long to respond. Please try again.');
+            }
+            if (err instanceof Anthropic.RateLimitError) {
+                log.error(`[${requestId}] Provider rate limited the request`);
+                return fail(503, 'The AI generator is busy. Please try again in a moment.');
+            }
+            if (err instanceof Anthropic.APIError) {
+                log.error(`[${requestId}] Provider error ${err.status ?? ''}: ${err.name}`);
+                return fail(502, 'The AI service returned an error. Please try again later.');
+            }
+            log.error(`[${requestId}] Unexpected error: ${err?.name || 'Error'}`);
+            return fail(500, 'Something went wrong. Please try again later.');
+        } finally {
+            inFlight--;
+        }
+    };
+}
+
+export default createHandler();

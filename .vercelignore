@@ -1,0 +1,6 @@
+# Not part of the deployed app
+*.md
+*.csv
+test/
+scripts/
+.github/

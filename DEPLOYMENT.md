@@ -1,169 +1,72 @@
-# Deployment Guide for Insulin-Smart Meal Hub
+# Deployment Guide
 
-## Application Summary
+The app is a static PWA plus one Vercel serverless function (`api/generate-meal.js`) that calls the Anthropic API. It is designed for **Vercel**. Other static hosts can serve the recipes and meal log, but the AI generator will not work there.
 
-A customizable meal-planning system for users with:
-- Insulin resistance / type 2 diabetes support (HbA1c: 6.7%, Fasting glucose: 5.6 mmol/L)
-- Elevated cholesterol (Total: 6.04 mmol/L, LDL: 3.62 mmol/L)
-- Mildly elevated uric acid (0.44 mmol/L)
-- On medications: Metformin, Febuxostat, Rosuvastatin
+## What the app is (and isn't)
 
-## Deployment Options
+- Recipe ideas and an on-device meal log.
+- **Not** a medical device. It gives no medical advice and does not calculate insulin or medication doses.
+- Recipes have **not** been reviewed by a dietitian, clinician or food-safety specialist. Nutrition values are withheld (`"nutrition": null` in `meals.json`) until per-serving figures are calculated from weighed ingredients and reviewed.
 
-### Option 1: Deploy to Vercel (Recommended)
+Do not put real health information (lab results, diagnoses, medications) in this repository or its docs. Use clearly made-up examples if you need one.
 
-1. **Create a GitHub repository:**
-   ```bash
-   # Create new repo on GitHub.com
-   # Or use GitHub CLI if installed:
-   gh repo create insulin-meal-hub --public --description "Customizable meal planning for insulin resistance"
-   ```
+## Deploy to Vercel
 
-2. **Push code to GitHub:**
-   ```bash
-   # Remove old remote if exists
-   git remote remove test-origin
-   
-   # Add your new GitHub repo
-   git remote add origin https://github.com/YOUR_USERNAME/insulin-meal-hub.git
-   
-   # Push code
-   git push -u origin main
-   ```
+1. Import the GitHub repository in Vercel. No build command is needed; Vercel installs `@anthropic-ai/sdk` for the function from `package.json`.
+2. Set environment variables (Project → Settings → Environment Variables):
 
-3. **Deploy to Vercel:**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-   - Vercel will automatically detect the `vercel.json` configuration
-   - Deploy with default settings
+   | Variable | Required | Purpose |
+   |---|---|---|
+   | `ANTHROPIC_API_KEY` | for AI | Server-side API key. Never exposed to the browser. |
+   | `AI_GENERATION_ENABLED` | for AI | Must be `true` or the endpoint returns 503. Set to anything else to switch AI off instantly. |
+   | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | for AI in production | Shared rate-limit store (Upstash Redis from the Vercel Marketplace; `KV_REST_API_URL` / `KV_REST_API_TOKEN` also work). **In production the endpoint refuses to call the AI without it.** |
+   | `AI_LIMIT_PER_IP_10MIN` | no | Requests per visitor per 10 minutes (default 5). |
+   | `AI_LIMIT_PER_IP_DAY` | no | Requests per visitor per day (default 20). |
+   | `AI_LIMIT_GLOBAL_DAY` | no | Total requests per day for the whole app (default 200). This is the main cost cap. |
+   | `ALLOWED_ORIGINS` | no | Extra origins allowed to call the API, comma-separated (e.g. a custom domain). The deployment's own host is always allowed. |
+   | `ANTHROPIC_MODEL` | no | Override the model (default `claude-haiku-4-5-20251001`). |
+   | `AI_ALLOW_MEMORY_RATE_LIMIT` | no | `true` lets production run with per-instance in-memory limits. Not recommended: limits then don't hold across instances. |
 
-### Option 2: Deploy to Netlify
+3. Also set a **monthly spend limit and usage alerts** in the Anthropic Console. The app's limits bound request counts; the Console limit is the hard backstop on cost.
+4. Deploy, then check:
+   - The app loads, shows today's meals, and works offline after the first visit.
+   - Response headers include `Content-Security-Policy` and `X-Content-Type-Options`.
+   - In a preview deployment, a cross-site `POST /api/generate-meal` (no matching `Origin`) returns 403, and repeated requests eventually return 429.
 
-1. **Push to GitHub** (as above)
-2. **Go to [netlify.com](https://netlify.com)**
-3. **Import from GitHub**
-4. **Build settings:**
-   - Build command: (leave empty - static site)
-   - Publish directory: `.`
-   - Deploy site
+## How the AI endpoint is protected
 
-### Option 3: Manual Hosting (Any static hosting)
+In order, before any paid call is made:
 
-1. **Upload all files** to any web hosting service:
-   - `index.html`
-   - `app.js`
-   - `style.css`
-   - `manifest.json`
-   - `icon-192.svg`, `icon-512.svg`
-   - `fallback-data.json`
-   - All other supporting files
+1. Switched off unless `AI_GENERATION_ENABLED=true`.
+2. The request's `Origin` must be the app itself (or `ALLOWED_ORIGINS`). This stops other websites from using it through visitors' browsers. It does **not** stop scripts that fake the header; the rate limits handle those.
+3. JSON body of at most 2,000 characters, with every field checked against a fixed list or range.
+4. Per-visitor and global daily limits (visitor IPs are stored only as truncated SHA-256 hashes).
+5. At most 4 concurrent calls per instance, a 25 s provider timeout, and `max_tokens` 2,000.
 
-2. **Ensure proper MIME types:**
-   - SVG files should have `image/svg+xml` MIME type
-   - JSON files should have `application/json` MIME type
+The AI's answer must match a strict JSON schema and then pass the same checks as the built-in recipes: your carb limit and calorie target, gout and heart exclusions, the selected protein, and the food-safety rules (canned ackee only, cooking temperatures for poultry and pork). If any check fails, the recipe is withheld rather than shown. Errors returned to the browser never include provider responses; server logs carry a request ID.
 
-## Local Development
+## Recipe data
+
+- `meals.json` is the single source of recipes. `test/meals-data.test.js` checks it on every run: no duplicate IDs, no fresh ackee, cooking temperatures for raw poultry and pork, no unverified nutrition.
+- To add nutrition, calculate per-serving values from weighed ingredients, have them reviewed, then set `"nutrition": { "calories": …, "protein": …, "carbs": …, "fiber": …, "verified": true, "source": "who reviewed it" }`. Only verified nutrition is used to apply carb limits to the built-in recipes.
+- The old Google Sheet is **off** (`USE_REMOTE_SHEET: false` in `app.js`) because it still holds the previous recipes. To use it again, re-import `meals-for-sheet.csv` (run `node scripts/export-sheet-csv.mjs`), check the sheet's sharing settings, then set the flag to `true`. Sheet rows that fail the safety checks are dropped automatically, and sheet nutrition is never treated as verified.
+
+## Releasing an update
+
+Bump `VERSION` in `sw.js` on each release. Same-origin files are fetched network-first, so installed apps pick up new code on their next online visit; the version bump refreshes the offline copy.
+
+## Local development
 
 ```bash
-# Install dependencies (optional)
 npm install
-
-# Start local server
-npm start
-# Or use Python:
-python -m http.server 8000
-# Or use PHP:
-php -S localhost:8000
+npm run check      # syntax check + tests
+npx vercel dev     # app + API at http://localhost:3000
 ```
 
-## Configuration Notes
+`npm start` serves the static files only (no API).
 
-### Google Sheets Integration
-The app fetches meal data from a Google Sheet. To update the data source:
-1. Edit `CONFIG.GOOGLE_SHEET_ID` in `app.js:5`
-2. Edit `CONFIG.SHEET_NAME` in `app.js:6`
-3. Make sure the Google Sheet is publicly accessible
+## Privacy summary
 
-### PWA Icons
-- Current icons are in SVG format
-- For better browser compatibility, convert to PNG:
-  - `icon-192.svg` → `icon-192.png` (192×192)
-  - `icon-512.svg` → `icon-512.png` (512×512)
-- Update `manifest.json` to reference PNG files
-
-### Health Profile Customization
-To customize for a different user:
-1. Edit `HEALTH_PROFILE` in `app.js:14-38`
-2. Adjust scoring thresholds in `scoreMeal` function
-3. Update medication considerations as needed
-
-## Security Notes
-
-✅ **XSS Protection:** Implemented with `escapeHtml()` function
-✅ **No Sensitive Data:** All data stored locally or in public Google Sheets
-✅ **No API Keys:** No external API keys required
-⚠️ **Google Sheets Dependency:** Single point of failure - has fallback data
-
-## Features Deployed
-
-1. **Enhanced Health Scoring:**
-   - Blood sugar friendliness (HbA1c 6.7% optimized)
-   - Insulin resistance support
-   - Heart/cholesterol friendliness
-   - Gout friendliness with uric acid considerations
-
-2. **Medication-Aware Features:**
-   - Metformin: High-carb meal flags
-   - Febuxostat: High-purine food flags
-   - Rosuvastatin: High-saturated fat flags
-
-3. **Customization Settings:**
-   - Budget, meal timing, ingredients on hand
-   - Carb tolerance, weight loss goals
-   - Jamaican cuisine preferences
-   - Meal prep options
-
-4. **Portion Guidance:**
-   - Carb portion recommendations
-   - Protein optimization tips
-   - Practical eating guidelines
-   - Meal prep instructions
-
-5. **Jamaican-Accessible Focus:**
-   - Local superfoods prioritized
-   - Traditional ingredients scoring
-   - Budget-friendly options
-
-## Testing After Deployment
-
-1. **Load the application** in a browser
-2. **Check settings panel** customization
-3. **Test meal generation** for breakfast/lunch/dinner
-4. **Verify scoring display** in recipe modals
-5. **Test PWA installation** (if supported)
-6. **Verify offline functionality** with fallback data
-
-## Troubleshooting
-
-**Issue:** Google Sheets not loading
-**Solution:** Check internet connection, verify Sheet is public, fallback data should load
-
-**Issue:** Icons not displaying in PWA
-**Solution:** Convert SVG to PNG, update manifest.json
-
-**Issue:** Settings not saving
-**Solution:** Check browser localStorage permissions, clear cache
-
-**Issue:** Meal scoring seems incorrect
-**Solution:** Verify health profile settings match user metrics
-
-## Support
-
-For issues or enhancements:
-1. Check existing issues in GitHub
-2. Review code comments for customization
-3. Test with different health profiles
-4. Adjust scoring thresholds as needed
-
----
-*Last updated: April 12, 2026*
+- Meal log, notes and settings: stored only in the browser (`localStorage`). Not sent anywhere.
+- AI generator (only when used, after the in-app notice is accepted): selected proteins, meal type, carb level, calorie and protein targets, budget, and the gout/heart choices go to the Vercel function and to Anthropic.
+- Check the current data-retention terms of Vercel and Anthropic for your account and describe them accurately to users.
