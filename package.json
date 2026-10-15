@@ -1,15 +1,27 @@
 {
   "name": "insulin-smart-meal-hub",
-  "version": "1.0.0",
-  "description": "Mobile web app for insulin-sensitive meal suggestions",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Mobile web app with Jamaican-style recipe suggestions and a local meal log",
+  "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8080",
-    "test": "echo \"No tests specified\" && exit 0"
+    "dev": "vercel dev",
+    "lint": "node --check app.js && node --check sw.js && node --check meal-rules.js && node --check api/generate-meal.js && node --check api/_lib/rate-limit.js",
+    "test": "node --test test/*.test.js",
+    "check": "npm run lint && npm test"
   },
-  "keywords": ["insulin", "diabetes", "meal-planning", "jamaican"],
+  "keywords": [
+    "diabetes",
+    "meal-planning",
+    "jamaican"
+  ],
   "author": "Lifestyle Hikers",
   "license": "MIT",
   "engines": {
-    "node": ">=14"
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.134.0"
   }
 }
