@@ -6,7 +6,7 @@ import {
     DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
     cautions, countLast7Days, filterMeals, logToCsv, mealMatchesProteins,
     normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily, pickDifferent,
-    safetyIssues, streakDays,
+    exclusionReasons, localDateKey, safetyIssues, streakDays,
 } from './meal-rules.js';
 
 const CONFIG = {
@@ -24,6 +24,7 @@ const CONFIG = {
 
 const state = {
     meals: [],
+    loadingMeals: false,
     todayMeals: { breakfast: null, lunch: null, dinner: null },
     mealLog: [],
     settings: { ...DEFAULT_SETTINGS },
@@ -31,6 +32,8 @@ const state = {
     currentModalMeal: null,
     aiRequest: null,
     lastFocus: null,
+    day: localDateKey(new Date()),
+    hasSearched: false,
 };
 
 // ── INIT ──
@@ -49,6 +52,9 @@ function init() {
     updateStats();
     loadMeals();
     registerServiceWorker();
+    document.addEventListener('visibilitychange', refreshDay);
+    window.addEventListener('focus', refreshDay);
+    setInterval(refreshDay, 60000);
 }
 
 // ── STATE ──
@@ -87,9 +93,14 @@ function saveState() {
 
 // ── MEAL DATA ──
 async function loadMeals() {
+    if (state.loadingMeals) return;
+    state.loadingMeals = true;
+    document.getElementById('retry-meals').disabled = true;
+    setText('filter-summary', 'Loading recipes…');
+    renderTodayMeals();
     let meals = [];
     try {
-        const res = await fetch(CONFIG.MEALS_URL, { cache: 'no-cache' });
+        const res = await fetch(CONFIG.MEALS_URL, { cache: 'no-cache', signal: AbortSignal.timeout(10000) });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         meals = acceptMeals(Array.isArray(data?.meals) ? data.meals : []);
@@ -100,12 +111,25 @@ async function loadMeals() {
         const remote = await fetchSheetMeals();
         if (remote.length > 0) meals = remote;
     }
+    state.loadingMeals = false;
     state.meals = meals;
     if (meals.length === 0) {
         setText('filter-summary', 'Recipes could not be loaded. Check your connection and reload.');
     }
     selectMeals();
     renderTodayMeals();
+    document.getElementById('retry-meals').hidden = meals.length > 0;
+    document.getElementById('retry-meals').disabled = false;
+    if (state.hasSearched) findMealsByProtein();
+}
+
+function refreshDay() {
+    const day = localDateKey(new Date());
+    if (day === state.day) return;
+    state.day = day;
+    selectMeals();
+    renderTodayMeals();
+    updateStats();
 }
 
 // Normalises records and drops any that fail the food-safety checks.
@@ -176,6 +200,7 @@ function servingsLabel(meal) {
 }
 
 function renderTodayMeals() {
+    document.getElementById('refresh-meals').disabled = state.loadingMeals || state.meals.length === 0;
     ['breakfast', 'lunch', 'dinner'].forEach(type => {
         const meal = state.todayMeals[type];
         const viewBtn = document.getElementById('view-' + type);
@@ -183,7 +208,7 @@ function renderTodayMeals() {
         if (viewBtn) viewBtn.disabled = !meal;
         if (logBtn) logBtn.disabled = !meal;
         if (!meal) {
-            setText(type + '-name', state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
+            setText(type + '-name', state.loadingMeals ? 'Loading…' : state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
             setText(type + '-time', '–');
             setText(type + '-meta', state.meals.length ? 'Try changing your settings or the Find tab.' : '');
             replaceChildren(type + '-tags', []);
@@ -199,7 +224,7 @@ function renderTodayMeals() {
 }
 
 function renderFilterSummary() {
-    if (state.meals.length === 0) return;
+    if (state.loadingMeals || state.meals.length === 0) return;
     const { excluded } = filterMeals(state.meals, state.settings);
     const parts = [];
     if (state.settings.avoidGout) parts.push('gout triggers');
@@ -315,8 +340,13 @@ function initProteinChips() {
         ]);
         btn.addEventListener('click', () => {
             const pressed = btn.getAttribute('aria-pressed') !== 'true';
+            if (pressed && getSelectedProteins().length >= 5) {
+                toast('Select up to 5 proteins at a time.', 'error');
+                return;
+            }
             btn.setAttribute('aria-pressed', String(pressed));
             btn.classList.toggle('selected', pressed);
+            finderChanged();
         });
         return btn;
     }));
@@ -336,7 +366,22 @@ function hint(text, className = 'protein-hint') {
     return el('p', { className, text });
 }
 
+function cancelAI() {
+    state.aiRequest?.abort();
+    state.aiRequest = null;
+    const btn = document.getElementById('generate-ai-btn');
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    replaceChildren('ai-result', []);
+}
+
+function finderChanged() {
+    cancelAI();
+    if (state.hasSearched) findMealsByProtein();
+}
+
 function findMealsByProtein() {
+    state.hasSearched = true;
     const selected = getSelectedProteins();
     const resultEl = document.getElementById('protein-result');
     if (!resultEl) return;
@@ -441,7 +486,9 @@ async function generateWithAI() {
             return;
         }
         const meal = normalizeMeal({ ...(data?.meal || {}), source: 'ai' });
-        if (!meal || safetyIssues(meal).length > 0) {
+        if (!meal || safetyIssues(meal).length > 0 || exclusionReasons(meal, state.settings).length > 0
+            || !mealMatchesProteins(meal, selected)
+            || (selectedFindType() !== 'any' && meal.type !== selectedFindType())) {
             aiEl.replaceChildren(hint('The AI response could not be used. Please try again.', 'protein-hint error'));
             return;
         }
@@ -517,13 +564,16 @@ function bindTodayTab() {
         on('log-' + type, 'click', () => logMeal(state.todayMeals[type]));
     });
     on('refresh-meals', 'click', shuffleMeals);
+    on('retry-meals', 'click', loadMeals);
 }
 
 function bindFindTab() {
     on('find-meal-btn', 'click', findMealsByProtein);
+    on('find-meal-type', 'change', finderChanged);
     on('generate-ai-btn', 'click', generateWithAI);
     on('ai-consent-check', 'change', e => {
         state.aiConsent = e.target.checked;
+        if (!state.aiConsent) cancelAI();
         saveState();
     });
 }
@@ -540,20 +590,37 @@ function bindSettingsTab() {
         e.preventDefault();
         const previous = state.settings;
         state.settings = readSettingsFromUI();
-        if (!saveState()) { state.settings = previous; return; }
+        if (!saveState()) { state.settings = previous; applySettingsToUI(); return; }
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();
+        finderChanged();
         toast('Settings saved');
     });
     on('calorie-target', 'input', e => setText('calorie-display', e.target.value + ' kcal'));
     on('protein-target', 'input', e => setText('protein-display', e.target.value + 'g'));
     on('reset-data', 'click', () => {
         if (!confirm('Delete all logged meals and settings from this device? This cannot be undone.')) return;
+        try {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+        } catch {
+            toast('Could not delete data on this device. Check browser storage permissions and try again.', 'error');
+            return;
+        }
+        cancelAI();
         state.mealLog = [];
         state.settings = { ...DEFAULT_SETTINGS };
         state.aiConsent = false;
-        try { localStorage.removeItem(CONFIG.STORAGE_KEY); } catch { /* nothing stored */ }
+        state.currentModalMeal = null;
+        document.getElementById('custom-meal-form').reset();
+        document.getElementById('custom-meal-name').removeAttribute('aria-invalid');
+        document.querySelectorAll('.protein-chip').forEach(btn => {
+            btn.setAttribute('aria-pressed', 'false');
+            btn.classList.remove('selected');
+        });
+        state.hasSearched = false;
+        replaceChildren('protein-result', []);
+        document.getElementById('find-meal-type').value = 'any';
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();

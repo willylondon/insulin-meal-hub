@@ -126,3 +126,12 @@ test('streak and 7-day counts use local calendar days', () => {
     assert.equal(streakDays(log, now), 3);
     assert.equal(countLast7Days(log, now), 3);
 });
+
+test('protein finder does not mistake minced vegetables or eggplant for animal protein', () => {
+    const vegetable = { name: 'Eggplant and vegetables', ingredients: ['2 cloves minced garlic', 'minced ginger', '1 eggplant', '1 tbsp cod liver oil'] };
+    assert.equal(mealMatchesProteins(vegetable, ['beef']), false);
+    assert.equal(mealMatchesProteins(vegetable, ['eggs']), false);
+    assert.equal(mealMatchesProteins({ name: 'Egg bowl', ingredients: ['2 eggs'] }, ['eggs']), true);
+    assert.equal(mealMatchesProteins({ name: 'Chickpea bowl', ingredients: ['1 cup chickpeas'] }, ['chickpea']), true);
+    assert.equal(mealMatchesProteins({ name: 'Beef', ingredients: ['200g minced beef'] }, ['beef']), true);
+});

@@ -49,7 +49,8 @@
                 <p>Recipe ideas only, not medical advice. Recipes and nutrition haven't been reviewed by a dietitian, and this app doesn't calculate insulin doses. Blood-sugar responses vary, so check portions and carbs with your care team.</p>
             </div>
 
-            <p class="filter-summary" id="filter-summary"></p>
+            <p class="filter-summary" id="filter-summary" role="status"></p>
+            <button type="button" class="btn-find" id="retry-meals" hidden>Retry loading recipes</button>
 
             <div class="meal-stack" id="meal-stack">
                 <article class="meal-card-v2 breakfast" id="card-breakfast" aria-labelledby="breakfast-name">
@@ -63,8 +64,8 @@
                         <div class="meal-tags-row" id="breakfast-tags"></div>
                     </div>
                     <div class="meal-card-footer">
-                        <button type="button" class="btn-recipe" id="view-breakfast"><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
-                        <button type="button" class="btn-ate" id="log-breakfast"><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
+                        <button type="button" class="btn-recipe" id="view-breakfast" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-ate" id="log-breakfast" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
 
@@ -79,8 +80,8 @@
                         <div class="meal-tags-row" id="lunch-tags"></div>
                     </div>
                     <div class="meal-card-footer">
-                        <button type="button" class="btn-recipe" id="view-lunch"><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
-                        <button type="button" class="btn-ate" id="log-lunch"><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
+                        <button type="button" class="btn-recipe" id="view-lunch" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-ate" id="log-lunch" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
 
@@ -95,8 +96,8 @@
                         <div class="meal-tags-row" id="dinner-tags"></div>
                     </div>
                     <div class="meal-card-footer">
-                        <button type="button" class="btn-recipe" id="view-dinner"><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
-                        <button type="button" class="btn-ate" id="log-dinner"><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
+                        <button type="button" class="btn-recipe" id="view-dinner" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-ate" id="log-dinner" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
             </div>
@@ -109,7 +110,7 @@
         <!-- FIND TAB -->
         <section class="tab-pane" id="tab-find" aria-labelledby="find-heading" hidden>
             <h1 class="section-label" id="find-heading">Protein Finder</h1>
-            <p class="section-sub" id="protein-chips-label">What's in your fridge right now? Select one or more.</p>
+            <p class="section-sub" id="protein-chips-label">What's in your fridge right now? Select up to 5 proteins.</p>
 
             <div class="protein-chips" id="protein-chips" role="group" aria-labelledby="protein-chips-label"></div>
 

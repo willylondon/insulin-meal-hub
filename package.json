@@ -1,6 +1,6 @@
 {
   "name": "insulin-smart-meal-hub",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "private": true,
   "description": "Mobile web app with Jamaican-style recipe suggestions and a local meal log",
   "type": "module",

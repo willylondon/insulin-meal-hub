@@ -16,7 +16,7 @@ export const PROTEINS = [
     { id: 'shrimp',   label: 'Shrimp',    icon: '🦐', keywords: ['shrimp', 'prawn'] },
     { id: 'turkey',   label: 'Turkey',    icon: '🦃', keywords: ['turkey'] },
     { id: 'tofu',     label: 'Tofu',      icon: '🧆', keywords: ['tofu'] },
-    { id: 'beef',     label: 'Beef',      icon: '🥩', keywords: ['beef', 'steak', 'mince'] },
+    { id: 'beef',     label: 'Beef',      icon: '🥩', keywords: ['beef'] },
     { id: 'ackee',    label: 'Ackee',     icon: '🍳', keywords: ['ackee'] },
     { id: 'chickpea', label: 'Chickpeas', icon: '🫘', keywords: ['chickpea'] },
 ];
@@ -160,7 +160,7 @@ export function mealMatchesProteins(meal, proteinIds) {
     const text = mealText(meal);
     return proteinIds.some(id => {
         const protein = PROTEINS.find(p => p.id === id);
-        return protein ? protein.keywords.some(kw => hasWord(text, kw)) : false;
+        return protein ? protein.keywords.some(kw => new RegExp(`\\b${kw}(?:s|es)?\\b`, 'i').test(text)) : false;
     });
 }
 

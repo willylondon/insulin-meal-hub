@@ -38,7 +38,7 @@ function worker({ fetch = async () => new Response('fresh'), put, addAll } = {})
         clearTimeout(id) { timers.delete(id); },
         self: { location: { origin }, addEventListener(name, fn) { handlers[name] = fn; },
             async skipWaiting() { skipped = true; }, clients: { async claim() { claimed = true; } } },
-        caches: { async open() { return cache; }, async keys() { return ['other-app', 'meal-hub-3.0.0', 'meal-hub-3.0.1']; },
+        caches: { async open() { return cache; }, async keys() { return ['other-app', 'meal-hub-3.0.0', 'meal-hub-3.0.1', `meal-hub-${source.match(/const VERSION = '([^']+)'/)[1]}`]; },
             async delete(name) { deleted.push(name); } },
     });
     return {
@@ -75,7 +75,7 @@ test('failed essential precache prevents takeover', async () => {
 test('activation removes only previous caches owned by this app', async () => {
     const w = worker();
     await Promise.all(w.dispatch('activate').lifetime);
-    assert.deepEqual(w.deleted, ['meal-hub-3.0.0']);
+    assert.deepEqual(w.deleted, ['meal-hub-3.0.0', 'meal-hub-3.0.1']);
     assert.equal(w.claimed, true);
 });
 
