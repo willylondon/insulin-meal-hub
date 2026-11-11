@@ -110,7 +110,7 @@
         <!-- FIND TAB -->
         <section class="tab-pane" id="tab-find" aria-labelledby="find-heading" hidden>
             <h1 class="section-label" id="find-heading">Protein Finder</h1>
-            <p class="section-sub" id="protein-chips-label">What's in your fridge right now? Select up to 5 proteins.</p>
+            <p class="section-sub" id="protein-chips-label">What's in your fridge right now? Select up to 5 proteins, or leave them all off to browse every recipe.</p>
 
             <div class="protein-chips" id="protein-chips" role="group" aria-labelledby="protein-chips-label"></div>
 
@@ -146,8 +146,13 @@
                 </label>
             </div>
 
-            <div id="protein-result" aria-live="polite"></div>
             <div id="ai-result" aria-live="polite"></div>
+            <div id="protein-result" aria-live="polite"></div>
+
+            <section class="saved-section" id="saved-section" aria-labelledby="saved-heading" hidden>
+                <h2 class="saved-heading" id="saved-heading">Saved recipes</h2>
+                <div class="protein-match-grid" id="saved-list"></div>
+            </section>
         </section>
 
         <!-- LOG TAB -->
@@ -258,7 +263,7 @@
                 <h2 id="about-heading">About &amp; privacy</h2>
                 <p><strong>What this app is:</strong> a collection of Jamaican-style recipe ideas and a simple meal log. It is intended for general recipe ideas, gives no medical advice and does not calculate insulin or medication doses.</p>
                 <p><strong>Recipes:</strong> not yet reviewed by a dietitian, clinician or food-safety specialist. Built-in recipes have no verified nutrition figures. Any AI nutrition figures are unverified estimates and do not filter recipes. Follow the cooking temperatures in each recipe and use a food thermometer.</p>
-                <p><strong>Your data:</strong> your meal log, notes and settings are stored only in this browser on this device. Anyone using this browser profile can see them. "Reset All Data" deletes them from this device.</p>
+                <p><strong>Your data:</strong> your meal log, notes, saved recipes and settings are stored only in this browser on this device. Anyone using this browser profile can see them. "Reset All Data" deletes them from this device.</p>
                 <p><strong>AI generator:</strong> only when you use it, your selected proteins, meal type and diet settings are sent to our server (hosted on Vercel) and to Anthropic to write a recipe. Your log and notes are never sent. The providers may keep request logs under their own policies.</p>
             </section>
         </section>
@@ -327,6 +332,9 @@
             </div>
         </div>
         <div class="modal-footer">
+            <button type="button" class="btn-save-recipe" id="save-modal-meal" aria-pressed="false">
+                <i class="fas fa-bookmark" aria-hidden="true"></i> <span id="save-modal-label">Save</span>
+            </button>
             <button type="button" class="btn-log-modal" id="log-modal-meal">
                 <i class="fas fa-check-circle" aria-hidden="true"></i> Log This Meal
             </button>
@@ -373,6 +381,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
     <i class="fas fa-check-circle" aria-hidden="true"></i>
     <span id="toast-text"></span>
+    <button type="button" class="toast-action" id="toast-action" hidden></button>
 </div>
 </body>
 </html>

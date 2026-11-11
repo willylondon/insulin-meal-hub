@@ -4,7 +4,7 @@
 // installed apps on the next online visit; the cache is only an offline
 // fallback. Bump VERSION on every release to refresh the precache.
 
-const VERSION = '3.0.2';
+const VERSION = '3.1.0';
 const NETWORK_TIMEOUT_MS = 4000;
 const PREFIX = 'meal-hub-';
 const CACHE = `${PREFIX}${VERSION}`;

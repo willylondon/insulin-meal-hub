@@ -45,3 +45,105 @@ test('cancelling AI aborts the pending request, clears stale output and unlocks 
     assert.equal(button.removed, 'aria-busy');
     assert.equal(output.nodes.length, 0);
 });
+
+// Permissive DOM stand-in: every element accepts any call the app makes.
+function fakeDom() {
+    const elements = new Map();
+    const make = () => ({
+        hidden: false, disabled: false, textContent: '', children: [], attributes: {}, listeners: {}, dataset: {},
+        classList: { add() {}, remove() {}, toggle() {} },
+        setAttribute(k, v) { this.attributes[k] = v; }, removeAttribute(k) { delete this.attributes[k]; },
+        getAttribute(k) { return this.attributes[k]; },
+        addEventListener(type, fn) { this.listeners[type] = fn; },
+        append(...nodes) { this.children.push(...nodes); },
+        replaceChildren(...nodes) { this.children = nodes; },
+        scrollIntoView() {}, focus() {},
+    });
+    return {
+        readyState: 'loading', addEventListener() {},
+        createElement: make, createTextNode: text => ({ textContent: text }),
+        getElementById(id) { if (!elements.has(id)) elements.set(id, make()); return elements.get(id); },
+        querySelectorAll: () => [], querySelector: () => null,
+    };
+}
+
+function appContext(extra = {}) {
+    const stored = new Map();
+    const context = {
+        localDateKey, DEFAULT_SETTINGS: {}, MAX_LOG_ENTRIES: 2000, MEAL_TYPES: ['Breakfast', 'Lunch', 'Dinner'],
+        countLast7Days: log => log.length, streakDays: () => 0, exclusionReasons: () => [], cautions: () => [],
+        filterMeals: meals => ({ allowed: meals, excluded: [] }), mealMatchesProteins: () => false,
+        document: fakeDom(), setTimeout: () => 0, clearTimeout() {},
+        localStorage: { getItem: k => stored.get(k) ?? null, setItem: (k, v) => stored.set(k, v), removeItem: k => stored.delete(k) },
+        stored, ...extra,
+    };
+    return context;
+}
+
+test('deleting a log entry persists, and Undo restores it in date order', () => {
+    const context = appContext();
+    vm.runInNewContext(source + `
+        const a = { name: 'Older', type: 'Lunch', date: '2026-01-01T12:00:00.000Z' };
+        const b = { name: 'Newer', type: 'Dinner', date: '2026-01-02T12:00:00.000Z' };
+        state.mealLog = [b, a];
+        deleteLogEntry(b);
+        globalThis.afterDelete = state.mealLog.map(e => e.name);
+        globalThis.persisted = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)).mealLog.length;
+        globalThis.undoLabel = toastAction.label;
+        toastAction.run();
+        globalThis.afterUndo = state.mealLog.map(e => e.name);
+    `, context);
+    assert.deepEqual([...context.afterDelete], ['Older']);
+    assert.equal(context.persisted, 1);
+    assert.equal(context.undoLabel, 'Undo');
+    assert.deepEqual([...context.afterUndo], ['Newer', 'Older']);
+});
+
+test('a failed save leaves the log and saved recipes unchanged', () => {
+    const context = appContext();
+    context.localStorage.setItem = () => { throw new Error('quota'); };
+    vm.runInNewContext(source + `
+        const entry = { name: 'Kept', type: 'Lunch', date: '2026-01-01T12:00:00.000Z' };
+        state.mealLog = [entry];
+        deleteLogEntry(entry);
+        toggleSaved({ id: 'BF001', name: 'Recipe', type: 'Breakfast', tags: [] });
+        globalThis.logSize = state.mealLog.length;
+        globalThis.savedSize = state.savedMeals.length;
+    `, context);
+    assert.equal(context.logSize, 1);
+    assert.equal(context.savedSize, 0);
+});
+
+test('saving a recipe toggles, persists and is capped', () => {
+    const context = appContext();
+    vm.runInNewContext(source + `
+        const meal = { id: 'AI-1', name: 'Recipe', type: 'Dinner', tags: [], source: 'ai' };
+        state.currentModalMeal = meal;
+        toggleSaved(meal);
+        globalThis.savedOnce = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)).savedMeals.map(m => m.id);
+        globalThis.pressed = document.getElementById('save-modal-meal').attributes['aria-pressed'];
+        toggleSaved(meal);
+        globalThis.savedTwice = state.savedMeals.length;
+        state.savedMeals = Array.from({ length: CONFIG.MAX_SAVED_MEALS }, (_, i) => ({ id: 'M' + i }));
+        toggleSaved(meal);
+        globalThis.capped = state.savedMeals.length;
+    `, context);
+    assert.deepEqual([...context.savedOnce], ['AI-1']);
+    assert.equal(context.pressed, 'true');
+    assert.equal(context.savedTwice, 0);
+    assert.equal(context.capped, 50);
+});
+
+test('Find with no protein selected browses every recipe of the chosen type', () => {
+    const context = appContext();
+    vm.runInNewContext(source + `
+        state.meals = [
+            { id: 'A', name: 'A', type: 'Breakfast', tags: [] },
+            { id: 'B', name: 'B', type: 'Dinner', tags: [] },
+        ];
+        findMealsByProtein();
+        const grid = document.getElementById('protein-result').children.find(n => n.className === 'protein-match-grid');
+        globalThis.shown = grid ? grid.children.length : 0;
+    `, context);
+    assert.equal(context.shown, 2);
+});

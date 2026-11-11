@@ -19,6 +19,7 @@ const CONFIG = {
     SHEET_NAME: '21 Recipes',
     STORAGE_KEY: 'insulinMealHubData_v2',
     LOG_DISPLAY_LIMIT: 50,
+    MAX_SAVED_MEALS: 50,
     AI_TIMEOUT_MS: 40000,
 };
 
@@ -27,6 +28,7 @@ const state = {
     loadingMeals: false,
     todayMeals: { breakfast: null, lunch: null, dinner: null },
     mealLog: [],
+    savedMeals: [],
     settings: { ...DEFAULT_SETTINGS },
     aiConsent: false,
     currentModalMeal: null,
@@ -49,6 +51,7 @@ function init() {
     bindModals();
     renderHeader();
     renderLogHistory();
+    renderSavedMeals();
     updateStats();
     loadMeals();
     registerServiceWorker();
@@ -70,6 +73,10 @@ function loadState() {
         if (Array.isArray(parsed.mealLog)) {
             state.mealLog = parsed.mealLog.map(normalizeLogEntry).filter(Boolean).slice(0, MAX_LOG_ENTRIES);
         }
+        if (Array.isArray(parsed.savedMeals)) {
+            // Stored recipes go through the same checks as fresh ones.
+            state.savedMeals = acceptMeals(parsed.savedMeals).slice(0, CONFIG.MAX_SAVED_MEALS);
+        }
         state.settings = normalizeSettings(parsed.settings);
         state.aiConsent = parsed.aiConsent === true;
     }
@@ -81,6 +88,7 @@ function saveState() {
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
             version: 3,
             mealLog: state.mealLog,
+            savedMeals: state.savedMeals,
             settings: state.settings,
             aiConsent: state.aiConsent,
         }));
@@ -254,7 +262,9 @@ function openRecipeModal(meal) {
 
     setText('modal-nutrition', nutritionText(meal));
 
-    const notes = cautions(meal, state.settings);
+    // Saved recipes stay visible after settings change, so say when one no longer fits.
+    const notes = [...exclusionReasons(meal, state.settings), ...cautions(meal, state.settings)];
+    renderSaveButton();
     document.getElementById('modal-cautions-section').hidden = notes.length === 0;
     replaceChildren('modal-cautions', notes.map(t => el('li', { text: t })));
 
@@ -266,6 +276,44 @@ function nutritionText(meal) {
     if (!n) return 'Not available yet. Nutrition for this recipe has not been checked, so it is not shown. Do not use this app to work out insulin doses.';
     const figures = `About ${Math.round(n.calories)} kcal · ${Math.round(n.protein)}g protein · ${Math.round(n.carbs)}g carbs · ${Math.round(n.fiber)}g fiber per serving.`;
     return `${figures} ${meal.source === 'ai' ? 'AI estimate' : 'Estimate'}, not verified. Not used for recipe filtering. Do not use it to work out insulin doses.`;
+}
+
+// ── SAVED RECIPES ──
+function isSaved(meal) {
+    return state.savedMeals.some(m => m.id === meal.id);
+}
+
+function renderSaveButton() {
+    const meal = state.currentModalMeal;
+    const btn = document.getElementById('save-modal-meal');
+    if (!btn || !meal) return;
+    const saved = isSaved(meal);
+    btn.setAttribute('aria-pressed', String(saved));
+    setText('save-modal-label', saved ? 'Saved' : 'Save');
+}
+
+function toggleSaved(meal) {
+    if (!meal) return;
+    const previous = state.savedMeals;
+    if (isSaved(meal)) {
+        state.savedMeals = previous.filter(m => m.id !== meal.id);
+    } else if (previous.length >= CONFIG.MAX_SAVED_MEALS) {
+        toast(`You can save up to ${CONFIG.MAX_SAVED_MEALS} recipes. Remove one first.`, 'error');
+        return;
+    } else {
+        state.savedMeals = [meal, ...previous];
+    }
+    if (!saveState()) state.savedMeals = previous;
+    renderSaveButton();
+    renderSavedMeals();
+}
+
+function renderSavedMeals() {
+    const section = document.getElementById('saved-section');
+    if (!section) return;
+    section.hidden = state.savedMeals.length === 0;
+    setText('saved-heading', `Saved recipes (${state.savedMeals.length})`);
+    replaceChildren('saved-list', state.savedMeals.map(matchCard));
 }
 
 // ── LOG MEAL ──
@@ -319,14 +367,41 @@ function renderLogHistory() {
             el('div', { className: 'log-entry-meta', text: when }),
         ]);
         if (entry.notes) info.append(el('div', { className: 'log-entry-notes', text: entry.notes }));
+        const remove = el('button', { className: 'btn-log-delete', attrs: { type: 'button', 'aria-label': `Delete ${entry.name} from the log` } }, [
+            el('i', { className: 'fas fa-trash', attrs: { 'aria-hidden': 'true' } }),
+        ]);
+        remove.addEventListener('click', () => deleteLogEntry(entry));
         return el('li', { className: 'log-entry' }, [
             info,
             el('span', { className: `log-entry-type type-${entry.type.toLowerCase()}`, text: entry.type }),
+            remove,
         ]);
     }));
     const hiddenCount = state.mealLog.length - shown.length;
     more.hidden = hiddenCount <= 0;
     more.textContent = hiddenCount > 0 ? `Showing the latest ${shown.length}. Export the log to see all ${state.mealLog.length}.` : '';
+}
+
+function setLog(next) {
+    const previous = state.mealLog;
+    state.mealLog = next;
+    if (!saveState()) { state.mealLog = previous; return false; }
+    renderLogHistory();
+    updateStats();
+    renderHeader();
+    return true;
+}
+
+function deleteLogEntry(entry) {
+    if (!setLog(state.mealLog.filter(e => e !== entry))) return;
+    toast('Deleted: ' + entry.name, 'info', {
+        label: 'Undo',
+        run() {
+            if (state.mealLog.includes(entry)) return;
+            const restored = [...state.mealLog, entry].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (setLog(restored.slice(0, MAX_LOG_ENTRIES))) toast('Restored: ' + entry.name);
+        },
+    });
 }
 
 // ── PROTEIN CHIPS ──
@@ -385,18 +460,22 @@ function findMealsByProtein() {
     const selected = getSelectedProteins();
     const resultEl = document.getElementById('protein-result');
     if (!resultEl) return;
-    if (selected.length === 0) {
-        resultEl.replaceChildren(hint('Select at least one protein above.'));
+    if (state.loadingMeals) {
+        resultEl.replaceChildren(hint('Loading recipes…'));
         return;
     }
     const type = selectedFindType();
-    const candidates = state.meals.filter(m => (type === 'any' || m.type === type) && mealMatchesProteins(m, selected));
+    // No protein selected means "browse everything".
+    const candidates = state.meals.filter(m => (type === 'any' || m.type === type)
+        && (selected.length === 0 || mealMatchesProteins(m, selected)));
     const { allowed, excluded } = filterMeals(candidates, state.settings);
 
     const nodes = [];
     if (allowed.length === 0) {
         nodes.push(hint(candidates.length
             ? 'Every matching recipe is hidden by your Avoid settings. Change them in Settings or try another protein.'
+            : state.meals.length === 0 ? 'Recipes could not be loaded. Go to Today and retry.'
+            : selected.length === 0 ? 'No recipes of this meal type.'
             : 'No recipes found. Try another protein or the AI generator.'));
     } else {
         nodes.push(el('p', { className: 'protein-found-note' }, [
@@ -454,6 +533,7 @@ async function generateWithAI() {
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     aiEl.replaceChildren(el('div', { className: 'ai-loading', text: 'Writing a recipe… this can take up to 30 seconds.' }));
+    aiEl.scrollIntoView({ block: 'nearest' });
 
     const s = state.settings;
     try {
@@ -493,6 +573,7 @@ async function generateWithAI() {
             return;
         }
         aiEl.replaceChildren(matchCard(meal));
+        aiEl.scrollIntoView({ block: 'nearest' });
     } catch (err) {
         if (state.aiRequest !== controller) return;
         aiEl.replaceChildren(hint(err?.name === 'AbortError'
@@ -600,7 +681,7 @@ function bindSettingsTab() {
     on('calorie-target', 'input', e => setText('calorie-display', e.target.value + ' kcal'));
     on('protein-target', 'input', e => setText('protein-display', e.target.value + 'g'));
     on('reset-data', 'click', () => {
-        if (!confirm('Delete all logged meals and settings from this device? This cannot be undone.')) return;
+        if (!confirm('Delete all logged meals, saved recipes and settings from this device? This cannot be undone.')) return;
         try {
             localStorage.removeItem(CONFIG.STORAGE_KEY);
         } catch {
@@ -609,6 +690,7 @@ function bindSettingsTab() {
         }
         cancelAI();
         state.mealLog = [];
+        state.savedMeals = [];
         state.settings = { ...DEFAULT_SETTINGS };
         state.aiConsent = false;
         state.currentModalMeal = null;
@@ -625,6 +707,7 @@ function bindSettingsTab() {
         selectMeals();
         renderTodayMeals();
         renderLogHistory();
+        renderSavedMeals();
         updateStats();
         toast('All data deleted from this device');
     });
@@ -632,8 +715,14 @@ function bindSettingsTab() {
 
 function bindModals() {
     on('close-modal', 'click', () => closeModal('recipe-modal'));
+    on('save-modal-meal', 'click', () => toggleSaved(state.currentModalMeal));
     on('log-modal-meal', 'click', () => {
         if (logMeal(state.currentModalMeal)) closeModal('recipe-modal');
+    });
+    on('toast-action', 'click', () => {
+        const action = toastAction;
+        hideToast();
+        action?.run();
     });
     document.querySelectorAll('dialog.modal').forEach(dialog => {
         // Click on the backdrop (outside the sheet) closes the dialog.
@@ -722,15 +811,29 @@ function closeModal(id) {
 }
 
 let toastTimer;
-function toast(msg, kind = 'info') {
+let toastAction = null;
+// `action` is an optional { label, run } shown as a button (for example Undo).
+function toast(msg, kind = 'info', action = null) {
     const box = document.getElementById('toast');
     const tx = document.getElementById('toast-text');
+    const btn = document.getElementById('toast-action');
     if (!box || !tx) return;
     tx.textContent = msg;
+    toastAction = action;
+    if (btn) {
+        btn.hidden = !action;
+        btn.textContent = action ? action.label : '';
+    }
     box.classList.toggle('error', kind === 'error');
     box.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => box.classList.remove('show'), 3500);
+    toastTimer = setTimeout(hideToast, action ? 7000 : 3500);
+}
+function hideToast() {
+    document.getElementById('toast')?.classList.remove('show');
+    const btn = document.getElementById('toast-action');
+    if (btn) btn.hidden = true;
+    toastAction = null;
 }
 
 // ── START ──
