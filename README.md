@@ -8,7 +8,8 @@ A mobile-first PWA with Jamaican-style recipe ideas, an optional AI recipe gener
 
 - **Today's plan**: one breakfast, lunch and dinner suggestion per day from 36 recipes, filtered by your gout and heart-health settings.
 - **Protein finder**: find recipes by what's in your fridge, or ask the AI generator for one. AI recipes pass limited input, estimate and food-safety screens before display; these do not establish actual nutrition or safety.
-- **Meal log**: log meals with notes, see streaks, export to CSV. Stored only in this browser.
+- **Browse and save**: run Find with no protein selected to browse every recipe. Save any recipe, including AI ones, from its recipe sheet; saved recipes are listed on the Find tab.
+- **Meal log**: log meals with notes, delete entries (with undo), see streaks, export to CSV. Stored only in this browser.
 - **Offline**: installable PWA that works without a connection after the first visit.
 
 Numeric recipe filtering is unavailable: all built-in nutrition remains unknown. The numeric controls only guide unverified AI estimates. Ingredient exclusions still apply. Production AI fails closed unless explicitly enabled with exact allowed origins and a shared rate-limit store; previews cannot generate.
@@ -33,7 +34,8 @@ test/                    Node test suite
 ```bash
 npm ci --ignore-scripts
 npm run check     # syntax check + tests
-npm start        # static app only; tests mock the API
+npm start                 # app + API at http://localhost:8080 (API answers 503 unless configured)
+MOCK_AI=true npm start    # API returns a canned recipe: no key, no provider call
 ```
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for environment variables, the AI endpoint's protections, recipe data rules and the privacy summary.

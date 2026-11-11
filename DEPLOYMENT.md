@@ -41,7 +41,7 @@ npm audit --omit=dev --audit-level=high
 npm start
 ```
 
-`npm start` serves static files only. Tests mock the provider and Redis and do not require credentials or network calls. For intentionally configured local API development, memory limits require `NODE_ENV=development` and `AI_LOCAL_DEVELOPMENT=true`, with no `VERCEL`, `VERCEL_ENV` or `VERCEL_URL` markers. Configure an exact loopback HTTP origin in `ALLOWED_ORIGINS`. This is not a staging/preview bypass, and setting it alone does not enable generation. Never use real health data in tests.
+`npm start` runs `scripts/dev-server.mjs`: the static app with the `vercel.json` security headers, plus the API route (503 unless configured as below). `MOCK_AI=true npm start` swaps the provider for a canned recipe so the generator UI can be exercised without a key or a paid call. Tests mock the provider and Redis and do not require credentials or network calls. For intentionally configured local API development, memory limits require `NODE_ENV=development` and `AI_LOCAL_DEVELOPMENT=true`, with no `VERCEL`, `VERCEL_ENV` or `VERCEL_URL` markers. Configure an exact loopback HTTP origin in `ALLOWED_ORIGINS`. This is not a staging/preview bypass, and setting it alone does not enable generation. Never use real health data in tests.
 
 ## Recipe updates
 
@@ -57,4 +57,4 @@ An open tab may retain loaded JavaScript until reload. Test upgrades from an ins
 
 Before enabling paid generation, verify production origins, environment scoping, durable store response handling and budgets with a mocked provider in an isolated test environment. Never use real paid requests merely to check configuration. Public GET checks can confirm security headers and method rejection, but cannot prove POST protection or provider retention.
 
-Meal names, notes and settings remain in browser storage. Generation, when explicitly used after consent, sends selected proteins and preferences to Vercel and Anthropic. Document actual account retention/region settings before enabling it. Reset removes local state, not provider or platform logs. Do not claim regulatory exemption or compliance without appropriate assessment.
+Meal names, notes, saved recipes and settings remain in browser storage. Generation, when explicitly used after consent, sends selected proteins and preferences to Vercel and Anthropic. Document actual account retention/region settings before enabling it. Reset removes local state, not provider or platform logs. Do not claim regulatory exemption or compliance without appropriate assessment.

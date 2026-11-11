@@ -268,3 +268,15 @@ test('unexpected AI fields, verified claims, nonfinite or inconsistent nutrition
         { ...goodRecipe(), nutritionPerServing: { ...goodRecipe().nutritionPerServing, protein: '40' } },
     ]) assert.ok(validateGeneratedMeal(raw, request).problems);
 });
+
+test('extra or over-long tags are trimmed instead of discarding the recipe', () => {
+    const request = validateRequest(goodBody()).value;
+    const many = { ...goodRecipe(), tags: ['Jamaican', 'Chicken', 'Quick', 'Dinner', 'Grilled', 'Low carb', 'High protein', 'A tag that is far too long to display on a card'] };
+    const { meal, problems } = validateGeneratedMeal(many, request);
+    assert.equal(problems, undefined);
+    assert.equal(meal.tags.length, 6);
+    assert.ok(meal.tags.every(t => t.length <= 30));
+    assert.ok(validateGeneratedMeal({ ...goodRecipe(), tags: 'Jamaican' }, request).problems.some(p => /Tags/.test(p)));
+    assert.ok(validateGeneratedMeal({ ...goodRecipe(), tags: ['ok', 7] }, request).problems.some(p => /Tags/.test(p)));
+    assert.ok(validateGeneratedMeal({ ...goodRecipe(), tags: ['Clinically proven'] }, request).problems.some(p => /claim/.test(p)));
+});

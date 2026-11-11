@@ -753,3 +753,40 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ── SAVED RECIPES, LOG DELETE, TOAST ACTION ── */
+.saved-section { margin-top: 28px; }
+.saved-heading { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+#ai-result:not(:empty) { margin-bottom: 16px; scroll-margin-top: 12px; }
+
+.modal-footer { display: flex; gap: 10px; }
+.modal-footer .btn-log-modal { flex: 1; }
+.btn-save-recipe {
+    background: transparent; color: var(--text-soft);
+    border: 1px solid var(--border-light); border-radius: var(--radius);
+    padding: 15px 16px; font-size: 15px; font-weight: 700; min-width: 104px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-save-recipe:hover { border-color: var(--gold); color: var(--gold); }
+.btn-save-recipe[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); background: rgba(251,191,36,0.1); }
+
+.log-entry { gap: 10px; }
+.log-entry-info { flex: 1; min-width: 0; }
+.btn-log-delete {
+    background: transparent; border: none; color: var(--text-muted);
+    width: 44px; height: 44px; margin: -8px -10px -8px 0; flex-shrink: 0;
+    border-radius: 50%; cursor: pointer; font-size: 14px;
+    transition: color 0.2s, background 0.2s;
+}
+.btn-log-delete:hover { color: #fca5a5; background: rgba(239,68,68,0.12); }
+
+.toast.show { pointer-events: auto; }
+.toast-action {
+    background: transparent; border: none; color: var(--primary);
+    font: inherit; font-weight: 700; cursor: pointer;
+    padding: 8px 6px; margin: -8px -8px -8px 4px;
+    text-decoration: underline; text-underline-offset: 3px;
+}
+.toast { width: max-content; text-align: left; }
+.toast-action { flex-shrink: 0; }

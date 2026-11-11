@@ -23,6 +23,8 @@ const MAX_BODY_CHARS = 2000;
 const MAX_CONCURRENT = 4;
 const PROVIDER_TIMEOUT_MS = 25000;
 const CALORIE_TOLERANCE = 200;
+const MAX_TAGS = 6;
+const MAX_TAG_CHARS = 30;
 
 // ── Request validation ──
 
@@ -110,7 +112,8 @@ Rules:
 - Give quantities for every ingredient so the nutrition estimate is per serving.
 - nutritionPerServing is your best estimate in kcal and grams per serving. It will be shown as an unverified estimate.
 - Do not make health or medical claims, and do not mention insulin doses.
-- Ingredients and instructions are plain strings without numbering or bullet characters.`;
+- Ingredients and instructions are plain strings without numbering or bullet characters.
+- Give at most 5 tags, each one or two words (for example "Jamaican", "Chicken", "Quick").`;
 
 export function buildPrompt({ proteins, mealType, preferences }) {
     const labels = proteins.map(id => PROTEINS.find(p => p.id === id).label.toLowerCase());
@@ -152,7 +155,9 @@ export function validateGeneratedMeal(raw, request) {
     if (!Array.isArray(raw.instructions) || raw.instructions.length < 2 || raw.instructions.length > 20 || !raw.instructions.every(i => isString(i, 3, 400))) {
         problems.push('Instructions are missing or malformed.');
     }
-    if (!Array.isArray(raw.tags) || raw.tags.length > 6 || !raw.tags.every(t => isString(t, 1, 30))) problems.push('Tags are malformed.');
+    // Tags are display-only labels: extra or over-long ones are dropped rather
+    // than discarding an otherwise valid (and already paid for) recipe.
+    if (!Array.isArray(raw.tags) || raw.tags.length > 30 || !raw.tags.every(t => typeof t === 'string' && t.length <= 200)) problems.push('Tags are malformed.');
 
     const n = raw.nutritionPerServing;
     const nutritionOk = n && typeof n === 'object' && !Array.isArray(n)
@@ -182,7 +187,7 @@ export function validateGeneratedMeal(raw, request) {
         difficulty: raw.difficulty,
         ingredients: raw.ingredients,
         instructions: raw.instructions,
-        tags: raw.tags,
+        tags: raw.tags.filter(t => isString(t, 1, MAX_TAG_CHARS)).slice(0, MAX_TAGS),
         nutrition: { ...n, verified: false, source: 'AI estimate (unverified)' },
         source: 'ai',
     });

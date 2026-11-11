@@ -1,13 +1,13 @@
 {
   "name": "insulin-smart-meal-hub",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "private": true,
   "description": "Mobile web app with Jamaican-style recipe suggestions and a local meal log",
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8080",
+    "start": "node scripts/dev-server.mjs",
     "dev": "vercel dev",
-    "lint": "node --check app.js && node --check sw.js && node --check meal-rules.js && node --check api/generate-meal.js && node --check api/_lib/rate-limit.js",
+    "lint": "node --check app.js && node --check sw.js && node --check meal-rules.js && node --check api/generate-meal.js && node --check api/_lib/rate-limit.js && node --check scripts/dev-server.mjs",
     "test": "node --test test/*.test.js",
     "check": "npm run lint && npm test"
   },

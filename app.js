@@ -6,7 +6,7 @@ import {
     DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
     cautions, countLast7Days, filterMeals, logToCsv, mealMatchesProteins,
     normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily, pickDifferent,
-    safetyIssues, streakDays,
+    exclusionReasons, localDateKey, safetyIssues, streakDays,
 } from './meal-rules.js';
 
 const CONFIG = {
@@ -19,18 +19,23 @@ const CONFIG = {
     SHEET_NAME: '21 Recipes',
     STORAGE_KEY: 'insulinMealHubData_v2',
     LOG_DISPLAY_LIMIT: 50,
+    MAX_SAVED_MEALS: 50,
     AI_TIMEOUT_MS: 40000,
 };
 
 const state = {
     meals: [],
+    loadingMeals: false,
     todayMeals: { breakfast: null, lunch: null, dinner: null },
     mealLog: [],
+    savedMeals: [],
     settings: { ...DEFAULT_SETTINGS },
     aiConsent: false,
     currentModalMeal: null,
     aiRequest: null,
     lastFocus: null,
+    day: localDateKey(new Date()),
+    hasSearched: false,
 };
 
 // ── INIT ──
@@ -46,9 +51,13 @@ function init() {
     bindModals();
     renderHeader();
     renderLogHistory();
+    renderSavedMeals();
     updateStats();
     loadMeals();
     registerServiceWorker();
+    document.addEventListener('visibilitychange', refreshDay);
+    window.addEventListener('focus', refreshDay);
+    setInterval(refreshDay, 60000);
 }
 
 // ── STATE ──
@@ -64,6 +73,10 @@ function loadState() {
         if (Array.isArray(parsed.mealLog)) {
             state.mealLog = parsed.mealLog.map(normalizeLogEntry).filter(Boolean).slice(0, MAX_LOG_ENTRIES);
         }
+        if (Array.isArray(parsed.savedMeals)) {
+            // Stored recipes go through the same checks as fresh ones.
+            state.savedMeals = acceptMeals(parsed.savedMeals).slice(0, CONFIG.MAX_SAVED_MEALS);
+        }
         state.settings = normalizeSettings(parsed.settings);
         state.aiConsent = parsed.aiConsent === true;
     }
@@ -75,6 +88,7 @@ function saveState() {
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
             version: 3,
             mealLog: state.mealLog,
+            savedMeals: state.savedMeals,
             settings: state.settings,
             aiConsent: state.aiConsent,
         }));
@@ -87,9 +101,14 @@ function saveState() {
 
 // ── MEAL DATA ──
 async function loadMeals() {
+    if (state.loadingMeals) return;
+    state.loadingMeals = true;
+    document.getElementById('retry-meals').disabled = true;
+    setText('filter-summary', 'Loading recipes…');
+    renderTodayMeals();
     let meals = [];
     try {
-        const res = await fetch(CONFIG.MEALS_URL, { cache: 'no-cache' });
+        const res = await fetch(CONFIG.MEALS_URL, { cache: 'no-cache', signal: AbortSignal.timeout(10000) });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         meals = acceptMeals(Array.isArray(data?.meals) ? data.meals : []);
@@ -100,12 +119,25 @@ async function loadMeals() {
         const remote = await fetchSheetMeals();
         if (remote.length > 0) meals = remote;
     }
+    state.loadingMeals = false;
     state.meals = meals;
     if (meals.length === 0) {
         setText('filter-summary', 'Recipes could not be loaded. Check your connection and reload.');
     }
     selectMeals();
     renderTodayMeals();
+    document.getElementById('retry-meals').hidden = meals.length > 0;
+    document.getElementById('retry-meals').disabled = false;
+    if (state.hasSearched) findMealsByProtein();
+}
+
+function refreshDay() {
+    const day = localDateKey(new Date());
+    if (day === state.day) return;
+    state.day = day;
+    selectMeals();
+    renderTodayMeals();
+    updateStats();
 }
 
 // Normalises records and drops any that fail the food-safety checks.
@@ -176,6 +208,7 @@ function servingsLabel(meal) {
 }
 
 function renderTodayMeals() {
+    document.getElementById('refresh-meals').disabled = state.loadingMeals || state.meals.length === 0;
     ['breakfast', 'lunch', 'dinner'].forEach(type => {
         const meal = state.todayMeals[type];
         const viewBtn = document.getElementById('view-' + type);
@@ -183,7 +216,7 @@ function renderTodayMeals() {
         if (viewBtn) viewBtn.disabled = !meal;
         if (logBtn) logBtn.disabled = !meal;
         if (!meal) {
-            setText(type + '-name', state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
+            setText(type + '-name', state.loadingMeals ? 'Loading…' : state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
             setText(type + '-time', '–');
             setText(type + '-meta', state.meals.length ? 'Try changing your settings or the Find tab.' : '');
             replaceChildren(type + '-tags', []);
@@ -199,7 +232,7 @@ function renderTodayMeals() {
 }
 
 function renderFilterSummary() {
-    if (state.meals.length === 0) return;
+    if (state.loadingMeals || state.meals.length === 0) return;
     const { excluded } = filterMeals(state.meals, state.settings);
     const parts = [];
     if (state.settings.avoidGout) parts.push('gout triggers');
@@ -229,7 +262,9 @@ function openRecipeModal(meal) {
 
     setText('modal-nutrition', nutritionText(meal));
 
-    const notes = cautions(meal, state.settings);
+    // Saved recipes stay visible after settings change, so say when one no longer fits.
+    const notes = [...exclusionReasons(meal, state.settings), ...cautions(meal, state.settings)];
+    renderSaveButton();
     document.getElementById('modal-cautions-section').hidden = notes.length === 0;
     replaceChildren('modal-cautions', notes.map(t => el('li', { text: t })));
 
@@ -241,6 +276,44 @@ function nutritionText(meal) {
     if (!n) return 'Not available yet. Nutrition for this recipe has not been checked, so it is not shown. Do not use this app to work out insulin doses.';
     const figures = `About ${Math.round(n.calories)} kcal · ${Math.round(n.protein)}g protein · ${Math.round(n.carbs)}g carbs · ${Math.round(n.fiber)}g fiber per serving.`;
     return `${figures} ${meal.source === 'ai' ? 'AI estimate' : 'Estimate'}, not verified. Not used for recipe filtering. Do not use it to work out insulin doses.`;
+}
+
+// ── SAVED RECIPES ──
+function isSaved(meal) {
+    return state.savedMeals.some(m => m.id === meal.id);
+}
+
+function renderSaveButton() {
+    const meal = state.currentModalMeal;
+    const btn = document.getElementById('save-modal-meal');
+    if (!btn || !meal) return;
+    const saved = isSaved(meal);
+    btn.setAttribute('aria-pressed', String(saved));
+    setText('save-modal-label', saved ? 'Saved' : 'Save');
+}
+
+function toggleSaved(meal) {
+    if (!meal) return;
+    const previous = state.savedMeals;
+    if (isSaved(meal)) {
+        state.savedMeals = previous.filter(m => m.id !== meal.id);
+    } else if (previous.length >= CONFIG.MAX_SAVED_MEALS) {
+        toast(`You can save up to ${CONFIG.MAX_SAVED_MEALS} recipes. Remove one first.`, 'error');
+        return;
+    } else {
+        state.savedMeals = [meal, ...previous];
+    }
+    if (!saveState()) state.savedMeals = previous;
+    renderSaveButton();
+    renderSavedMeals();
+}
+
+function renderSavedMeals() {
+    const section = document.getElementById('saved-section');
+    if (!section) return;
+    section.hidden = state.savedMeals.length === 0;
+    setText('saved-heading', `Saved recipes (${state.savedMeals.length})`);
+    replaceChildren('saved-list', state.savedMeals.map(matchCard));
 }
 
 // ── LOG MEAL ──
@@ -294,14 +367,41 @@ function renderLogHistory() {
             el('div', { className: 'log-entry-meta', text: when }),
         ]);
         if (entry.notes) info.append(el('div', { className: 'log-entry-notes', text: entry.notes }));
+        const remove = el('button', { className: 'btn-log-delete', attrs: { type: 'button', 'aria-label': `Delete ${entry.name} from the log` } }, [
+            el('i', { className: 'fas fa-trash', attrs: { 'aria-hidden': 'true' } }),
+        ]);
+        remove.addEventListener('click', () => deleteLogEntry(entry));
         return el('li', { className: 'log-entry' }, [
             info,
             el('span', { className: `log-entry-type type-${entry.type.toLowerCase()}`, text: entry.type }),
+            remove,
         ]);
     }));
     const hiddenCount = state.mealLog.length - shown.length;
     more.hidden = hiddenCount <= 0;
     more.textContent = hiddenCount > 0 ? `Showing the latest ${shown.length}. Export the log to see all ${state.mealLog.length}.` : '';
+}
+
+function setLog(next) {
+    const previous = state.mealLog;
+    state.mealLog = next;
+    if (!saveState()) { state.mealLog = previous; return false; }
+    renderLogHistory();
+    updateStats();
+    renderHeader();
+    return true;
+}
+
+function deleteLogEntry(entry) {
+    if (!setLog(state.mealLog.filter(e => e !== entry))) return;
+    toast('Deleted: ' + entry.name, 'info', {
+        label: 'Undo',
+        run() {
+            if (state.mealLog.includes(entry)) return;
+            const restored = [...state.mealLog, entry].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (setLog(restored.slice(0, MAX_LOG_ENTRIES))) toast('Restored: ' + entry.name);
+        },
+    });
 }
 
 // ── PROTEIN CHIPS ──
@@ -315,8 +415,13 @@ function initProteinChips() {
         ]);
         btn.addEventListener('click', () => {
             const pressed = btn.getAttribute('aria-pressed') !== 'true';
+            if (pressed && getSelectedProteins().length >= 5) {
+                toast('Select up to 5 proteins at a time.', 'error');
+                return;
+            }
             btn.setAttribute('aria-pressed', String(pressed));
             btn.classList.toggle('selected', pressed);
+            finderChanged();
         });
         return btn;
     }));
@@ -336,22 +441,41 @@ function hint(text, className = 'protein-hint') {
     return el('p', { className, text });
 }
 
+function cancelAI() {
+    state.aiRequest?.abort();
+    state.aiRequest = null;
+    const btn = document.getElementById('generate-ai-btn');
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    replaceChildren('ai-result', []);
+}
+
+function finderChanged() {
+    cancelAI();
+    if (state.hasSearched) findMealsByProtein();
+}
+
 function findMealsByProtein() {
+    state.hasSearched = true;
     const selected = getSelectedProteins();
     const resultEl = document.getElementById('protein-result');
     if (!resultEl) return;
-    if (selected.length === 0) {
-        resultEl.replaceChildren(hint('Select at least one protein above.'));
+    if (state.loadingMeals) {
+        resultEl.replaceChildren(hint('Loading recipes…'));
         return;
     }
     const type = selectedFindType();
-    const candidates = state.meals.filter(m => (type === 'any' || m.type === type) && mealMatchesProteins(m, selected));
+    // No protein selected means "browse everything".
+    const candidates = state.meals.filter(m => (type === 'any' || m.type === type)
+        && (selected.length === 0 || mealMatchesProteins(m, selected)));
     const { allowed, excluded } = filterMeals(candidates, state.settings);
 
     const nodes = [];
     if (allowed.length === 0) {
         nodes.push(hint(candidates.length
             ? 'Every matching recipe is hidden by your Avoid settings. Change them in Settings or try another protein.'
+            : state.meals.length === 0 ? 'Recipes could not be loaded. Go to Today and retry.'
+            : selected.length === 0 ? 'No recipes of this meal type.'
             : 'No recipes found. Try another protein or the AI generator.'));
     } else {
         nodes.push(el('p', { className: 'protein-found-note' }, [
@@ -409,6 +533,7 @@ async function generateWithAI() {
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     aiEl.replaceChildren(el('div', { className: 'ai-loading', text: 'Writing a recipe… this can take up to 30 seconds.' }));
+    aiEl.scrollIntoView({ block: 'nearest' });
 
     const s = state.settings;
     try {
@@ -441,11 +566,14 @@ async function generateWithAI() {
             return;
         }
         const meal = normalizeMeal({ ...(data?.meal || {}), source: 'ai' });
-        if (!meal || safetyIssues(meal).length > 0) {
+        if (!meal || safetyIssues(meal).length > 0 || exclusionReasons(meal, state.settings).length > 0
+            || !mealMatchesProteins(meal, selected)
+            || (selectedFindType() !== 'any' && meal.type !== selectedFindType())) {
             aiEl.replaceChildren(hint('The AI response could not be used. Please try again.', 'protein-hint error'));
             return;
         }
         aiEl.replaceChildren(matchCard(meal));
+        aiEl.scrollIntoView({ block: 'nearest' });
     } catch (err) {
         if (state.aiRequest !== controller) return;
         aiEl.replaceChildren(hint(err?.name === 'AbortError'
@@ -517,13 +645,16 @@ function bindTodayTab() {
         on('log-' + type, 'click', () => logMeal(state.todayMeals[type]));
     });
     on('refresh-meals', 'click', shuffleMeals);
+    on('retry-meals', 'click', loadMeals);
 }
 
 function bindFindTab() {
     on('find-meal-btn', 'click', findMealsByProtein);
+    on('find-meal-type', 'change', finderChanged);
     on('generate-ai-btn', 'click', generateWithAI);
     on('ai-consent-check', 'change', e => {
         state.aiConsent = e.target.checked;
+        if (!state.aiConsent) cancelAI();
         saveState();
     });
 }
@@ -540,24 +671,43 @@ function bindSettingsTab() {
         e.preventDefault();
         const previous = state.settings;
         state.settings = readSettingsFromUI();
-        if (!saveState()) { state.settings = previous; return; }
+        if (!saveState()) { state.settings = previous; applySettingsToUI(); return; }
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();
+        finderChanged();
         toast('Settings saved');
     });
     on('calorie-target', 'input', e => setText('calorie-display', e.target.value + ' kcal'));
     on('protein-target', 'input', e => setText('protein-display', e.target.value + 'g'));
     on('reset-data', 'click', () => {
-        if (!confirm('Delete all logged meals and settings from this device? This cannot be undone.')) return;
+        if (!confirm('Delete all logged meals, saved recipes and settings from this device? This cannot be undone.')) return;
+        try {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+        } catch {
+            toast('Could not delete data on this device. Check browser storage permissions and try again.', 'error');
+            return;
+        }
+        cancelAI();
         state.mealLog = [];
+        state.savedMeals = [];
         state.settings = { ...DEFAULT_SETTINGS };
         state.aiConsent = false;
-        try { localStorage.removeItem(CONFIG.STORAGE_KEY); } catch { /* nothing stored */ }
+        state.currentModalMeal = null;
+        document.getElementById('custom-meal-form').reset();
+        document.getElementById('custom-meal-name').removeAttribute('aria-invalid');
+        document.querySelectorAll('.protein-chip').forEach(btn => {
+            btn.setAttribute('aria-pressed', 'false');
+            btn.classList.remove('selected');
+        });
+        state.hasSearched = false;
+        replaceChildren('protein-result', []);
+        document.getElementById('find-meal-type').value = 'any';
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();
         renderLogHistory();
+        renderSavedMeals();
         updateStats();
         toast('All data deleted from this device');
     });
@@ -565,8 +715,14 @@ function bindSettingsTab() {
 
 function bindModals() {
     on('close-modal', 'click', () => closeModal('recipe-modal'));
+    on('save-modal-meal', 'click', () => toggleSaved(state.currentModalMeal));
     on('log-modal-meal', 'click', () => {
         if (logMeal(state.currentModalMeal)) closeModal('recipe-modal');
+    });
+    on('toast-action', 'click', () => {
+        const action = toastAction;
+        hideToast();
+        action?.run();
     });
     document.querySelectorAll('dialog.modal').forEach(dialog => {
         // Click on the backdrop (outside the sheet) closes the dialog.
@@ -655,15 +811,29 @@ function closeModal(id) {
 }
 
 let toastTimer;
-function toast(msg, kind = 'info') {
+let toastAction = null;
+// `action` is an optional { label, run } shown as a button (for example Undo).
+function toast(msg, kind = 'info', action = null) {
     const box = document.getElementById('toast');
     const tx = document.getElementById('toast-text');
+    const btn = document.getElementById('toast-action');
     if (!box || !tx) return;
     tx.textContent = msg;
+    toastAction = action;
+    if (btn) {
+        btn.hidden = !action;
+        btn.textContent = action ? action.label : '';
+    }
     box.classList.toggle('error', kind === 'error');
     box.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => box.classList.remove('show'), 3500);
+    toastTimer = setTimeout(hideToast, action ? 7000 : 3500);
+}
+function hideToast() {
+    document.getElementById('toast')?.classList.remove('show');
+    const btn = document.getElementById('toast-action');
+    if (btn) btn.hidden = true;
+    toastAction = null;
 }
 
 // ── START ──
