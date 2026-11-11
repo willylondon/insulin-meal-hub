@@ -280,3 +280,25 @@ test('extra or over-long tags are trimmed instead of discarding the recipe', () 
     assert.ok(validateGeneratedMeal({ ...goodRecipe(), tags: ['ok', 7] }, request).problems.some(p => /Tags/.test(p)));
     assert.ok(validateGeneratedMeal({ ...goodRecipe(), tags: ['Clinically proven'] }, request).problems.some(p => /claim/.test(p)));
 });
+
+test('the safety sentences the prompt asks for are accepted by the food-safety screen', async () => {
+    const { SAFETY_STEPS } = await import('../api/generate-meal.js');
+    const { safetyIssues } = await import('../meal-rules.js');
+    const swap = (step, food) => step.replace(/chicken|fish|ground beef|pork/, food);
+    const cases = [
+        [['2 chicken breasts'], ['Pan-fry the chicken in oil for 6 minutes per side', SAFETY_STEPS.poultry]],
+        [['300g ground turkey'], ['Brown the turkey in a hot pan', swap(SAFETY_STEPS.poultry, 'turkey')]],
+        [['2 snapper fillets'], ['Bake the fish in a 400°F oven for 12 minutes', SAFETY_STEPS.fish]],
+        [['200g saltfish, soaked'], ['Simmer the saltfish in water', swap(SAFETY_STEPS.fish, 'saltfish')]],
+        [['300g ground beef'], ['Brown the beef in a pan', SAFETY_STEPS.ground]],
+        [['2 pork chops'], ['Sear the pork in oil', SAFETY_STEPS.whole, SAFETY_STEPS.rest]],
+        [['300g goat, cubed'], ['Stew the goat for 90 minutes', swap(SAFETY_STEPS.whole, 'goat'), swap(SAFETY_STEPS.rest, 'goat')]],
+        [['1 cup canned ackee, drained', '1 can tuna, drained'], ['Warm the ackee and fold in the tuna']],
+        [['2 chicken thighs', '2 tilapia fillets'], ['Grill both', SAFETY_STEPS.poultry, SAFETY_STEPS.fish]],
+    ];
+    for (const [ingredients, instructions] of cases) {
+        assert.deepEqual(safetyIssues({ name: 'Test', ingredients, instructions }), [], ingredients.join(', '));
+    }
+    // The wording that was being rejected in production: endpoint mentioned alongside the pan.
+    assert.notDeepEqual(safetyIssues({ name: 'Test', ingredients: ['2 chicken breasts'], instructions: ['Cook the chicken in the pan until it reaches 165°F (74°C)'] }), []);
+});

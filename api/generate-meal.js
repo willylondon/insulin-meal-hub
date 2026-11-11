@@ -103,11 +103,31 @@ const RECIPE_SCHEMA = {
     },
 };
 
+// Sentences the food-safety screen in meal-rules.js is known to accept. The
+// model is asked to use them as written, because free wording (for example a
+// temperature mentioned alongside the pan or oven) is rejected by that screen
+// and the whole recipe is then withheld. test/generate-meal.test.js keeps the
+// two in sync.
+export const SAFETY_STEPS = {
+    poultry: 'Check with a food thermometer that the thickest part of the chicken reads at least 165°F (74°C).',
+    fish: 'Check with a food thermometer that the thickest part of the fish reads at least 145°F (63°C).',
+    ground: 'Check with a food thermometer that the centre of the ground beef reads at least 160°F (71°C).',
+    whole: 'Check with a food thermometer that the thickest part of the pork reads at least 145°F (63°C).',
+    rest: 'Let the pork rest for 5 minutes before serving.',
+};
+
 const SYSTEM_PROMPT = `You write practical home recipes in a Jamaican style for an app used by people who are watching their carbohydrate intake.
 
 Rules:
 - Use only commercially canned ackee (drained). Never include fresh ackee or instructions for preparing it.
-- Raw chicken or turkey must be cooked to 165°F (74°C); say so in the instructions. Pork must reach 145°F (63°C), ground meat 160°F (71°C), fish 145°F (63°C).
+- Write ackee in the ingredients exactly as "canned ackee, drained" with its quantity in front.
+- Every recipe with meat, poultry or fresh fish needs a thermometer check as its own instruction step, placed straight after the step that cooks it. Copy the matching sentence below word for word, changing only the food name (for example "chicken" to "turkey"), and do not add anything else to that step: no times, no pan, oven, oil or water.
+  - Chicken, turkey or other poultry (also when reheating cooked poultry): "${SAFETY_STEPS.poultry}"
+  - Fresh or frozen fish, including saltfish: "${SAFETY_STEPS.fish}"
+  - Ground or minced beef, pork or lamb, sausages, burgers and meatballs: "${SAFETY_STEPS.ground}"
+  - Whole cuts of beef, pork, lamb or goat: "${SAFETY_STEPS.whole}" followed by a separate step: "${SAFETY_STEPS.rest}"
+- In every other step, do not mention a temperature for the food. Oven and oil temperatures are fine.
+- Canned fish (tuna, sardines, salmon) must be written as "canned" in the ingredients and needs no thermometer step.
 - Respect every dietary restriction you are given; if an ingredient might break one, leave it out.
 - Give quantities for every ingredient so the nutrition estimate is per serving.
 - nutritionPerServing is your best estimate in kcal and grams per serving. It will be shown as an unverified estimate.
