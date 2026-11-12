@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { localDateKey } from '../meal-rules.js';
+import {
+    BUILT_IN_MEALS, DEFAULT_SETTINGS, isMealLoggedOnDate, localDateKey,
+    mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings,
+    safetyIssues, selectDailyPlan, shuffleDailyPlan,
+} from '../meal-rules.js';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../app.js', import.meta.url), 'utf8').replace(/import\s*\{[\s\S]*?\}\s*from '\.\/meal-rules\.js';/, '');
@@ -146,4 +150,39 @@ test('Find with no protein selected browses every recipe of the chosen type', ()
         globalThis.shown = grid ? grid.children.length : 0;
     `, context);
     assert.equal(context.shown, 2);
+});
+
+test('init synchronously populates today meals from BUILT_IN_MEALS without getting stuck on Loading even if fetch hangs or retry-meals is missing', () => {
+    const dom = fakeDom();
+    const origGet = dom.getElementById.bind(dom);
+    // Simulate a stale cached HTML shell where #retry-meals does not exist yet
+    dom.getElementById = id => (id === 'retry-meals' ? null : origGet(id));
+    dom.getElementById('breakfast-name').textContent = 'Loading…';
+    dom.getElementById('lunch-name').textContent = 'Loading…';
+    dom.getElementById('dinner-name').textContent = 'Loading…';
+
+    const context = appContext({
+        BUILT_IN_MEALS,
+        DEFAULT_SETTINGS,
+        PROTEINS: [],
+        normalizeMeal,
+        normalizeSettings,
+        normalizeLogEntry,
+        safetyIssues,
+        selectDailyPlan,
+        shuffleDailyPlan,
+        mealsConflict,
+        isMealLoggedOnDate,
+        document: dom,
+        setInterval: () => 0,
+        fetch: () => new Promise(() => {}), // never resolves
+        AbortSignal: { timeout: () => undefined },
+    });
+    vm.runInNewContext(source + '\ninit();', context);
+    assert.notEqual(dom.getElementById('breakfast-name').textContent, 'Loading…');
+    assert.notEqual(dom.getElementById('lunch-name').textContent, 'Loading…');
+    assert.notEqual(dom.getElementById('dinner-name').textContent, 'Loading…');
+    assert.ok(dom.getElementById('breakfast-name').textContent.length > 3);
+    assert.ok(dom.getElementById('lunch-name').textContent.length > 3);
+    assert.ok(dom.getElementById('dinner-name').textContent.length > 3);
 });

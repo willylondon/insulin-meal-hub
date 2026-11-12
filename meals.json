@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updated": "2026-10-14",
+  "updated": "2026-11-07",
   "reviewStatus": "unreviewed",
   "reviewNote": "Recipes have not been reviewed by a dietitian, clinician or food-safety specialist. Nutrition is withheld (null) until per-serving values are calculated from weighed ingredients and reviewed; set nutrition.verified=true only after that review.",
   "meals": [
@@ -38,57 +38,61 @@
     },
     {
       "id": "BF002",
-      "name": "Callaloo & Sweet Potato Hash",
+      "name": "Callaloo, Black Bean & Sweet Potato Hash",
       "type": "Breakfast",
       "prepTime": "15-20 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
         "2 cups callaloo, chopped",
-        "1 small sweet potato, diced",
+        "1/2 cup cooked black beans, rinsed and drained",
+        "1/2 small sweet potato, diced",
         "1/4 onion, diced",
         "1 garlic clove, minced",
-        "1 tsp coconut oil",
+        "1 tbsp pumpkin seeds",
+        "1 tsp olive oil",
         "1/4 tsp thyme"
       ],
       "instructions": [
-        "Steam sweet potato 10 min until tender",
-        "Heat coconut oil, sauté onion and garlic",
-        "Add callaloo, cook 5 min",
-        "Add sweet potato, mix well",
-        "Season with thyme"
+        "Steam diced sweet potato 8–10 min until fork-tender",
+        "Heat olive oil in a skillet and sauté onion and garlic for 2 min",
+        "Add callaloo and black beans, cooking 4–5 min until greens are tender",
+        "Fold in sweet potato, season with thyme, and top with pumpkin seeds"
       ],
       "tags": [
         "Jamaican",
-        "Vegan"
+        "Vegan",
+        "High-fiber"
       ],
       "safetyNotes": [],
       "nutrition": null
     },
     {
       "id": "BF003",
-      "name": "Coconut Chia Pudding with Mango",
+      "name": "Spiced Almond Chia & Berry Pudding",
       "type": "Breakfast",
-      "prepTime": "15-20 min",
+      "prepTime": "10 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
         "1/4 cup chia seeds",
-        "1 cup coconut milk",
-        "1/2 mango, diced",
-        "1 tbsp shredded coconut",
+        "3/4 cup unsweetened almond milk",
+        "1/4 cup plain Greek yogurt",
+        "1/3 cup fresh mixed berries",
+        "1 tbsp chopped walnuts",
         "1 tsp vanilla extract",
-        "Pinch of nutmeg"
+        "Pinch of nutmeg and cinnamon"
       ],
       "instructions": [
-        "Mix chia seeds with coconut milk",
-        "Refrigerate overnight",
-        "Top with mango and coconut",
-        "Drizzle with vanilla extract"
+        "Whisk chia seeds with unsweetened almond milk, vanilla, nutmeg and cinnamon",
+        "Refrigerate at least 2 hours or overnight until thick",
+        "Stir in plain Greek yogurt before serving",
+        "Top with fresh berries and chopped walnuts"
       ],
       "tags": [
-        "Vegan",
-        "Make-ahead"
+        "Vegetarian",
+        "Make-ahead",
+        "High-fiber"
       ],
       "safetyNotes": [],
       "nutrition": null
@@ -124,25 +128,27 @@
     },
     {
       "id": "BF005",
-      "name": "Green Banana Porridge with Cinnamon",
+      "name": "Green Banana, Flax & Walnut Porridge",
       "type": "Breakfast",
       "prepTime": "15-20 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
-        "1 green banana, grated",
-        "1 cup almond milk",
-        "1/2 tsp cinnamon",
+        "1 small green banana, grated",
+        "1 cup unsweetened soy or almond milk",
+        "2 tbsp hemp seeds",
         "1 tbsp ground flaxseed",
+        "1 tbsp chopped walnuts",
+        "1/2 tsp cinnamon",
         "1 tsp vanilla extract",
         "Pinch of salt"
       ],
       "instructions": [
-        "Grate green banana",
-        "Bring almond milk to simmer",
-        "Whisk in banana, cook 10 min",
-        "Add cinnamon and flaxseed",
-        "Stir until thickened"
+        "Finely grate the green banana",
+        "Bring milk to a gentle simmer in a small pot",
+        "Whisk in grated green banana and cook 8–10 min, stirring constantly",
+        "Stir in cinnamon, vanilla, ground flaxseed and hemp seeds until thickened",
+        "Top with chopped walnuts and serve warm"
       ],
       "tags": [
         "Jamaican",
@@ -153,7 +159,7 @@
     },
     {
       "id": "BF006",
-      "name": "Protein Pumpkin Pancakes",
+      "name": "Protein Pumpkin & Almond Pancakes",
       "type": "Breakfast",
       "prepTime": "15-20 min",
       "servings": 1,
@@ -162,14 +168,15 @@
         "1/2 cup pumpkin puree",
         "2 eggs",
         "1/4 cup almond flour",
+        "1 tbsp ground flaxseed",
         "1 tsp baking powder",
         "1/2 tsp cinnamon",
-        "1 tsp coconut oil"
+        "1 tsp olive oil"
       ],
       "instructions": [
-        "Mix all ingredients in bowl",
-        "Heat coconut oil in pan",
-        "Pour batter, cook about 3 min per side until set in the centre",
+        "Whisk pumpkin puree, eggs, almond flour, flaxseed, baking powder and cinnamon in a bowl",
+        "Heat olive oil in a non-stick pan over medium heat",
+        "Pour batter and cook about 3 min per side until golden and set in the centre",
         "Serve warm"
       ],
       "tags": [
@@ -181,24 +188,25 @@
     },
     {
       "id": "BF007",
-      "name": "Jamaican Breakfast Bowl (Yam, Banana, Ackee)",
+      "name": "Jamaican Ackee, Green Banana & Black Bean Bowl",
       "type": "Breakfast",
       "prepTime": "15-20 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
-        "1/2 yam, boiled and sliced",
-        "1 green banana, boiled",
         "1/2 cup canned ackee, drained",
+        "1/2 cup cooked black beans, rinsed",
+        "1 small green banana, boiled and sliced",
+        "1 cup steamed spinach or cabbage",
         "1/4 avocado, sliced",
         "1 tsp olive oil",
         "Pinch of black pepper"
       ],
       "instructions": [
-        "Boil yam and banana until tender",
-        "Gently heat the drained canned ackee in a pan for 2–3 min",
-        "Arrange on plate with avocado",
-        "Drizzle with olive oil"
+        "Boil green banana until tender and steam the greens for 3 min",
+        "Gently heat the drained canned ackee and black beans in a pan for 2–3 min",
+        "Arrange on a plate with sliced avocado and greens",
+        "Drizzle with olive oil and season with black pepper"
       ],
       "tags": [
         "Jamaican",
@@ -211,7 +219,7 @@
     },
     {
       "id": "BF008",
-      "name": "Avocado & Saltfish on Toast",
+      "name": "Avocado & Saltfish on Whole-Grain Toast",
       "type": "Breakfast",
       "prepTime": "15-20 min",
       "servings": 1,
@@ -241,23 +249,23 @@
     },
     {
       "id": "BF009",
-      "name": "Tropical Fruit & Yogurt Parfait",
+      "name": "Greek Yogurt, Papaya & Walnut Parfait",
       "type": "Breakfast",
-      "prepTime": "15-20 min",
+      "prepTime": "5 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
-        "1/2 cup Greek yogurt",
-        "1/4 cup pineapple chunks",
+        "3/4 cup plain Greek yogurt",
         "1/4 cup papaya cubes",
-        "1 tbsp chopped nuts",
-        "1 tsp honey (optional)",
-        "1 tsp chia seeds"
+        "1/4 cup fresh berries",
+        "2 tbsp chopped walnuts or almonds",
+        "1 tbsp chia seeds",
+        "1/4 tsp cinnamon"
       ],
       "instructions": [
-        "Layer yogurt and fruits in glass",
-        "Top with nuts and chia seeds",
-        "Drizzle with honey if desired"
+        "Layer plain Greek yogurt, papaya cubes and berries in a bowl or glass",
+        "Top with chopped nuts and chia seeds",
+        "Dust lightly with cinnamon and serve"
       ],
       "tags": [
         "Vegetarian",
@@ -268,28 +276,31 @@
     },
     {
       "id": "BF010",
-      "name": "Jamaican Cornmeal Porridge",
+      "name": "Jamaican Spiced Oat & Flax Porridge",
       "type": "Breakfast",
-      "prepTime": "15-20 min",
+      "prepTime": "15 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
-        "1/4 cup cornmeal",
-        "1 cup almond milk",
+        "1/3 cup rolled oats",
+        "1 cup unsweetened soy or almond milk",
+        "1 tbsp ground flaxseed",
+        "1 tbsp chia seeds",
+        "1 tbsp chopped almonds",
         "1 cinnamon stick",
         "1/4 tsp nutmeg",
-        "1 tsp vanilla extract",
-        "1 tbsp ground flaxseed"
+        "1 tsp vanilla extract"
       ],
       "instructions": [
-        "Mix cornmeal with cold milk",
-        "Bring to boil, add cinnamon",
-        "Simmer 15 min, stirring",
-        "Remove cinnamon, add flavorings"
+        "Combine rolled oats, milk and cinnamon stick in a small pot",
+        "Bring to a gentle boil, then simmer 8–10 min, stirring occasionally",
+        "Remove cinnamon stick and stir in flaxseed, chia seeds, nutmeg and vanilla",
+        "Top with chopped almonds and serve warm"
       ],
       "tags": [
         "Jamaican",
-        "Vegan"
+        "Vegan",
+        "High-fiber"
       ],
       "safetyNotes": [],
       "nutrition": null
@@ -335,7 +346,7 @@
       "id": "LH002",
       "name": "Chicken & Callaloo Egg Muffins",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "25 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -344,14 +355,14 @@
         "1 cup callaloo (or spinach), chopped",
         "¼ bell pepper, diced",
         "1 scallion, chopped",
-        "2 tbsp coconut milk",
+        "2 tbsp unsweetened almond milk",
         "¼ tsp turmeric",
         "Pinch of black pepper",
         "Olive oil spray"
       ],
       "instructions": [
         "Preheat oven to 350°F (175°C).",
-        "Whisk eggs with coconut milk, turmeric, pepper.",
+        "Whisk eggs with unsweetened almond milk, turmeric, pepper.",
         "Stir in chicken, callaloo, bell pepper, scallion.",
         "Spray muffin tin with olive oil.",
         "Pour mixture into 6 muffin cups.",
@@ -471,7 +482,7 @@
       "id": "LH006",
       "name": "Callaloo & Egg White Frittata",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "20 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
@@ -502,7 +513,7 @@
       "id": "LH007",
       "name": "Protein Power Bowl: Beans & Greens",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "10 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
@@ -531,24 +542,25 @@
     },
     {
       "id": "LH008",
-      "name": "Green Smoothie Bowl (Post-workout)",
+      "name": "Green Protein & Berry Smoothie Bowl",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "10 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
-        "1 banana, frozen",
         "1 cup spinach",
-        "½ cup Greek yogurt",
-        "¼ cup almond milk",
+        "¼ avocado, diced",
+        "½ cup plain Greek yogurt",
+        "½ cup unsweetened almond milk",
         "1 scoop protein powder",
         "1 tbsp chia seeds",
+        "1 tbsp pumpkin seeds",
         "½ cup mixed berries"
       ],
       "instructions": [
-        "Blend all ingredients until smooth.",
-        "Pour into bowl.",
-        "Top with additional berries and seeds.",
+        "Blend spinach, avocado, Greek yogurt, almond milk and protein powder until thick and smooth.",
+        "Pour into a bowl.",
+        "Top with mixed berries, chia seeds and pumpkin seeds.",
         "Enjoy immediately."
       ],
       "tags": [
@@ -562,7 +574,7 @@
       "id": "LH009",
       "name": "Jamaican Chicken Salad Wrap",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "15 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
@@ -590,9 +602,9 @@
     },
     {
       "id": "LH010",
-      "name": "Pumpkin & Lentil Soup",
+      "name": "Pumpkin & Red Lentil Soup",
       "type": "Lunch",
-      "prepTime": "15-20 min",
+      "prepTime": "30 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -691,10 +703,10 @@
         "1 tbsp curry powder",
         "1/4 onion",
         "1 garlic clove",
-        "1 tsp coconut oil"
+        "1 tsp olive oil"
       ],
       "instructions": [
-        "Sauté onion and garlic in oil",
+        "Sauté onion and garlic in olive oil",
         "Add curry powder, toast 1 min",
         "Add chickpeas, coat well",
         "Add callaloo, cook 5 min",
@@ -711,7 +723,7 @@
       "id": "DN001",
       "name": "Jamaican Salmon with Pumpkin & Greens",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "25 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
@@ -746,7 +758,7 @@
       "id": "DN002",
       "name": "Tuna & Avocado Stuffed Sweet Potato",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "50 min",
       "servings": 1,
       "difficulty": "Easy",
       "ingredients": [
@@ -774,43 +786,44 @@
     },
     {
       "id": "DN003",
-      "name": "Fish Tea with Pumpkin & Okra",
+      "name": "Jamaican Curry Chicken with Steamed Cabbage",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "25 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
-        "1 whole fish (snapper or parrotfish), cleaned",
-        "4 cups water",
-        "1 cup pumpkin, cubed",
-        "½ cup okra, sliced",
-        "1 carrot, sliced",
-        "1 scallion, chopped",
+        "2 skinless chicken breasts, cubed",
+        "2 cups cabbage, shredded",
+        "1/2 bell pepper, sliced",
+        "1 tbsp Jamaican curry powder",
+        "1 onion, diced",
+        "2 garlic cloves, minced",
+        "1 tsp fresh ginger, grated",
         "1 tsp thyme",
-        "1 scotch bonnet pepper (whole)",
-        "1 lime, juiced",
-        "Salt and pepper"
+        "1 tbsp olive oil",
+        "1/2 cup water"
       ],
       "instructions": [
-        "Bring water to boil in large pot.",
-        "Add fish, pumpkin, okra, carrot, scallion, thyme, and whole scotch bonnet.",
-        "Simmer 20–25 min until a food thermometer in the thickest part of the fish reads 145°F (63°C).",
-        "Remove scotch bonnet.",
-        "Add lime juice, season with salt and pepper.",
+        "Season cubed chicken with curry powder, thyme, garlic and ginger.",
+        "Heat olive oil in a skillet and brown the chicken with onion for 4–5 min.",
+        "Add water, cover and simmer 10–12 min until a food thermometer in the thickest piece of chicken reads 165°F (74°C).",
+        "Stir in shredded cabbage and sliced bell pepper and steam 4–5 min until tender-crisp.",
         "Serve hot."
       ],
       "tags": [
         "Jamaican",
-        "Fish"
+        "Chicken"
       ],
-      "safetyNotes": [],
+      "safetyNotes": [
+        "Check poultry with a food thermometer: it is safe at 165°F (74°C) in the thickest part."
+      ],
       "nutrition": null
     },
     {
       "id": "DN004",
       "name": "Curry Goat with Cauliflower Rice",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "2 hr",
       "servings": 3,
       "difficulty": "Easy",
       "ingredients": [
@@ -843,7 +856,7 @@
       "id": "DN005",
       "name": "Steamed Fish with Cho-Cho & Carrots",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "25 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -875,7 +888,7 @@
       "id": "DN006",
       "name": "Oven-Roasted Chicken with Root Vegetables",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "45 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -908,7 +921,7 @@
       "id": "DN007",
       "name": "Stuffed Bell Peppers with Ground Turkey",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "40 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -940,7 +953,7 @@
       "id": "DN008",
       "name": "Jerk Pork with Roasted Vegetables",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "40 min",
       "servings": 3,
       "difficulty": "Easy",
       "ingredients": [
@@ -969,7 +982,7 @@
       "id": "DN009",
       "name": "Callaloo & Saltfish Patties",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "25 min",
       "servings": 2,
       "difficulty": "Easy",
       "ingredients": [
@@ -1000,7 +1013,7 @@
       "id": "DN010",
       "name": "Jamaican Oxtail Stew (Lean)",
       "type": "Dinner",
-      "prepTime": "15-20 min",
+      "prepTime": "3 hr",
       "servings": 3,
       "difficulty": "Easy",
       "ingredients": [
@@ -1065,18 +1078,21 @@
       "difficulty": "Medium",
       "ingredients": [
         "1 block firm tofu, cubed",
+        "1 cup broccoli florets",
+        "1/2 bell pepper, sliced",
+        "1 carrot, sliced",
         "1 tbsp browning",
         "1 onion, sliced",
         "2 garlic cloves",
         "Pimento berries, thyme",
-        "1 tbsp soy sauce"
+        "1 tbsp low-sodium soy sauce"
       ],
       "instructions": [
         "Press and cube tofu, pat dry",
         "Brown in oil until golden",
-        "Add onion, garlic, pimento",
-        "Stir in browning and soy sauce",
-        "Simmer in 1/4 cup water 10 min"
+        "Add onion, garlic, bell pepper, carrot and pimento",
+        "Stir in browning and low-sodium soy sauce",
+        "Add broccoli and simmer in 1/4 cup water 8–10 min until vegetables are tender-crisp"
       ],
       "tags": [
         "Jamaican",
@@ -1095,17 +1111,19 @@
       "difficulty": "Medium",
       "ingredients": [
         "1 boneless turkey breast (about 1 lb / 450 g)",
+        "2 cups green beans, trimmed",
         "Fresh rosemary and thyme",
         "3 garlic cloves, minced",
         "1 tbsp olive oil",
+        "1 lemon wedge",
         "Salt and black pepper"
       ],
       "instructions": [
         "Preheat oven to 375°F (190°C)",
         "Mix herbs, garlic and oil into a paste",
         "Rub all over the turkey breast",
-        "Roast until the thickest part reaches 165°F (74°C), about 30–40 min for a 1 lb breast (longer for larger cuts)",
-        "Rest 5 min before slicing"
+        "Roast until the thickest part reaches 165°F (74°C), about 30–40 min for a 1 lb breast (longer for larger cuts), steaming the green beans for the last 6–8 min",
+        "Rest 5 min before slicing and serve with steamed green beans and lemon"
       ],
       "tags": [
         "Turkey"

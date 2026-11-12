@@ -1,10 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
-    DEFAULT_SETTINGS, csvCell, exclusionReasons, filterMeals, logToCsv,
-    mealMatchesProteins, normalizeLogEntry, normalizeMeal, normalizeSettings,
-    pickDaily, pickDifferent, safetyIssues, streakDays, countLast7Days,
+    DEFAULT_SETTINGS, csvCell, exclusionReasons, filterMeals, isMealLoggedOnDate, logToCsv,
+    mealMatchesProteins, mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings,
+    pickDaily, pickDifferent, safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays, countLast7Days,
 } from '../meal-rules.js';
+
+const allMeals = JSON.parse(readFileSync(new URL('../meals.json', import.meta.url))).meals.map(normalizeMeal);
 
 const meal = (overrides = {}) => normalizeMeal({
     id: 'T1', name: 'Test Meal', type: 'Lunch',
@@ -56,6 +59,13 @@ test('keyword rules match words, not unrelated substrings', () => {
     const organ = meal({ ingredients: ['2 lamb kidneys'] });
     assert.ok(exclusionReasons(organ, { ...DEFAULT_SETTINGS, prioritizeHeart: false }).length > 0);
     assert.equal(mealMatchesProteins(meal({ ingredients: ['2 eggs', 'pepper'] }), ['eggs']), true);
+    assert.equal(mealMatchesProteins(meal({ ingredients: ['1 cup eggplant, cubed'] }), ['eggs']), false);
+    assert.equal(mealMatchesProteins(meal({ ingredients: ['1 garlic clove, minced', '2 cups beef broth'] }), ['beef']), false);
+    assert.equal(mealMatchesProteins(meal({ ingredients: ['1 tbsp cod liver oil'] }), ['fish']), false);
+    assert.equal(mealMatchesProteins(meal({ ingredients: ['1 lb oxtail'] }), ['beef']), true);
+    assert.equal(mealMatchesProteins(meal({ ingredients: ['1 salmon steak'] }), ['beef']), false);
+    assert.equal(exclusionReasons(meal({ ingredients: ['1 salmon steak'] }), DEFAULT_SETTINGS).length, 0);
+    assert.ok(exclusionReasons(meal({ ingredients: ['1 sirloin steak'] }), DEFAULT_SETTINGS).length > 0);
     assert.equal(mealMatchesProteins(meal(), ['chicken']), false);
 });
 
@@ -127,11 +137,68 @@ test('streak and 7-day counts use local calendar days', () => {
     assert.equal(countLast7Days(log, now), 3);
 });
 
-test('protein finder does not mistake minced vegetables or eggplant for animal protein', () => {
-    const vegetable = { name: 'Eggplant and vegetables', ingredients: ['2 cloves minced garlic', 'minced ginger', '1 eggplant', '1 tbsp cod liver oil'] };
-    assert.equal(mealMatchesProteins(vegetable, ['beef']), false);
-    assert.equal(mealMatchesProteins(vegetable, ['eggs']), false);
-    assert.equal(mealMatchesProteins({ name: 'Egg bowl', ingredients: ['2 eggs'] }, ['eggs']), true);
-    assert.equal(mealMatchesProteins({ name: 'Chickpea bowl', ingredients: ['1 cup chickpeas'] }, ['chickpea']), true);
-    assert.equal(mealMatchesProteins({ name: 'Beef', ingredients: ['200g minced beef'] }, ['beef']), true);
+test('selectDailyPlan avoids same-day signature conflicts, multi-day repeats, and recently logged meals', () => {
+    const recentByType = { breakfast: [], lunch: [], dinner: [] };
+    for (let i = 0; i < 60; i++) {
+        const date = new Date(2026, 0, 1 + i, 12);
+        const plan = selectDailyPlan(allMeals, DEFAULT_SETTINGS, { date });
+        assert.ok(plan.breakfast && plan.lunch && plan.dinner);
+        // No duplicate meals or conflicting main proteins/signature ingredients on the same day
+        assert.equal(mealsConflict(plan.breakfast, plan.lunch), false, `Day ${i} B/L conflict: ${plan.breakfast.name} vs ${plan.lunch.name}`);
+        assert.equal(mealsConflict(plan.breakfast, plan.dinner), false, `Day ${i} B/D conflict: ${plan.breakfast.name} vs ${plan.dinner.name}`);
+        assert.equal(mealsConflict(plan.lunch, plan.dinner), false, `Day ${i} L/D conflict: ${plan.lunch.name} vs ${plan.dinner.name}`);
+        // No repeat within the multi-day sliding window (at least 4 consecutive days)
+        for (const key of ['breakfast', 'lunch', 'dinner']) {
+            assert.ok(!recentByType[key].slice(0, 4).includes(plan[key].id), `Day ${i} repeated ${key}: ${plan[key].id}`);
+            recentByType[key] = [plan[key].id, ...recentByType[key]].slice(0, 4);
+        }
+    }
+
+    // Logged meal yesterday is avoided today
+    const today = new Date(2026, 5, 10, 9);
+    const yesterday = new Date(2026, 5, 9, 13);
+    const basePlan = selectDailyPlan(allMeals, DEFAULT_SETTINGS, { date: today });
+    const log = [{ mealId: basePlan.lunch.id, name: basePlan.lunch.name, type: 'Lunch', date: yesterday.toISOString() }];
+    const adjustedPlan = selectDailyPlan(allMeals, DEFAULT_SETTINGS, { date: today, log });
+    assert.notEqual(adjustedPlan.lunch.id, basePlan.lunch.id);
+});
+
+test('shuffleDailyPlan cycles through the entire allowed pool without repeating meals', () => {
+    const allowedBreakfastCount = filterMeals(allMeals.filter(m => m.type === 'Breakfast'), DEFAULT_SETTINGS).allowed.length;
+    let currentPlan = selectDailyPlan(allMeals, DEFAULT_SETTINGS, { date: new Date(2026, 3, 1, 9) });
+    let seenByType = {
+        breakfast: [currentPlan.breakfast.id],
+        lunch: [currentPlan.lunch.id],
+        dinner: [currentPlan.dinner.id],
+    };
+    const seenBreakfastOrder = [currentPlan.breakfast.id];
+
+    for (let step = 1; step < allowedBreakfastCount; step++) {
+        const prev = currentPlan;
+        const next = shuffleDailyPlan(allMeals, DEFAULT_SETTINGS, { currentPlan, seenByType, random: () => 0 });
+        currentPlan = next.plan;
+        seenByType = next.seenByType;
+        assert.notEqual(currentPlan.breakfast.id, prev.breakfast.id);
+        assert.notEqual(currentPlan.lunch.id, prev.lunch.id);
+        assert.notEqual(currentPlan.dinner.id, prev.dinner.id);
+        assert.ok(!seenBreakfastOrder.includes(currentPlan.breakfast.id), `Repeated breakfast ${currentPlan.breakfast.id} at step ${step}`);
+        seenBreakfastOrder.push(currentPlan.breakfast.id);
+        assert.equal(mealsConflict(currentPlan.breakfast, currentPlan.lunch), false);
+        assert.equal(mealsConflict(currentPlan.lunch, currentPlan.dinner), false);
+    }
+    assert.equal(new Set(seenBreakfastOrder).size, allowedBreakfastCount);
+
+    // Next shuffle wraps around the cycle cleanly without repeating the immediately preceding meal
+    const prevBreakfastId = currentPlan.breakfast.id;
+    const wrapped = shuffleDailyPlan(allMeals, DEFAULT_SETTINGS, { currentPlan, seenByType, random: () => 0 });
+    assert.notEqual(wrapped.plan.breakfast.id, prevBreakfastId);
+});
+
+test('isMealLoggedOnDate detects same-day duplicate logging', () => {
+    const targetMeal = allMeals[0];
+    const d1 = new Date(2026, 9, 14, 8, 30);
+    const d2 = new Date(2026, 9, 15, 8, 30);
+    const log = [{ id: 1, mealId: targetMeal.id, name: targetMeal.name, type: targetMeal.type, date: d1.toISOString() }];
+    assert.equal(isMealLoggedOnDate(log, targetMeal, d1), true);
+    assert.equal(isMealLoggedOnDate(log, targetMeal, d2), false);
 });

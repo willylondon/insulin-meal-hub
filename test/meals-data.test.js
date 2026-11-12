@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { MEAL_TYPES, normalizeMeal, safetyIssues } from '../meal-rules.js';
+import { BUILT_IN_MEALS, DEFAULT_SETTINGS, MEAL_TYPES, PROTEIN_IDS, cautions, filterMeals, mealMatchesProteins, normalizeMeal, safetyIssues } from '../meal-rules.js';
 
 const data = JSON.parse(readFileSync(new URL('../meals.json', import.meta.url)));
+
+test('BUILT_IN_MEALS stays in sync with meals.json', () => {
+    assert.deepEqual(BUILT_IN_MEALS, data.meals);
+});
 
 test('every recipe is complete and valid', () => {
     assert.ok(data.meals.length >= 30);
@@ -15,9 +19,30 @@ test('every recipe is complete and valid', () => {
     }
 });
 
-test('recipe IDs are unique', () => {
+test('recipe IDs and names are unique', () => {
     const ids = data.meals.map(m => m.id);
+    const names = data.meals.map(m => m.name.toLowerCase());
     assert.equal(new Set(ids).size, ids.length);
+    assert.equal(new Set(names).size, names.length);
+});
+
+test('default-allowed recipes are heart-healthy with no saturated-fat cautions and include a protein source', () => {
+    const normalized = data.meals.map(normalizeMeal);
+    const { allowed } = filterMeals(normalized, DEFAULT_SETTINGS);
+    assert.ok(allowed.length >= 30);
+    const plantProteinRe = /\b(?:beans?|lentils?|chia|hemp|flaxseed|yogurt|protein\s+powder|nuts?|walnuts?|almonds?|pumpkin\s+seeds?)\b/i;
+    for (const meal of allowed) {
+        const notes = cautions(meal, DEFAULT_SETTINGS);
+        assert.ok(!notes.some(n => /saturated fat/i.test(n)), `${meal.id} (${meal.name}) has saturated fat caution: ${notes.join('; ')}`);
+        const hasProtein = mealMatchesProteins(meal, PROTEIN_IDS) || meal.ingredients.some(i => plantProteinRe.test(i));
+        assert.ok(hasProtein, `${meal.id} (${meal.name}) lacks a clear protein source`);
+    }
+});
+
+test('beef protein filter only matches actual beef/oxtail recipes, never minced garlic', () => {
+    const normalized = data.meals.map(normalizeMeal);
+    const beefMatches = normalized.filter(m => mealMatchesProteins(m, ['beef'])).map(m => m.id);
+    assert.deepEqual(beefMatches, ['DN010']);
 });
 
 test('every meal type has several recipes', () => {

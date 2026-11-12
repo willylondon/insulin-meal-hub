@@ -3,10 +3,11 @@
 // innerHTML with data from recipes, storage, the network or the AI.
 
 import {
-    DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
-    cautions, countLast7Days, filterMeals, logToCsv, mealMatchesProteins,
-    normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily, pickDifferent,
-    exclusionReasons, localDateKey, safetyIssues, streakDays,
+    BUILT_IN_MEALS, DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
+    cautions, countLast7Days, exclusionReasons, filterMeals, isMealLoggedOnDate,
+    localDateKey, logToCsv, mealMatchesProteins, mealsConflict, normalizeLogEntry,
+    normalizeMeal, normalizeSettings, pickDaily, pickDifferent, safetyIssues,
+    selectDailyPlan, shuffleDailyPlan, streakDays,
 } from './meal-rules.js';
 
 const CONFIG = {
@@ -27,6 +28,8 @@ const state = {
     meals: [],
     loadingMeals: false,
     todayMeals: { breakfast: null, lunch: null, dinner: null },
+    seenByType: { breakfast: [], lunch: [], dinner: [] },
+    storedPlan: null,
     mealLog: [],
     savedMeals: [],
     settings: { ...DEFAULT_SETTINGS },
@@ -53,14 +56,42 @@ function init() {
     renderLogHistory();
     renderSavedMeals();
     updateStats();
+    // Seed built-in recipes synchronously so Today's Plan is ready immediately
+    // without waiting on the network or getting stuck on "Loading…".
+    if (state.meals.length === 0 && typeof BUILT_IN_MEALS !== 'undefined' && Array.isArray(BUILT_IN_MEALS)) {
+        state.meals = acceptMeals(BUILT_IN_MEALS);
+        if (state.meals.length > 0) {
+            selectMeals();
+            renderTodayMeals();
+        }
+    }
     loadMeals();
     registerServiceWorker();
     document.addEventListener('visibilitychange', refreshDay);
-    window.addEventListener('focus', refreshDay);
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('focus', refreshDay);
+    }
     setInterval(refreshDay, 60000);
 }
 
 // ── STATE ──
+function normalizeStoredPlan(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const dateKey = typeof raw.dateKey === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.dateKey) ? raw.dateKey : null;
+    if (!dateKey) return null;
+    const mealIds = {};
+    const seenByType = {};
+    for (const key of ['breakfast', 'lunch', 'dinner']) {
+        const id = raw.mealIds && typeof raw.mealIds[key] === 'string' ? raw.mealIds[key].slice(0, 40) : null;
+        mealIds[key] = id;
+        const seen = Array.isArray(raw.seenByType?.[key])
+            ? raw.seenByType[key].filter(v => typeof v === 'string' && v.length <= 40).slice(0, 50)
+            : [];
+        seenByType[key] = [...new Set(seen)];
+    }
+    return { dateKey, mealIds, seenByType };
+}
+
 function loadState() {
     let parsed = null;
     try {
@@ -79,6 +110,7 @@ function loadState() {
         }
         state.settings = normalizeSettings(parsed.settings);
         state.aiConsent = parsed.aiConsent === true;
+        state.storedPlan = normalizeStoredPlan(parsed.todayPlan);
     }
 }
 
@@ -91,6 +123,7 @@ function saveState() {
             savedMeals: state.savedMeals,
             settings: state.settings,
             aiConsent: state.aiConsent,
+            todayPlan: state.storedPlan,
         }));
         return true;
     } catch {
@@ -99,13 +132,33 @@ function saveState() {
     }
 }
 
+function syncStoredPlan(date = new Date()) {
+    const dateKey = localDateKey(date);
+    const mealIds = {
+        breakfast: state.todayMeals.breakfast?.id || null,
+        lunch: state.todayMeals.lunch?.id || null,
+        dinner: state.todayMeals.dinner?.id || null,
+    };
+    const seenByType = {};
+    for (const key of ['breakfast', 'lunch', 'dinner']) {
+        const currentId = mealIds[key];
+        const existing = Array.isArray(state.seenByType[key]) ? state.seenByType[key] : [];
+        seenByType[key] = currentId && !existing.includes(currentId) ? [...existing, currentId] : [...existing];
+    }
+    state.seenByType = seenByType;
+    state.storedPlan = { dateKey, mealIds, seenByType };
+}
+
 // ── MEAL DATA ──
 async function loadMeals() {
     if (state.loadingMeals) return;
     state.loadingMeals = true;
-    document.getElementById('retry-meals').disabled = true;
-    setText('filter-summary', 'Loading recipes…');
-    renderTodayMeals();
+    const retryBtn = document.getElementById('retry-meals');
+    if (retryBtn) retryBtn.disabled = true;
+    if (state.meals.length === 0) {
+        setText('filter-summary', 'Loading recipes…');
+        renderTodayMeals();
+    }
     let meals = [];
     try {
         const res = await fetch(CONFIG.MEALS_URL, { cache: 'no-cache', signal: AbortSignal.timeout(10000) });
@@ -119,6 +172,9 @@ async function loadMeals() {
         const remote = await fetchSheetMeals();
         if (remote.length > 0) meals = remote;
     }
+    if (meals.length === 0 && typeof BUILT_IN_MEALS !== 'undefined' && Array.isArray(BUILT_IN_MEALS)) {
+        meals = acceptMeals(BUILT_IN_MEALS);
+    }
     state.loadingMeals = false;
     state.meals = meals;
     if (meals.length === 0) {
@@ -126,8 +182,10 @@ async function loadMeals() {
     }
     selectMeals();
     renderTodayMeals();
-    document.getElementById('retry-meals').hidden = meals.length > 0;
-    document.getElementById('retry-meals').disabled = false;
+    if (retryBtn) {
+        retryBtn.hidden = meals.length > 0;
+        retryBtn.disabled = false;
+    }
     if (state.hasSearched) findMealsByProtein();
 }
 
@@ -135,6 +193,8 @@ function refreshDay() {
     const day = localDateKey(new Date());
     if (day === state.day) return;
     state.day = day;
+    state.storedPlan = null;
+    state.seenByType = { breakfast: [], lunch: [], dinner: [] };
     selectMeals();
     renderTodayMeals();
     updateStats();
@@ -181,17 +241,67 @@ function poolFor(type) {
     return filterMeals(state.meals.filter(m => m.type === type), state.settings).allowed;
 }
 
-function selectMeals() {
-    MEAL_TYPES.forEach(type => {
-        state.todayMeals[type.toLowerCase()] = pickDaily(poolFor(type));
-    });
+function selectMeals(now = new Date()) {
+    const todayKey = localDateKey(now);
+    const defaultPlan = typeof selectDailyPlan === 'function'
+        ? selectDailyPlan(state.meals, state.settings, { date: now, log: state.mealLog })
+        : {
+            breakfast: typeof pickDaily === 'function' ? pickDaily(poolFor('Breakfast'), now) : (poolFor('Breakfast')[0] || null),
+            lunch: typeof pickDaily === 'function' ? pickDaily(poolFor('Lunch'), now) : (poolFor('Lunch')[0] || null),
+            dinner: typeof pickDaily === 'function' ? pickDaily(poolFor('Dinner'), now) : (poolFor('Dinner')[0] || null),
+        };
+
+    const conflictFn = typeof mealsConflict === 'function' ? mealsConflict : (a, b) => a?.id === b?.id;
+
+    if (state.storedPlan && state.storedPlan.dateKey === todayKey) {
+        state.seenByType = {
+            breakfast: [...(state.storedPlan.seenByType?.breakfast || [])],
+            lunch: [...(state.storedPlan.seenByType?.lunch || [])],
+            dinner: [...(state.storedPlan.seenByType?.dinner || [])],
+        };
+        const chosen = [];
+        for (const type of MEAL_TYPES) {
+            const key = type.toLowerCase();
+            const pool = poolFor(type);
+            const savedId = state.storedPlan.mealIds?.[key];
+            const savedMeal = savedId ? pool.find(m => m.id === savedId) : null;
+            if (savedMeal && !chosen.some(other => conflictFn(savedMeal, other))) {
+                state.todayMeals[key] = savedMeal;
+                chosen.push(savedMeal);
+            } else {
+                const fallback = defaultPlan[key] && !chosen.some(other => conflictFn(defaultPlan[key], other))
+                    ? defaultPlan[key]
+                    : (pool.find(m => !chosen.some(other => conflictFn(m, other))) || defaultPlan[key] || pool[0] || null);
+                state.todayMeals[key] = fallback;
+                if (fallback) chosen.push(fallback);
+            }
+        }
+    } else {
+        state.todayMeals = defaultPlan;
+        state.seenByType = { breakfast: [], lunch: [], dinner: [] };
+    }
+    syncStoredPlan(now);
 }
 
 function shuffleMeals() {
-    MEAL_TYPES.forEach(type => {
-        const key = type.toLowerCase();
-        state.todayMeals[key] = pickDifferent(poolFor(type), state.todayMeals[key]);
-    });
+    const now = new Date();
+    if (typeof shuffleDailyPlan === 'function') {
+        const { plan, seenByType } = shuffleDailyPlan(state.meals, state.settings, {
+            currentPlan: state.todayMeals,
+            seenByType: state.seenByType,
+            log: state.mealLog,
+            date: now,
+        });
+        state.todayMeals = plan;
+        state.seenByType = seenByType;
+    } else if (typeof pickDifferent === 'function') {
+        MEAL_TYPES.forEach(type => {
+            const key = type.toLowerCase();
+            state.todayMeals[key] = pickDifferent(poolFor(type), state.todayMeals[key]);
+        });
+    }
+    syncStoredPlan(now);
+    saveState();
     renderTodayMeals();
     toast('Meals shuffled');
 }
@@ -207,14 +317,33 @@ function servingsLabel(meal) {
     return meal.servings ? `Serves ${meal.servings}` : 'Servings not stated';
 }
 
+function updateAteButton(btn, meal, defaultLabel, iconClass = 'fa-check') {
+    if (!btn) return;
+    if (!meal) {
+        btn.disabled = true;
+        btn.replaceChildren(
+            el('i', { className: `fas ${iconClass}`, attrs: { 'aria-hidden': 'true' } }),
+            document.createTextNode(' ' + defaultLabel),
+        );
+        return;
+    }
+    const alreadyLogged = typeof isMealLoggedOnDate === 'function' ? isMealLoggedOnDate(state.mealLog, meal) : false;
+    btn.disabled = alreadyLogged;
+    btn.replaceChildren(
+        el('i', { className: `fas ${alreadyLogged ? 'fa-check-double' : iconClass}`, attrs: { 'aria-hidden': 'true' } }),
+        document.createTextNode(alreadyLogged ? ' Logged Today' : ' ' + defaultLabel),
+    );
+}
+
 function renderTodayMeals() {
-    document.getElementById('refresh-meals').disabled = state.loadingMeals || state.meals.length === 0;
+    const refreshBtn = document.getElementById('refresh-meals');
+    if (refreshBtn) refreshBtn.disabled = (state.loadingMeals && state.meals.length === 0) || state.meals.length === 0;
     ['breakfast', 'lunch', 'dinner'].forEach(type => {
         const meal = state.todayMeals[type];
         const viewBtn = document.getElementById('view-' + type);
         const logBtn = document.getElementById('log-' + type);
         if (viewBtn) viewBtn.disabled = !meal;
-        if (logBtn) logBtn.disabled = !meal;
+        updateAteButton(logBtn, meal, 'I Ate This', 'fa-check');
         if (!meal) {
             setText(type + '-name', state.loadingMeals ? 'Loading…' : state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
             setText(type + '-time', '–');
@@ -225,14 +354,14 @@ function renderTodayMeals() {
         setText(type + '-name', meal.name);
         setText(type + '-time', meal.prepTime || '–');
         setText(type + '-meta', [servingsLabel(meal), meal.difficulty].filter(Boolean).join(' · '));
-        replaceChildren(type + '-tags', meal.tags.map(t => el('span', { className: 'meal-tag', text: t })));
+        replaceChildren(type + '-tags', (meal.tags || []).map(t => el('span', { className: 'meal-tag', text: t })));
     });
     renderFilterSummary();
     renderHeader();
 }
 
 function renderFilterSummary() {
-    if (state.loadingMeals || state.meals.length === 0) return;
+    if (state.meals.length === 0) return;
     const { excluded } = filterMeals(state.meals, state.settings);
     const parts = [];
     if (state.settings.avoidGout) parts.push('gout triggers');
@@ -251,13 +380,15 @@ function openRecipeModal(meal) {
     setText('modal-prep-time', meal.prepTime || '–');
     setText('modal-servings', servingsLabel(meal));
     setText('modal-difficulty', meal.difficulty || '–');
-    document.getElementById('modal-ai-warning').hidden = meal.source !== 'ai';
+    const aiWarning = document.getElementById('modal-ai-warning');
+    if (aiWarning) aiWarning.hidden = meal.source !== 'ai';
 
     replaceChildren('modal-ingredients', meal.ingredients.map(t => el('li', { text: t })));
     replaceChildren('modal-instructions', meal.instructions.map(t => el('li', { text: t })));
 
     const safety = meal.safetyNotes || [];
-    document.getElementById('modal-safety-section').hidden = safety.length === 0;
+    const safetySection = document.getElementById('modal-safety-section');
+    if (safetySection) safetySection.hidden = safety.length === 0;
     replaceChildren('modal-safety', safety.map(t => el('li', { text: t })));
 
     setText('modal-nutrition', nutritionText(meal));
@@ -265,7 +396,9 @@ function openRecipeModal(meal) {
     // Saved recipes stay visible after settings change, so say when one no longer fits.
     const notes = [...exclusionReasons(meal, state.settings), ...cautions(meal, state.settings)];
     renderSaveButton();
-    document.getElementById('modal-cautions-section').hidden = notes.length === 0;
+    updateAteButton(document.getElementById('log-modal-meal'), meal, 'Log This Meal', 'fa-check-circle');
+    const cautionsSection = document.getElementById('modal-cautions-section');
+    if (cautionsSection) cautionsSection.hidden = notes.length === 0;
     replaceChildren('modal-cautions', notes.map(t => el('li', { text: t })));
 
     openModal('recipe-modal');
@@ -319,13 +452,22 @@ function renderSavedMeals() {
 // ── LOG MEAL ──
 function logMeal(meal, notes = '') {
     if (!meal) return false;
+    const now = new Date();
+    if (typeof isMealLoggedOnDate === 'function' && isMealLoggedOnDate(state.mealLog, meal, now)) {
+        toast('Already logged today: ' + meal.name);
+        renderTodayMeals();
+        if (state.currentModalMeal) {
+            updateAteButton(document.getElementById('log-modal-meal'), state.currentModalMeal, 'Log This Meal', 'fa-check-circle');
+        }
+        return false;
+    }
     const entry = normalizeLogEntry({
-        id: Date.now(),
+        id: now.getTime(),
         mealId: meal.id || 'custom',
         name: meal.name,
         type: meal.type,
         notes,
-        date: new Date().toISOString(),
+        date: now.toISOString(),
     });
     if (!entry) return false;
     const previous = state.mealLog;
@@ -336,7 +478,10 @@ function logMeal(meal, notes = '') {
     }
     renderLogHistory();
     updateStats();
-    renderHeader();
+    renderTodayMeals();
+    if (state.currentModalMeal) {
+        updateAteButton(document.getElementById('log-modal-meal'), state.currentModalMeal, 'Log This Meal', 'fa-check-circle');
+    }
     toast('Logged: ' + entry.name);
     return true;
 }
@@ -355,7 +500,7 @@ function renderLogHistory() {
     if (!list) return;
     if (state.mealLog.length === 0) {
         list.replaceChildren(el('li', { className: 'empty-log', text: 'No meals logged yet. Tap "I Ate This" on one of today\'s meals to start.' }));
-        more.hidden = true;
+        if (more) more.hidden = true;
         return;
     }
     const shown = state.mealLog.slice(0, CONFIG.LOG_DISPLAY_LIMIT);
@@ -378,8 +523,10 @@ function renderLogHistory() {
         ]);
     }));
     const hiddenCount = state.mealLog.length - shown.length;
-    more.hidden = hiddenCount <= 0;
-    more.textContent = hiddenCount > 0 ? `Showing the latest ${shown.length}. Export the log to see all ${state.mealLog.length}.` : '';
+    if (more) {
+        more.hidden = hiddenCount <= 0;
+        more.textContent = hiddenCount > 0 ? `Showing the latest ${shown.length}. Export the log to see all ${state.mealLog.length}.` : '';
+    }
 }
 
 function setLog(next) {
@@ -388,7 +535,10 @@ function setLog(next) {
     if (!saveState()) { state.mealLog = previous; return false; }
     renderLogHistory();
     updateStats();
-    renderHeader();
+    renderTodayMeals();
+    if (state.currentModalMeal) {
+        updateAteButton(document.getElementById('log-modal-meal'), state.currentModalMeal, 'Log This Meal', 'fa-check-circle');
+    }
     return true;
 }
 
@@ -445,8 +595,10 @@ function cancelAI() {
     state.aiRequest?.abort();
     state.aiRequest = null;
     const btn = document.getElementById('generate-ai-btn');
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
+    if (btn) {
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+    }
     replaceChildren('ai-result', []);
 }
 
@@ -670,10 +822,21 @@ function bindSettingsTab() {
     on('settings-form', 'submit', e => {
         e.preventDefault();
         const previous = state.settings;
+        const previousStoredPlan = state.storedPlan;
+        const previousSeenByType = state.seenByType;
         state.settings = readSettingsFromUI();
-        if (!saveState()) { state.settings = previous; applySettingsToUI(); return; }
-        applySettingsToUI();
+        state.storedPlan = null;
+        state.seenByType = { breakfast: [], lunch: [], dinner: [] };
         selectMeals();
+        if (!saveState()) {
+            state.settings = previous;
+            state.storedPlan = previousStoredPlan;
+            state.seenByType = previousSeenByType;
+            selectMeals();
+            applySettingsToUI();
+            return;
+        }
+        applySettingsToUI();
         renderTodayMeals();
         finderChanged();
         toast('Settings saved');
@@ -691,18 +854,21 @@ function bindSettingsTab() {
         cancelAI();
         state.mealLog = [];
         state.savedMeals = [];
+        state.storedPlan = null;
+        state.seenByType = { breakfast: [], lunch: [], dinner: [] };
         state.settings = { ...DEFAULT_SETTINGS };
         state.aiConsent = false;
         state.currentModalMeal = null;
-        document.getElementById('custom-meal-form').reset();
-        document.getElementById('custom-meal-name').removeAttribute('aria-invalid');
+        document.getElementById('custom-meal-form')?.reset();
+        document.getElementById('custom-meal-name')?.removeAttribute('aria-invalid');
         document.querySelectorAll('.protein-chip').forEach(btn => {
             btn.setAttribute('aria-pressed', 'false');
             btn.classList.remove('selected');
         });
         state.hasSearched = false;
         replaceChildren('protein-result', []);
-        document.getElementById('find-meal-type').value = 'any';
+        const findType = document.getElementById('find-meal-type');
+        if (findType) findType.value = 'any';
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();
@@ -771,7 +937,18 @@ function exportLog() {
 
 // ── SERVICE WORKER ──
 function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let refreshing = false;
+    if (typeof navigator.serviceWorker.addEventListener === 'function') {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!hadController || refreshing) return;
+            refreshing = true;
+            if (typeof window !== 'undefined' && window.location && typeof window.location.reload === 'function') {
+                window.location.reload();
+            }
+        });
+    }
     navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(err => {
         console.warn('Offline support is unavailable:', err?.message || err);
     });

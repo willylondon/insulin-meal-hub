@@ -4,7 +4,7 @@
 // installed apps on the next online visit; the cache is only an offline
 // fallback. Bump VERSION on every release to refresh the precache.
 
-const VERSION = '3.1.0';
+const VERSION = '3.2.0';
 const NETWORK_TIMEOUT_MS = 4000;
 const PREFIX = 'meal-hub-';
 const CACHE = `${PREFIX}${VERSION}`;
@@ -75,7 +75,7 @@ async function networkFirst(request, event) {
     try {
         response = await fetchWithDeadline(request, true);
         if (response.ok) remember(event, cache, request, response);
-        if (response.status < 500) return response;
+        if (response.status >= 200 && response.status < 500) return response;
     } catch (_) { /* offline or slow: use the most recent successful copy */ }
     const cached = await cache.match(request, { ignoreSearch: true });
     if (cached) return cached;
