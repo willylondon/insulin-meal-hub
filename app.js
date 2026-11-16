@@ -16,8 +16,8 @@ const CONFIG = {
     // nutrition). Leave this off until the sheet has been updated from
     // meals.json; remote rows are validated and safety-checked either way.
     USE_REMOTE_SHEET: false,
-    GOOGLE_SHEET_ID: '1yBxlRrZEjBy0z5A7K0T5UihVo3PmWVfm',
-    SHEET_NAME: '21 Recipes',
+    GOOGLE_SHEET_ID: '1dbnesN6ZJF1ztou3vQH3Bn4Zj2zSQbzjLE6x_440R_A',
+    SHEET_NAME: 'Recipes',
     STORAGE_KEY: 'insulinMealHubData_v2',
     LOG_DISPLAY_LIMIT: 50,
     MAX_SAVED_MEALS: 50,
