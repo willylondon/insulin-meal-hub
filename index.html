@@ -65,6 +65,7 @@
                     </div>
                     <div class="meal-card-footer">
                         <button type="button" class="btn-recipe" id="view-breakfast" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-swap" id="swap-breakfast" aria-label="Swap breakfast recipe" disabled><i class="fas fa-rotate" aria-hidden="true"></i> Swap</button>
                         <button type="button" class="btn-ate" id="log-breakfast" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
@@ -81,6 +82,7 @@
                     </div>
                     <div class="meal-card-footer">
                         <button type="button" class="btn-recipe" id="view-lunch" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-swap" id="swap-lunch" aria-label="Swap lunch recipe" disabled><i class="fas fa-rotate" aria-hidden="true"></i> Swap</button>
                         <button type="button" class="btn-ate" id="log-lunch" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
@@ -97,14 +99,20 @@
                     </div>
                     <div class="meal-card-footer">
                         <button type="button" class="btn-recipe" id="view-dinner" disabled><i class="fas fa-utensils" aria-hidden="true"></i> Recipe</button>
+                        <button type="button" class="btn-swap" id="swap-dinner" aria-label="Swap dinner recipe" disabled><i class="fas fa-rotate" aria-hidden="true"></i> Swap</button>
                         <button type="button" class="btn-ate" id="log-dinner" disabled><i class="fas fa-check" aria-hidden="true"></i> I Ate This</button>
                     </div>
                 </article>
             </div>
 
-            <button type="button" class="btn-shuffle" id="refresh-meals">
-                <i class="fas fa-shuffle" aria-hidden="true"></i> Shuffle Meals
-            </button>
+            <div class="today-actions-row">
+                <button type="button" class="btn-shuffle" id="refresh-meals">
+                    <i class="fas fa-shuffle" aria-hidden="true"></i> Shuffle All
+                </button>
+                <button type="button" class="btn-grocery" id="open-grocery-btn">
+                    <i class="fas fa-basket-shopping" aria-hidden="true"></i> 7-Day &amp; Grocery List
+                </button>
+            </div>
         </section>
 
         <!-- FIND TAB -->
@@ -113,6 +121,16 @@
             <p class="section-sub" id="protein-chips-label">What's in your fridge right now? Select up to 5 proteins, or leave them all off to browse every recipe.</p>
 
             <div class="protein-chips" id="protein-chips" role="group" aria-labelledby="protein-chips-label"></div>
+
+            <div class="form-group find-type">
+                <label for="find-search">Search by ingredient or dish</label>
+                <input type="text" id="find-search" class="text-input" maxlength="80" autocomplete="off" placeholder="e.g. spinach, avocado, salmon, soup…">
+            </div>
+
+            <div class="form-group find-type">
+                <label id="quick-filters-label">Quick filters</label>
+                <div class="quick-chips" id="quick-filter-chips" role="group" aria-labelledby="quick-filters-label"></div>
+            </div>
 
             <div class="form-group find-type">
                 <label for="find-meal-type">Meal type</label>
@@ -197,9 +215,20 @@
             <ul class="log-history" id="log-history"></ul>
             <p class="log-more" id="log-more" hidden></p>
 
-            <button type="button" class="btn-export" id="export-data">
-                <i class="fas fa-download" aria-hidden="true"></i> Export Log (CSV)
-            </button>
+            <div class="log-actions-stack">
+                <button type="button" class="btn-export" id="export-data">
+                    <i class="fas fa-download" aria-hidden="true"></i> Export Log (CSV)
+                </button>
+                <div class="log-backup-row">
+                    <button type="button" class="btn-export" id="backup-json">
+                        <i class="fas fa-file-export" aria-hidden="true"></i> Backup (JSON)
+                    </button>
+                    <label for="restore-backup-input" class="btn-export" id="restore-json-label">
+                        <i class="fas fa-file-import" aria-hidden="true"></i> Restore Backup
+                    </label>
+                    <input type="file" id="restore-backup-input" accept=".json,application/json" class="visually-hidden">
+                </div>
+            </div>
         </section>
 
         <!-- SETTINGS TAB -->
@@ -380,6 +409,10 @@
                 </div>
             </fieldset>
             <div class="form-group">
+                <label id="checkin-tags-label">Quick check-in (tap to add)</label>
+                <div class="checkin-chips" id="checkin-chips" role="group" aria-labelledby="checkin-tags-label"></div>
+            </div>
+            <div class="form-group">
                 <label for="custom-meal-notes">Notes (optional)</label>
                 <textarea id="custom-meal-notes" class="text-input" rows="3" maxlength="1000" placeholder="How did it taste? How did you feel?"></textarea>
             </div>
@@ -390,6 +423,43 @@
             </button>
         </div>
     </form>
+</dialog>
+
+<!-- ── 7-DAY PLAN & GROCERY LIST DIALOG ── -->
+<dialog class="modal" id="grocery-modal" aria-labelledby="grocery-modal-title">
+    <div class="modal-sheet">
+        <div class="modal-drag-bar" aria-hidden="true"></div>
+        <div class="modal-header">
+            <h2 id="grocery-modal-title">Plan &amp; Grocery List</h2>
+            <button type="button" class="modal-close" id="close-grocery-modal" aria-label="Close plan and grocery list"><i class="fas fa-times" aria-hidden="true"></i></button>
+        </div>
+        <div class="modal-scroll">
+            <fieldset class="form-group">
+                <legend>Planning window</legend>
+                <div class="seg-control" id="seg-grocery-days">
+                    <input type="radio" name="groceryDays" id="grocery-days-1" value="1"><label for="grocery-days-1">Today (3)</label>
+                    <input type="radio" name="groceryDays" id="grocery-days-3" value="3"><label for="grocery-days-3">3 Days (9)</label>
+                    <input type="radio" name="groceryDays" id="grocery-days-7" value="7" checked><label for="grocery-days-7">7 Days (21)</label>
+                </div>
+            </fieldset>
+
+            <div class="modal-section" id="grocery-plan-section">
+                <h3><i class="fas fa-calendar-week" aria-hidden="true"></i> Planned Meals</h3>
+                <div class="weekly-plan-list" id="weekly-plan-list"></div>
+            </div>
+
+            <div class="modal-section">
+                <h3><i class="fas fa-basket-shopping" aria-hidden="true"></i> Shopping List</h3>
+                <p class="field-hint">Tap items to check them off as you shop.</p>
+                <div id="grocery-categories"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-log-modal" id="copy-grocery-btn">
+                <i class="fas fa-copy" aria-hidden="true"></i> Copy Shopping List
+            </button>
+        </div>
+    </div>
 </dialog>
 
 <!-- ── TOAST ── -->

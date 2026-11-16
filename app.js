@@ -3,11 +3,13 @@
 // innerHTML with data from recipes, storage, the network or the AI.
 
 import {
-    BUILT_IN_MEALS, CUISINE_IDS, DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
+    BUILT_IN_MEALS, CHECKIN_TAGS, CUISINE_IDS, DEFAULT_SETTINGS, MAX_LOG_ENTRIES,
+    MEAL_TYPES, PROTEINS, QUICK_FILTERS, buildGroceryList, buildMultiDayPlan,
     cautions, countLast7Days, exclusionReasons, filterMeals, isMealLoggedOnDate,
-    localDateKey, logToCsv, mealMatchesCuisine, mealMatchesProteins, mealsConflict,
-    normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily, pickDifferent,
-    safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays,
+    localDateKey, logToCsv, mealMatchesCuisine, mealMatchesProteins, mealMatchesSearch,
+    mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily,
+    pickDifferent, safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays,
+    swapSingleMeal,
 } from './meal-rules.js';
 
 const CONFIG = {
@@ -46,6 +48,8 @@ function init() {
     loadState();
     applySettingsToUI();
     initProteinChips();
+    initQuickFilterChips();
+    initCheckinChips();
     bindNav();
     bindTodayTab();
     bindFindTab();
@@ -306,6 +310,136 @@ function shuffleMeals() {
     toast('Meals shuffled');
 }
 
+function swapMeal(type) {
+    const now = new Date();
+    const key = String(type || '').toLowerCase();
+    if (!['breakfast', 'lunch', 'dinner'].includes(key)) return;
+    if (typeof swapSingleMeal === 'function') {
+        const { plan, seenByType } = swapSingleMeal(state.meals, state.settings, type, {
+            currentPlan: state.todayMeals,
+            seenByType: state.seenByType,
+            log: state.mealLog,
+            date: now,
+        });
+        state.todayMeals = plan;
+        state.seenByType = seenByType;
+    } else if (typeof pickDifferent === 'function') {
+        const proper = key.charAt(0).toUpperCase() + key.slice(1);
+        state.todayMeals[key] = pickDifferent(poolFor(proper), state.todayMeals[key]);
+    }
+    syncStoredPlan(now);
+    saveState();
+    renderTodayMeals();
+    toast(`Swapped ${key}`);
+}
+
+// ── 7-DAY PLAN & GROCERY LIST ──
+function selectedGroceryDays() {
+    const v = Number(getRadio('groceryDays'));
+    return [1, 3, 7].includes(v) ? v : 7;
+}
+
+function currentPlannedMealsForGrocery(days = selectedGroceryDays()) {
+    if (typeof buildMultiDayPlan !== 'function') {
+        return {
+            daysPlan: [{ dateKey: localDateKey(new Date()), label: 'Today', meals: state.todayMeals }],
+            mealsList: Object.values(state.todayMeals).filter(Boolean),
+        };
+    }
+    const daysPlan = buildMultiDayPlan(state.meals, state.settings, {
+        startDate: new Date(),
+        days,
+        log: state.mealLog,
+        todayPlan: state.todayMeals,
+    });
+    const mealsList = [];
+    for (const d of daysPlan) {
+        for (const k of ['breakfast', 'lunch', 'dinner']) {
+            if (d.meals?.[k]) mealsList.push(d.meals[k]);
+        }
+    }
+    return { daysPlan, mealsList };
+}
+
+function renderGroceryModal() {
+    const days = selectedGroceryDays();
+    const { daysPlan, mealsList } = currentPlannedMealsForGrocery(days);
+    const planNodes = daysPlan.map(d => el('div', { className: 'weekly-day-card' }, [
+        el('div', { className: 'weekly-day-title', text: d.label }),
+        el('div', { className: 'weekly-day-meals' }, ['breakfast', 'lunch', 'dinner'].map(slot =>
+            el('div', { className: 'weekly-meal-line' }, [
+                el('span', { className: 'weekly-meal-slot', text: slot }),
+                el('span', { text: d.meals?.[slot]?.name || '–' }),
+            ])
+        )),
+    ]));
+    replaceChildren('weekly-plan-list', planNodes);
+
+    const groups = typeof buildGroceryList === 'function' ? buildGroceryList(mealsList) : [];
+    const catNodes = groups.map(group => el('div', { className: 'grocery-category' }, [
+        el('div', { className: 'grocery-category-title', text: `${group.label} (${group.items.length})` }),
+        el('ul', { className: 'grocery-list' }, group.items.map(item => {
+            const cb = el('input', { attrs: { type: 'checkbox', 'aria-label': item.text } });
+            const row = el('li', { className: 'grocery-item' }, [
+                cb,
+                el('span', { text: item.text }),
+                ...(item.count > 1 ? [el('span', { className: 'grocery-count', text: `×${item.count}` })] : []),
+            ]);
+            const syncCheck = () => row.classList.toggle('checked', cb.checked);
+            cb.addEventListener('change', syncCheck);
+            row.addEventListener('click', e => {
+                if (e.target !== cb) {
+                    cb.checked = !cb.checked;
+                    syncCheck();
+                }
+            });
+            return row;
+        })),
+    ]));
+    replaceChildren('grocery-categories', catNodes.length ? catNodes : [hint('No ingredients to list yet.')]);
+}
+
+function openGroceryModal() {
+    renderGroceryModal();
+    openModal('grocery-modal');
+}
+
+async function copyGroceryList() {
+    const days = selectedGroceryDays();
+    const { mealsList } = currentPlannedMealsForGrocery(days);
+    const groups = typeof buildGroceryList === 'function' ? buildGroceryList(mealsList) : [];
+    if (groups.length === 0) {
+        toast('No grocery items to copy.', 'error');
+        return;
+    }
+    const lines = [`Insulin-Smart Meal Hub — Shopping List (${days === 1 ? 'Today' : days + ' Days'})`, ''];
+    for (const group of groups) {
+        lines.push(group.label.toUpperCase());
+        for (const item of group.items) {
+            lines.push(`[ ] ${item.text}${item.count > 1 ? ` (×${item.count})` : ''}`);
+        }
+        lines.push('');
+    }
+    const text = lines.join('\n').trim() + '\n';
+    try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            toast('Shopping list copied to clipboard');
+            return;
+        }
+    } catch { /* fallback to file download below */ }
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grocery-list-${days}d.txt`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Shopping list downloaded');
+}
+
 // ── RENDER TODAY ──
 function renderHeader() {
     setText('current-date', new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }));
@@ -338,11 +472,15 @@ function updateAteButton(btn, meal, defaultLabel, iconClass = 'fa-check') {
 function renderTodayMeals() {
     const refreshBtn = document.getElementById('refresh-meals');
     if (refreshBtn) refreshBtn.disabled = (state.loadingMeals && state.meals.length === 0) || state.meals.length === 0;
+    const groceryBtn = document.getElementById('open-grocery-btn');
+    if (groceryBtn) groceryBtn.disabled = (state.loadingMeals && state.meals.length === 0) || state.meals.length === 0;
     ['breakfast', 'lunch', 'dinner'].forEach(type => {
         const meal = state.todayMeals[type];
         const viewBtn = document.getElementById('view-' + type);
+        const swapBtn = document.getElementById('swap-' + type);
         const logBtn = document.getElementById('log-' + type);
         if (viewBtn) viewBtn.disabled = !meal;
+        if (swapBtn) swapBtn.disabled = !meal;
         updateAteButton(logBtn, meal, 'I Ate This', 'fa-check');
         if (!meal) {
             setText(type + '-name', state.loadingMeals ? 'Loading…' : state.meals.length ? 'No recipe matches your settings' : 'No recipes available');
@@ -581,6 +719,52 @@ function getSelectedProteins() {
     return Array.from(document.querySelectorAll('.protein-chip[aria-pressed="true"]')).map(b => b.dataset.id);
 }
 
+function initQuickFilterChips() {
+    const container = document.getElementById('quick-filter-chips');
+    if (!container || typeof QUICK_FILTERS === 'undefined' || !Array.isArray(QUICK_FILTERS)) return;
+    container.replaceChildren(...QUICK_FILTERS.map(f => {
+        const btn = el('button', { className: 'quick-chip', attrs: { type: 'button', 'aria-pressed': 'false', 'data-tag': f.id } }, [
+            document.createTextNode(f.label),
+        ]);
+        btn.addEventListener('click', () => {
+            const pressed = btn.getAttribute('aria-pressed') !== 'true';
+            btn.setAttribute('aria-pressed', String(pressed));
+            btn.classList.toggle('selected', pressed);
+            finderChanged();
+        });
+        return btn;
+    }));
+}
+
+function getSelectedQuickFilters() {
+    return Array.from(document.querySelectorAll('.quick-chip[aria-pressed="true"]')).map(b => b.dataset.tag);
+}
+
+function findSearchQuery() {
+    return document.getElementById('find-search')?.value?.trim() || '';
+}
+
+function initCheckinChips() {
+    const container = document.getElementById('checkin-chips');
+    if (!container || typeof CHECKIN_TAGS === 'undefined' || !Array.isArray(CHECKIN_TAGS)) return;
+    container.replaceChildren(...CHECKIN_TAGS.map(label => {
+        const btn = el('button', { className: 'checkin-chip', text: label, attrs: { type: 'button' } });
+        btn.addEventListener('click', () => {
+            const notesEl = document.getElementById('custom-meal-notes');
+            if (!notesEl) return;
+            const tagText = `[${label}]`;
+            if (notesEl.value.includes(tagText)) {
+                notesEl.value = notesEl.value.replace(tagText, '').replace(/\s{2,}/g, ' ').trim();
+                btn.classList.remove('selected');
+            } else {
+                notesEl.value = (notesEl.value.trim() ? `${notesEl.value.trim()} ${tagText}` : tagText).slice(0, 1000);
+                btn.classList.add('selected');
+            }
+        });
+        return btn;
+    }));
+}
+
 function selectedFindType() {
     const v = document.getElementById('find-meal-type')?.value;
     return MEAL_TYPES.includes(v) ? v : 'any';
@@ -615,6 +799,8 @@ function finderChanged() {
 function findMealsByProtein() {
     state.hasSearched = true;
     const selected = getSelectedProteins();
+    const quickTags = getSelectedQuickFilters();
+    const query = findSearchQuery();
     const resultEl = document.getElementById('protein-result');
     if (!resultEl) return;
     if (state.loadingMeals) {
@@ -624,9 +810,11 @@ function findMealsByProtein() {
     const type = selectedFindType();
     const cuisine = selectedFindCuisine();
     const matchCuisine = typeof mealMatchesCuisine === 'function' ? mealMatchesCuisine : () => true;
+    const matchSearch = typeof mealMatchesSearch === 'function' ? mealMatchesSearch : () => true;
     // No protein selected means "browse everything".
     const candidates = state.meals.filter(m => (type === 'any' || m.type === type)
         && matchCuisine(m, cuisine)
+        && matchSearch(m, query, quickTags)
         && (selected.length === 0 || mealMatchesProteins(m, selected)));
     const { allowed, excluded } = filterMeals(candidates, state.settings);
 
@@ -803,14 +991,17 @@ function bindNav() {
 function bindTodayTab() {
     ['breakfast', 'lunch', 'dinner'].forEach(type => {
         on('view-' + type, 'click', () => openRecipeModal(state.todayMeals[type]));
+        on('swap-' + type, 'click', () => swapMeal(type));
         on('log-' + type, 'click', () => logMeal(state.todayMeals[type]));
     });
     on('refresh-meals', 'click', shuffleMeals);
+    on('open-grocery-btn', 'click', openGroceryModal);
     on('retry-meals', 'click', loadMeals);
 }
 
 function bindFindTab() {
     on('find-meal-btn', 'click', findMealsByProtein);
+    on('find-search', 'input', finderChanged);
     on('find-meal-type', 'change', finderChanged);
     on('find-cuisine', 'change', finderChanged);
     on('generate-ai-btn', 'click', generateWithAI);
@@ -822,8 +1013,24 @@ function bindFindTab() {
 }
 
 function bindLogTab() {
-    on('log-manual', 'click', () => openModal('custom-meal-modal', 'custom-meal-name'));
+    on('log-manual', 'click', () => {
+        document.querySelectorAll('.checkin-chip').forEach(b => b.classList.remove('selected'));
+        openModal('custom-meal-modal', 'custom-meal-name');
+    });
     on('export-data', 'click', exportLog);
+    on('backup-json', 'click', exportBackupJson);
+    on('restore-backup-input', 'change', async e => {
+        const file = e.target?.files?.[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            importBackupJson(text);
+        } catch {
+            toast('Could not read backup file.', 'error');
+        } finally {
+            e.target.value = '';
+        }
+    });
     on('custom-meal-form', 'submit', e => { e.preventDefault(); saveCustomMeal(); });
     on('close-custom-modal', 'click', () => closeModal('custom-meal-modal'));
 }
@@ -871,12 +1078,14 @@ function bindSettingsTab() {
         state.currentModalMeal = null;
         document.getElementById('custom-meal-form')?.reset();
         document.getElementById('custom-meal-name')?.removeAttribute('aria-invalid');
-        document.querySelectorAll('.protein-chip').forEach(btn => {
+        document.querySelectorAll('.protein-chip, .quick-chip').forEach(btn => {
             btn.setAttribute('aria-pressed', 'false');
             btn.classList.remove('selected');
         });
         state.hasSearched = false;
         replaceChildren('protein-result', []);
+        const findSearch = document.getElementById('find-search');
+        if (findSearch) findSearch.value = '';
         const findType = document.getElementById('find-meal-type');
         if (findType) findType.value = 'any';
         const findCuisine = document.getElementById('find-cuisine');
@@ -893,6 +1102,11 @@ function bindSettingsTab() {
 
 function bindModals() {
     on('close-modal', 'click', () => closeModal('recipe-modal'));
+    on('close-grocery-modal', 'click', () => closeModal('grocery-modal'));
+    on('copy-grocery-btn', 'click', copyGroceryList);
+    document.querySelectorAll('input[name="groceryDays"]').forEach(r => {
+        r.addEventListener('change', renderGroceryModal);
+    });
     on('save-modal-meal', 'click', () => toggleSaved(state.currentModalMeal));
     on('log-modal-meal', 'click', () => {
         if (logMeal(state.currentModalMeal)) closeModal('recipe-modal');
@@ -932,10 +1146,10 @@ function saveCustomMeal() {
     closeModal('custom-meal-modal');
 }
 
-// ── EXPORT ──
+// ── EXPORT & BACKUP ──
 function exportLog() {
     if (state.mealLog.length === 0) { toast('No meals to export yet.'); return; }
-    const blob = new Blob(['﻿' + logToCsv(state.mealLog)], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob(['\uFEFF' + logToCsv(state.mealLog)], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -945,6 +1159,76 @@ function exportLog() {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     toast('Log exported');
+}
+
+function exportBackupJson() {
+    const payload = {
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        mealLog: state.mealLog,
+        savedMeals: state.savedMeals,
+        settings: state.settings,
+        aiConsent: state.aiConsent,
+        todayPlan: state.storedPlan,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2) + '\n'], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `meal-hub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Backup saved');
+}
+
+function importBackupJson(rawText) {
+    if (typeof rawText !== 'string' || rawText.length > 5_000_000) {
+        toast('Backup file is invalid or too large.', 'error');
+        return false;
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(rawText);
+    } catch {
+        toast('Backup file is not valid JSON.', 'error');
+        return false;
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        toast('Backup file format is not recognised.', 'error');
+        return false;
+    }
+    const prev = {
+        mealLog: state.mealLog,
+        savedMeals: state.savedMeals,
+        settings: state.settings,
+        aiConsent: state.aiConsent,
+        storedPlan: state.storedPlan,
+    };
+    state.mealLog = Array.isArray(parsed.mealLog)
+        ? parsed.mealLog.map(normalizeLogEntry).filter(Boolean).slice(0, MAX_LOG_ENTRIES)
+        : state.mealLog;
+    state.savedMeals = Array.isArray(parsed.savedMeals)
+        ? acceptMeals(parsed.savedMeals).slice(0, CONFIG.MAX_SAVED_MEALS)
+        : state.savedMeals;
+    state.settings = parsed.settings ? normalizeSettings(parsed.settings) : state.settings;
+    state.aiConsent = typeof parsed.aiConsent === 'boolean' ? parsed.aiConsent : state.aiConsent;
+    state.storedPlan = normalizeStoredPlan(parsed.todayPlan);
+
+    if (!saveState()) {
+        Object.assign(state, prev);
+        return false;
+    }
+    applySettingsToUI();
+    selectMeals();
+    renderTodayMeals();
+    renderLogHistory();
+    renderSavedMeals();
+    updateStats();
+    finderChanged();
+    toast('Backup restored');
+    return true;
 }
 
 // ── SERVICE WORKER ──

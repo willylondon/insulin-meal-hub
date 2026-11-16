@@ -790,3 +790,109 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .toast { width: max-content; text-align: left; }
 .toast-action { flex-shrink: 0; }
+
+/* ── SWAP BUTTON, WEEKLY PLAN & GROCERY LIST, QUICK FILTERS, BACKUP ── */
+.btn-swap {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-swap:hover, .btn-swap:active { background: var(--card-hover); border-color: var(--primary-dark); color: var(--primary); }
+
+.today-actions-row {
+    display: flex; gap: 10px;
+}
+.today-actions-row .btn-shuffle { flex: 1; }
+.btn-grocery {
+    flex: 1.25;
+    background: var(--primary-glow);
+    border: 1px solid var(--primary-dark);
+    color: var(--primary);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-grocery:hover { background: var(--primary-dark); color: #050c18; }
+
+.quick-chips, .checkin-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+}
+.quick-chip, .checkin-chip {
+    padding: 7px 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.18s;
+    min-height: 36px;
+}
+.quick-chip:hover, .checkin-chip:hover { border-color: var(--border-light); color: var(--text); }
+.quick-chip.selected, .checkin-chip.selected {
+    background: var(--primary-glow);
+    border-color: var(--primary-dark);
+    color: var(--primary);
+}
+
+.log-actions-stack { display: flex; flex-direction: column; gap: 10px; }
+.log-backup-row { display: flex; gap: 10px; }
+.log-backup-row .btn-export { flex: 1; margin: 0; text-align: center; }
+
+.weekly-plan-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.weekly-day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+}
+.weekly-day-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+.weekly-day-meals {
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 13px; color: var(--text-soft);
+}
+.weekly-meal-line { display: flex; gap: 6px; align-items: baseline; }
+.weekly-meal-slot {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    min-width: 66px; color: var(--text-muted);
+}
+
+.grocery-category { margin-top: 14px; }
+.grocery-category-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--primary); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.grocery-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.grocery-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 13px; color: var(--text-soft); cursor: pointer;
+}
+.grocery-item.checked { opacity: 0.55; text-decoration: line-through; }
+.grocery-item input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0;
+    accent-color: var(--primary-dark); cursor: pointer;
+}
+.grocery-count {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    color: var(--gold); background: rgba(251,191,36,0.12);
+    padding: 2px 7px; border-radius: 12px; flex-shrink: 0;
+}

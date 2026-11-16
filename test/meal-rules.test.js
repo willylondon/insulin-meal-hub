@@ -2,9 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    DEFAULT_SETTINGS, csvCell, exclusionReasons, filterMeals, isMealLoggedOnDate, logToCsv,
-    mealMatchesProteins, mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings,
-    pickDaily, pickDifferent, safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays, countLast7Days,
+    DEFAULT_SETTINGS, buildGroceryList, buildMultiDayPlan, countLast7Days, csvCell,
+    exclusionReasons, filterMeals, isMealLoggedOnDate, logToCsv, mealMatchesProteins,
+    mealMatchesSearch, mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings,
+    pickDaily, pickDifferent, safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays,
+    swapSingleMeal,
 } from '../meal-rules.js';
 
 const allMeals = JSON.parse(readFileSync(new URL('../meals.json', import.meta.url))).meals.map(normalizeMeal);
@@ -201,4 +203,44 @@ test('isMealLoggedOnDate detects same-day duplicate logging', () => {
     const log = [{ id: 1, mealId: targetMeal.id, name: targetMeal.name, type: targetMeal.type, date: d1.toISOString() }];
     assert.equal(isMealLoggedOnDate(log, targetMeal, d1), true);
     assert.equal(isMealLoggedOnDate(log, targetMeal, d2), false);
+});
+
+test('swapSingleMeal swaps only the requested slot while keeping the other meals unchanged and non-conflicting', () => {
+    const initial = selectDailyPlan(allMeals, DEFAULT_SETTINGS, { date: new Date(2026, 4, 10, 9) });
+    const seenByType = {
+        breakfast: [initial.breakfast.id],
+        lunch: [initial.lunch.id],
+        dinner: [initial.dinner.id],
+    };
+    const swapped = swapSingleMeal(allMeals, DEFAULT_SETTINGS, 'lunch', {
+        currentPlan: initial,
+        seenByType,
+        random: () => 0,
+    });
+    assert.equal(swapped.plan.breakfast.id, initial.breakfast.id);
+    assert.equal(swapped.plan.dinner.id, initial.dinner.id);
+    assert.notEqual(swapped.plan.lunch.id, initial.lunch.id);
+    assert.equal(mealsConflict(swapped.plan.breakfast, swapped.plan.lunch), false);
+    assert.equal(mealsConflict(swapped.plan.lunch, swapped.plan.dinner), false);
+});
+
+test('mealMatchesSearch filters by keyword query and quick filter tags', () => {
+    const fastVegan = meal({ name: 'Spinach Tofu Skillet', prepTime: '15 min', ingredients: ['2 cups spinach', '150g tofu'], tags: ['Vegan', 'Low-carb'] });
+    const slowChicken = meal({ name: 'Braised Chicken', prepTime: '35 min', ingredients: ['1 chicken breast'], tags: ['Chicken'] });
+    assert.equal(mealMatchesSearch(fastVegan, 'spinach tofu', ['quick', 'Vegan', 'Low-carb']), true);
+    assert.equal(mealMatchesSearch(fastVegan, 'spinach', ['Vegetarian']), true); // Vegan satisfies Vegetarian
+    assert.equal(mealMatchesSearch(slowChicken, 'chicken', ['quick']), false);
+    assert.equal(mealMatchesSearch(slowChicken, 'salmon', []), false);
+});
+
+test('buildMultiDayPlan and buildGroceryList group and deduplicate ingredients across days', () => {
+    const days = buildMultiDayPlan(allMeals, DEFAULT_SETTINGS, { startDate: new Date(2026, 6, 1, 9), days: 3 });
+    assert.equal(days.length, 3);
+    assert.equal(days[0].label, 'Today');
+    assert.equal(days[1].label, 'Tomorrow');
+    const mealsList = days.flatMap(d => [d.meals.breakfast, d.meals.lunch, d.meals.dinner]).filter(Boolean);
+    const groups = buildGroceryList(mealsList);
+    assert.ok(groups.length >= 2);
+    assert.ok(groups.some(g => g.id === 'proteins'));
+    assert.ok(groups.some(g => g.id === 'produce'));
 });

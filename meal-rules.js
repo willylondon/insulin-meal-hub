@@ -37,6 +37,24 @@ export const CUISINES = [
 ];
 export const CUISINE_IDS = CUISINES.map(c => c.id);
 
+export const QUICK_FILTERS = [
+    { id: 'quick',        label: '≤ 20 min' },
+    { id: 'Low-carb',     label: 'Low-carb' },
+    { id: 'High-fiber',   label: 'High-fiber' },
+    { id: 'High-protein', label: 'High-protein' },
+    { id: 'Vegetarian',   label: 'Vegetarian' },
+    { id: 'Vegan',        label: 'Vegan' },
+    { id: 'No-cook',      label: 'No-cook' },
+    { id: 'Make-ahead',   label: 'Make-ahead' },
+];
+
+export const CHECKIN_TAGS = [
+    'Steady energy',
+    'Full & satisfied',
+    'Post-meal walk',
+    'Felt hungry soon',
+];
+
 // One definition of each carb level, shared by the settings UI, the
 // AI prompt/validator. Numeric recipe filtering is disabled. Grams of carbohydrate
 // per serving.
@@ -193,6 +211,36 @@ export function mealMatchesCuisine(meal, cuisine) {
     if (!entry) return text.includes(String(cuisine).toLowerCase());
     if (entry.keywords.length === 0) return true;
     return entry.keywords.some(kw => text.includes(kw));
+}
+
+function parseMaxMinutes(prepTime) {
+    if (typeof prepTime !== 'string') return Infinity;
+    const nums = [...prepTime.matchAll(/\d+/g)].map(m => Number(m[0]));
+    if (nums.length === 0) return Infinity;
+    return Math.max(...nums);
+}
+
+export function mealMatchesSearch(meal, query = '', quickTags = []) {
+    if (!meal || typeof meal !== 'object') return false;
+    const q = typeof query === 'string' ? query.trim().toLowerCase() : '';
+    if (q) {
+        const searchable = [meal.name || '', ...(meal.ingredients || []), ...(meal.tags || [])].join(' ').toLowerCase();
+        const terms = q.split(/\s+/).filter(Boolean);
+        if (!terms.every(term => searchable.includes(term))) return false;
+    }
+    if (Array.isArray(quickTags) && quickTags.length > 0) {
+        const mealTagsLower = new Set((meal.tags || []).map(t => String(t).toLowerCase()));
+        for (const tag of quickTags) {
+            if (tag === 'quick') {
+                if (parseMaxMinutes(meal.prepTime) > 20 && !mealTagsLower.has('quick') && !mealTagsLower.has('no-cook')) return false;
+            } else if (tag.toLowerCase() === 'vegetarian') {
+                if (!mealTagsLower.has('vegetarian') && !mealTagsLower.has('vegan')) return false;
+            } else if (!mealTagsLower.has(String(tag).toLowerCase())) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // ── Dietary rules ──
@@ -614,6 +662,159 @@ export function shuffleDailyPlan(meals, settings = DEFAULT_SETTINGS, {
     }
 
     return { plan: nextPlan, seenByType: nextSeen };
+}
+
+// Swaps only a single meal slot (e.g. 'breakfast', 'lunch' or 'dinner') while
+// preserving the other two slots and avoiding same-day signature conflicts.
+export function swapSingleMeal(meals, settings = DEFAULT_SETTINGS, targetType, {
+    currentPlan = {},
+    seenByType = {},
+    log = [],
+    date = new Date(),
+    random = Math.random,
+} = {}) {
+    const normalizedType = MEAL_TYPES.find(t => t.toLowerCase() === String(targetType || '').toLowerCase());
+    if (!normalizedType) return { plan: { ...currentPlan }, seenByType: { ...seenByType } };
+    const key = normalizedType.toLowerCase();
+    const nextPlan = {
+        breakfast: currentPlan.breakfast || null,
+        lunch: currentPlan.lunch || null,
+        dinner: currentPlan.dinner || null,
+    };
+    const nextSeen = {
+        breakfast: [...(seenByType.breakfast || [])],
+        lunch: [...(seenByType.lunch || [])],
+        dinner: [...(seenByType.dinner || [])],
+    };
+
+    const pool = filterMeals(meals.filter(m => m.type === normalizedType), settings).allowed;
+    if (pool.length === 0) {
+        nextPlan[key] = null;
+        return { plan: nextPlan, seenByType: nextSeen };
+    }
+    if (pool.length === 1) {
+        nextPlan[key] = pool[0];
+        nextSeen[key] = [pool[0].id];
+        return { plan: nextPlan, seenByType: nextSeen };
+    }
+
+    const otherMeals = ['breakfast', 'lunch', 'dinner']
+        .filter(k => k !== key && nextPlan[k])
+        .map(k => nextPlan[k]);
+    const currentId = nextPlan[key]?.id || null;
+    const allowedIds = new Set(pool.map(m => m.id));
+    let seen = nextSeen[key].filter(id => allowedIds.has(id));
+    if (currentId && allowedIds.has(currentId) && !seen.includes(currentId)) {
+        seen = [...seen, currentId];
+    }
+
+    let unseenPool = pool.filter(m => !seen.includes(m.id) && m.id !== currentId);
+    if (unseenPool.length === 0) {
+        seen = currentId && allowedIds.has(currentId) ? [currentId] : [];
+        unseenPool = pool.filter(m => m.id !== currentId);
+    }
+
+    const loggedRecent = recentLoggedIdsByType(log, date, 7);
+    const recentSet = new Set(loggedRecent[key] || []);
+    const unlogged = unseenPool.filter(m => !recentSet.has(m.id));
+    const baseCandidates = unlogged.length > 0 ? unlogged : unseenPool;
+
+    let finalCandidates = baseCandidates.filter(m => signatureOverlapCount(m, otherMeals) === 0);
+    if (finalCandidates.length === 0) {
+        const unseenNonConflicting = unseenPool.filter(m => signatureOverlapCount(m, otherMeals) === 0);
+        if (unseenNonConflicting.length > 0) {
+            finalCandidates = unseenNonConflicting;
+        } else {
+            const poolNonConflicting = pool.filter(m => m.id !== currentId && signatureOverlapCount(m, otherMeals) === 0);
+            if (poolNonConflicting.length > 0) {
+                finalCandidates = poolNonConflicting;
+            } else {
+                const minOverlap = Math.min(...baseCandidates.map(m => signatureOverlapCount(m, otherMeals)));
+                finalCandidates = baseCandidates.filter(m => signatureOverlapCount(m, otherMeals) === minOverlap);
+            }
+        }
+    }
+
+    const picked = finalCandidates[Math.floor(random() * finalCandidates.length)];
+    nextPlan[key] = picked;
+    nextSeen[key] = [...new Set([...seen, picked.id])];
+    return { plan: nextPlan, seenByType: nextSeen };
+}
+
+export function buildMultiDayPlan(meals, settings = DEFAULT_SETTINGS, {
+    startDate = new Date(),
+    days = 7,
+    log = [],
+    todayPlan = null,
+} = {}) {
+    const count = Math.min(14, Math.max(1, Number(days) || 7));
+    const result = [];
+    for (let i = 0; i < count; i++) {
+        const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i, 12);
+        const plan = i === 0 && todayPlan && (todayPlan.breakfast || todayPlan.lunch || todayPlan.dinner)
+            ? todayPlan
+            : selectDailyPlan(meals, settings, { date: d, log });
+        result.push({
+            dateKey: localDateKey(d),
+            label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
+            meals: plan,
+        });
+    }
+    return result;
+}
+
+const GROCERY_CATEGORIES = [
+    {
+        id: 'proteins',
+        label: 'Proteins, Fish, Eggs & Tofu',
+        re: /\b(?:chicken|turkey|salmon|cod|snapper|tilapia|halibut|haddock|trout|mahi|fish|saltfish|tuna|sardines?|shrimp|prawn|beef|pork|goat|lamb|oxtail|eggs?|egg\s+whites?|tofu|tempeh|yogurt|ackee)\b/i,
+    },
+    {
+        id: 'beans',
+        label: 'Beans, Lentils, Grains & Seeds',
+        re: /\b(?:beans?|chickpeas?|lentils?|peas|edamame|quinoa|oats?|cornmeal|bulgur|bread|tortilla|wrap|flax\w*|chia|hemp|walnuts?|almonds?|peanuts?|peanut\s+butter|pumpkin\s+seeds?|sesame\s+seeds?|tahini|flour)\b/i,
+    },
+    {
+        id: 'produce',
+        label: 'Produce, Greens & Fresh Herbs',
+        re: /\b(?:spinach|kale|callaloo|arugula|romaine|lettuce|cabbage|bok\s+choy|collard|greens|broccoli|cauliflower|zucchini|squash|cho-cho|chayote|okra|pumpkin|eggplant|mushrooms?|asparagus|brussels\s+sprouts|carrots?|celery|cucumber|tomato\w*|peppers?|bell\s+pepper|scotch\s+bonnet|onion\w*|scallions?|shallots?|garlic|ginger|avocado\w*|berries|blueberries|strawberry|papaya|banana|plantain|lemon\w*|lime\w*|parsley|cilantro|basil|mint|dill|thyme|rosemary|sprouts|radish\w*|jicama|artichoke|sweet\s+potato|yam)\b/i,
+    },
+    {
+        id: 'pantry',
+        label: 'Oils, Spices & Pantry',
+        re: /.*/,
+    },
+];
+
+export function buildGroceryList(mealsList) {
+    const groups = new Map(GROCERY_CATEGORIES.map(c => [c.id, { id: c.id, label: c.label, items: new Map() }]));
+    for (const meal of mealsList || []) {
+        if (!meal || !Array.isArray(meal.ingredients)) continue;
+        for (const rawLine of meal.ingredients) {
+            const line = cleanString(rawLine, 160);
+            if (!line) continue;
+            const normKey = line.toLowerCase().replace(/\s+/g, ' ');
+            const cat = GROCERY_CATEGORIES.find(c => c.re.test(line)) || GROCERY_CATEGORIES[GROCERY_CATEGORIES.length - 1];
+            const bucket = groups.get(cat.id);
+            const existing = bucket.items.get(normKey);
+            if (existing) {
+                existing.count += 1;
+                if (!existing.meals.includes(meal.name)) existing.meals.push(meal.name);
+            } else {
+                bucket.items.set(normKey, {
+                    text: line,
+                    count: 1,
+                    meals: meal.name ? [meal.name] : [],
+                });
+            }
+        }
+    }
+    return GROCERY_CATEGORIES
+        .map(c => {
+            const items = [...groups.get(c.id).items.values()];
+            return { id: c.id, label: c.label, items };
+        })
+        .filter(g => g.items.length > 0);
 }
 
 // ── Meal log ──

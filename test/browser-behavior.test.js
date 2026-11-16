@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {
     BUILT_IN_MEALS, DEFAULT_SETTINGS, isMealLoggedOnDate, localDateKey,
     mealsConflict, normalizeLogEntry, normalizeMeal, normalizeSettings,
-    safetyIssues, selectDailyPlan, shuffleDailyPlan,
+    safetyIssues, selectDailyPlan, shuffleDailyPlan, swapSingleMeal,
 } from '../meal-rules.js';
 import { readFileSync } from 'node:fs';
 
@@ -185,4 +185,52 @@ test('init synchronously populates today meals from BUILT_IN_MEALS without getti
     assert.ok(dom.getElementById('breakfast-name').textContent.length > 3);
     assert.ok(dom.getElementById('lunch-name').textContent.length > 3);
     assert.ok(dom.getElementById('dinner-name').textContent.length > 3);
+});
+
+test('swapMeal updates only the requested meal card and importBackupJson validates restored data', () => {
+    const context = appContext({
+        BUILT_IN_MEALS,
+        DEFAULT_SETTINGS,
+        PROTEINS: [],
+        normalizeMeal,
+        normalizeSettings,
+        normalizeLogEntry,
+        safetyIssues,
+        selectDailyPlan,
+        shuffleDailyPlan,
+        swapSingleMeal,
+        mealsConflict,
+        isMealLoggedOnDate,
+    });
+    vm.runInNewContext(source + `
+        state.meals = acceptMeals(BUILT_IN_MEALS);
+        selectMeals();
+        const beforeB = state.todayMeals.breakfast.id;
+        const beforeL = state.todayMeals.lunch.id;
+        const beforeD = state.todayMeals.dinner.id;
+        swapMeal('dinner');
+        globalThis.swapResult = {
+            sameB: state.todayMeals.breakfast.id === beforeB,
+            sameL: state.todayMeals.lunch.id === beforeL,
+            changedD: state.todayMeals.dinner.id !== beforeD,
+        };
+        const ok = importBackupJson(JSON.stringify({
+            version: 3,
+            mealLog: [{ name: 'Restored Lunch', type: 'Lunch', date: '2026-05-01T12:00:00.000Z', notes: '[Steady energy]' }],
+            savedMeals: [
+                BUILT_IN_MEALS[0],
+                { id: 'BAD', name: 'Raw Ackee', type: 'Breakfast', ingredients: ['1 cup fresh ackee'], instructions: ['Boil'] }
+            ],
+            settings: { carbTolerance: 'low', avoidGout: false }
+        }));
+        globalThis.backupResult = {
+            ok,
+            logCount: state.mealLog.length,
+            savedCount: state.savedMeals.length,
+            carbTolerance: state.settings.carbTolerance,
+            avoidGout: state.settings.avoidGout,
+        };
+    `, context);
+    assert.deepEqual({ ...context.swapResult }, { sameB: true, sameL: true, changedD: true });
+    assert.deepEqual({ ...context.backupResult }, { ok: true, logCount: 1, savedCount: 1, carbTolerance: 'low', avoidGout: false });
 });
