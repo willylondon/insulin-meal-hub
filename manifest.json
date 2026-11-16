@@ -1,7 +1,7 @@
 {
   "name": "Insulin-Smart Meal Hub",
   "short_name": "MealHub",
-  "description": "Jamaican-style recipe ideas and a private, on-device meal log",
+  "description": "Worldwide recipe ideas and a private, on-device meal log",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

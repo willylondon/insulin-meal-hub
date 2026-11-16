@@ -1,12 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { BUILT_IN_MEALS, DEFAULT_SETTINGS, MEAL_TYPES, PROTEIN_IDS, cautions, filterMeals, mealMatchesProteins, normalizeMeal, safetyIssues } from '../meal-rules.js';
+import { BUILT_IN_MEALS, CUISINES, DEFAULT_SETTINGS, MEAL_TYPES, PROTEIN_IDS, cautions, filterMeals, mealMatchesCuisine, mealMatchesProteins, normalizeMeal, safetyIssues } from '../meal-rules.js';
 
 const data = JSON.parse(readFileSync(new URL('../meals.json', import.meta.url)));
 
 test('BUILT_IN_MEALS stays in sync with meals.json', () => {
     assert.deepEqual(BUILT_IN_MEALS, data.meals);
+});
+
+test('catalog includes worldwide recipes across every major region', () => {
+    assert.equal(data.meals.length, 60);
+    for (const cuisine of CUISINES.filter(c => c.id !== 'any')) {
+        const matches = data.meals.filter(m => mealMatchesCuisine(m, cuisine.id));
+        assert.ok(matches.length >= 2, `Expected at least 2 recipes for ${cuisine.id}, found ${matches.length}`);
+    }
 });
 
 test('every recipe is complete and valid', () => {

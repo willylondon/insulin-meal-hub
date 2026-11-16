@@ -3,11 +3,11 @@
 // innerHTML with data from recipes, storage, the network or the AI.
 
 import {
-    BUILT_IN_MEALS, DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
+    BUILT_IN_MEALS, CUISINE_IDS, DEFAULT_SETTINGS, MAX_LOG_ENTRIES, MEAL_TYPES, PROTEINS,
     cautions, countLast7Days, exclusionReasons, filterMeals, isMealLoggedOnDate,
-    localDateKey, logToCsv, mealMatchesProteins, mealsConflict, normalizeLogEntry,
-    normalizeMeal, normalizeSettings, pickDaily, pickDifferent, safetyIssues,
-    selectDailyPlan, shuffleDailyPlan, streakDays,
+    localDateKey, logToCsv, mealMatchesCuisine, mealMatchesProteins, mealsConflict,
+    normalizeLogEntry, normalizeMeal, normalizeSettings, pickDaily, pickDifferent,
+    safetyIssues, selectDailyPlan, shuffleDailyPlan, streakDays,
 } from './meal-rules.js';
 
 const CONFIG = {
@@ -586,6 +586,11 @@ function selectedFindType() {
     return MEAL_TYPES.includes(v) ? v : 'any';
 }
 
+function selectedFindCuisine() {
+    const v = document.getElementById('find-cuisine')?.value;
+    return typeof CUISINE_IDS !== 'undefined' && Array.isArray(CUISINE_IDS) && CUISINE_IDS.includes(v) ? v : 'any';
+}
+
 // ── FIND MEALS ──
 function hint(text, className = 'protein-hint') {
     return el('p', { className, text });
@@ -617,8 +622,11 @@ function findMealsByProtein() {
         return;
     }
     const type = selectedFindType();
+    const cuisine = selectedFindCuisine();
+    const matchCuisine = typeof mealMatchesCuisine === 'function' ? mealMatchesCuisine : () => true;
     // No protein selected means "browse everything".
     const candidates = state.meals.filter(m => (type === 'any' || m.type === type)
+        && matchCuisine(m, cuisine)
         && (selected.length === 0 || mealMatchesProteins(m, selected)));
     const { allowed, excluded } = filterMeals(candidates, state.settings);
 
@@ -695,6 +703,7 @@ async function generateWithAI() {
             body: JSON.stringify({
                 proteins: selected,
                 mealType: selectedFindType(),
+                cuisine: selectedFindCuisine(),
                 preferences: {
                     carbTolerance: s.carbTolerance,
                     avoidGout: s.avoidGout,
@@ -803,6 +812,7 @@ function bindTodayTab() {
 function bindFindTab() {
     on('find-meal-btn', 'click', findMealsByProtein);
     on('find-meal-type', 'change', finderChanged);
+    on('find-cuisine', 'change', finderChanged);
     on('generate-ai-btn', 'click', generateWithAI);
     on('ai-consent-check', 'change', e => {
         state.aiConsent = e.target.checked;
@@ -869,6 +879,8 @@ function bindSettingsTab() {
         replaceChildren('protein-result', []);
         const findType = document.getElementById('find-meal-type');
         if (findType) findType.value = 'any';
+        const findCuisine = document.getElementById('find-cuisine');
+        if (findCuisine) findCuisine.value = 'any';
         applySettingsToUI();
         selectMeals();
         renderTodayMeals();

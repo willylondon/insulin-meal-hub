@@ -1,12 +1,12 @@
 # Insulin-Smart Meal Hub
 
-A mobile-first PWA with Jamaican-style recipe ideas, an optional AI recipe generator, and a meal log that stays on your device.
+A mobile-first PWA with worldwide recipe ideas, an optional AI recipe generator, and a meal log that stays on your device.
 
 > **Not medical advice.** The app does not calculate insulin or medication doses. Recipes and nutrition have not been reviewed by a dietitian or clinician, and blood-sugar responses vary from person to person. Talk to your care team about portions and carbohydrates.
 
 ## Features
 
-- **Today's plan**: one breakfast, lunch and dinner suggestion per day from 36 recipes, filtered by your gout and heart-health settings.
+- **Today's plan**: one breakfast, lunch and dinner suggestion per day from 60 global recipes (Mediterranean, Asian, Mexican, Indian, Middle Eastern, African, European, American, and Caribbean/Jamaican), filtered by your gout and heart-health settings.
 - **Protein finder**: find recipes by what's in your fridge, or ask the AI generator for one. AI recipes pass limited input, estimate and food-safety screens before display; these do not establish actual nutrition or safety.
 - **Browse and save**: run Find with no protein selected to browse every recipe. Save any recipe, including AI ones, from its recipe sheet; saved recipes are listed on the Find tab.
 - **Meal log**: log meals with notes, delete entries (with undo), see streaks, export to CSV. Stored only in this browser.

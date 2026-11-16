@@ -13,7 +13,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createHash, randomUUID } from 'node:crypto';
 import { createRateLimiter } from './_lib/rate-limit.js';
 import {
-    CARB_LEVELS, DIFFICULTIES, MEAL_TYPES, PROTEINS, PROTEIN_IDS, BUDGETS,
+    CARB_LEVELS, CUISINE_IDS, DIFFICULTIES, MEAL_TYPES, PROTEINS, PROTEIN_IDS, BUDGETS,
     CALORIE_RANGE, PROTEIN_RANGE, exclusionReasons, mealMatchesProteins,
     normalizeMeal, safetyIssues,
 } from '../meal-rules.js';
@@ -33,7 +33,7 @@ export function validateRequest(body) {
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
         return { errors: ['Request body must be a JSON object.'] };
     }
-    const { proteins, mealType = 'any', preferences } = body;
+    const { proteins, mealType = 'any', cuisine = 'any', preferences } = body;
 
     if (!Array.isArray(proteins) || proteins.length < 1 || proteins.length > 5) {
         errors.push('proteins must be a list of 1 to 5 items.');
@@ -41,6 +41,7 @@ export function validateRequest(body) {
         errors.push('proteins contains an unknown value.');
     }
     if (mealType !== 'any' && !MEAL_TYPES.includes(mealType)) errors.push('mealType is not recognised.');
+    if (cuisine !== 'any' && !CUISINE_IDS.includes(cuisine)) errors.push('cuisine is not recognised.');
 
     const p = preferences;
     if (!p || typeof p !== 'object' || Array.isArray(p)) {
@@ -62,6 +63,7 @@ export function validateRequest(body) {
         value: {
             proteins: [...new Set(proteins)],
             mealType,
+            cuisine,
             preferences: {
                 carbTolerance: p.carbTolerance,
                 avoidGout: p.avoidGout,
@@ -116,10 +118,10 @@ export const SAFETY_STEPS = {
     rest: 'Let the pork rest for 5 minutes before serving.',
 };
 
-const SYSTEM_PROMPT = `You write practical home recipes in a Jamaican style for an app used by people who are watching their carbohydrate intake.
+const SYSTEM_PROMPT = `You write practical, flavourful home recipes from cuisines around the world (Mediterranean, Asian, Mexican & Latin, Indian, Middle Eastern, African, European, North American and Caribbean/Jamaican) for an app used by people who are watching their carbohydrate intake.
 
 Rules:
-- Use only commercially canned ackee (drained). Never include fresh ackee or instructions for preparing it.
+- Use only commercially canned ackee (drained) if ackee is used. Never include fresh ackee or instructions for preparing it.
 - Write ackee in the ingredients exactly as "canned ackee, drained" with its quantity in front.
 - Every recipe with meat, poultry or fresh fish needs a thermometer check as its own instruction step, placed straight after the step that cooks it. Copy the matching sentence below word for word, changing only the food name (for example "chicken" to "turkey"), and do not add anything else to that step: no times, no pan, oven, oil or water.
   - Chicken, turkey or other poultry (also when reheating cooked poultry): "${SAFETY_STEPS.poultry}"
@@ -133,9 +135,9 @@ Rules:
 - nutritionPerServing is your best estimate in kcal and grams per serving. It will be shown as an unverified estimate.
 - Do not make health or medical claims, and do not mention insulin doses.
 - Ingredients and instructions are plain strings without numbering or bullet characters.
-- Give at most 5 tags, each one or two words (for example "Jamaican", "Chicken", "Quick").`;
+- Give at most 5 tags, each one or two words (include the cuisine, for example "Mediterranean", "Asian", "Mexican", "Indian", "Caribbean", "Chicken", "Quick").`;
 
-export function buildPrompt({ proteins, mealType, preferences }) {
+export function buildPrompt({ proteins, mealType, cuisine = 'any', preferences }) {
     const selectedSet = new Set(proteins);
     const labels = proteins.map(id => PROTEINS.find(p => p.id === id).label.toLowerCase());
     const carb = CARB_LEVELS[preferences.carbTolerance];
@@ -156,8 +158,14 @@ export function buildPrompt({ proteins, mealType, preferences }) {
             ? 'heart-healthy preparation: use lean cuts only, no processed meat (bacon, ham, sausage, salami, corned meat), keep saturated fat (coconut, butter, cheese) low'
             : 'heart-healthy: no red or processed meat, keep saturated fat (coconut, butter, cheese) low');
     }
+    const cuisineLine = !cuisine || cuisine === 'any'
+        ? (selectedSet.has('ackee')
+            ? 'Cuisine style: Caribbean / Jamaican.'
+            : 'Cuisine style: Worldwide — choose an authentic global cuisine (such as Mediterranean, Asian, Mexican, Indian, Middle Eastern, African, European, American, or Caribbean) that pairs well with the selected proteins.')
+        : `Cuisine style: ${cuisine}.`;
     return [
         `Create one recipe using at least one of these proteins: ${labels.join(', ')}. Do not add any unrequested meat, poultry, fish or shellfish outside this list.`,
+        cuisineLine,
         mealType === 'any' ? 'Choose the most suitable meal type (Breakfast, Lunch or Dinner).' : `It must be a ${mealType} recipe.`,
         `Carbohydrate: no more than ${carb.max}g per serving.`,
         `Calories: about ${preferences.calorieTarget} kcal per serving (within ${CALORIE_TOLERANCE} kcal).`,
@@ -223,7 +231,7 @@ export function repairModelRecipe(raw, request) {
 
     const tags = Array.isArray(raw.tags)
         ? raw.tags.filter(t => typeof t === 'string').map(t => stripClaims(t).slice(0, MAX_TAG_CHARS)).filter(Boolean).slice(0, MAX_TAGS)
-        : ['Jamaican'];
+        : [request?.cuisine && request.cuisine !== 'any' ? request.cuisine : 'Global'];
 
     let nutritionPerServing = raw.nutritionPerServing;
     if (nutritionPerServing && typeof nutritionPerServing === 'object' && !Array.isArray(nutritionPerServing)

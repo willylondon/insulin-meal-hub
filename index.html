@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Insulin-Smart Meal Hub</title>
-    <meta name="description" content="Jamaican-style recipe ideas and a private, on-device meal log.">
+    <meta name="description" content="Worldwide recipe ideas and a private, on-device meal log.">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
@@ -121,6 +121,21 @@
                     <option value="Breakfast">Breakfast</option>
                     <option value="Lunch">Lunch</option>
                     <option value="Dinner">Dinner</option>
+                </select>
+            </div>
+
+            <div class="form-group find-type">
+                <label for="find-cuisine">Cuisine</label>
+                <select id="find-cuisine" class="styled-select">
+                    <option value="any">Worldwide (Any)</option>
+                    <option value="Mediterranean">Mediterranean</option>
+                    <option value="Asian">Asian (Japanese, Thai, Chinese, Korean)</option>
+                    <option value="Mexican">Mexican &amp; Latin</option>
+                    <option value="Indian">Indian &amp; South Asian</option>
+                    <option value="Middle Eastern">Middle Eastern</option>
+                    <option value="African">African</option>
+                    <option value="Caribbean">Caribbean &amp; Jamaican</option>
+                    <option value="European">European &amp; American</option>
                 </select>
             </div>
 
@@ -261,7 +276,7 @@
 
             <section class="about" aria-labelledby="about-heading">
                 <h2 id="about-heading">About &amp; privacy</h2>
-                <p><strong>What this app is:</strong> a collection of Jamaican-style recipe ideas and a simple meal log. It is intended for general recipe ideas, gives no medical advice and does not calculate insulin or medication doses.</p>
+                <p><strong>What this app is:</strong> a collection of worldwide recipe ideas and a simple meal log. It is intended for general recipe ideas, gives no medical advice and does not calculate insulin or medication doses.</p>
                 <p><strong>Recipes:</strong> not yet reviewed by a dietitian, clinician or food-safety specialist. Built-in recipes have no verified nutrition figures. Any AI nutrition figures are unverified estimates and do not filter recipes. Follow the cooking temperatures in each recipe and use a food thermometer.</p>
                 <p><strong>Your data:</strong> your meal log, notes, saved recipes and settings are stored only in this browser on this device. Anyone using this browser profile can see them. "Reset All Data" deletes them from this device.</p>
                 <p><strong>AI generator:</strong> only when you use it, your selected proteins, meal type and diet settings are sent to our server (hosted on Vercel) and to Anthropic to write a recipe. Your log and notes are never sent. The providers may keep request logs under their own policies.</p>
