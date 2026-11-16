@@ -32,7 +32,8 @@
         "Vegetarian"
       ],
       "safetyNotes": [
-        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy",
+        "so don't prepare fresh ackee unless you have been trained to do so safely."
       ],
       "nutrition": null
     },
@@ -213,7 +214,8 @@
         "Vegan"
       ],
       "safetyNotes": [
-        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy",
+        "so don't prepare fresh ackee unless you have been trained to do so safely."
       ],
       "nutrition": null
     },
@@ -338,7 +340,8 @@
         "Fish"
       ],
       "safetyNotes": [
-        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy",
+        "so don't prepare fresh ackee unless you have been trained to do so safely."
       ],
       "nutrition": null
     },
@@ -474,7 +477,8 @@
         "Vegan"
       ],
       "safetyNotes": [
-        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy, so don't prepare fresh ackee unless you have been trained to do so safely."
+        "Use commercially canned ackee only. Unripe or incorrectly prepared ackee contains a toxin (hypoglycin) that cooking does not destroy",
+        "so don't prepare fresh ackee unless you have been trained to do so safely."
       ],
       "nutrition": null
     },
@@ -1901,6 +1905,1892 @@
         "Cook chicken to an internal temperature of 165°F (74°C)."
       ],
       "nutrition": null
+    },
+    {
+      "id": "BF019",
+      "name": "Turkish Menemen with Ground Turkey & Herbs",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs, lightly beaten",
+        "80g lean ground turkey",
+        "1/2 green bell pepper, diced",
+        "1 cup diced roma tomatoes",
+        "1/4 onion, finely chopped",
+        "1/2 tsp paprika and dried oregano",
+        "2 tbsp chopped fresh parsley",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in a skillet over medium heat and brown the ground turkey with onion and green bell pepper for 6 minutes.",
+        "Check with a food thermometer that the ground turkey reads at least 165°F (74°C).",
+        "Stir in the tomatoes, paprika and oregano and simmer for 3 minutes until juicy.",
+        "Pour in the beaten eggs, stir gently until the eggs are fully set and firm, and top with fresh parsley."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Turkey",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF020",
+      "name": "Persian Kuku Sabzi (Fresh Herb & Walnut Frittata)",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "1 cup finely chopped fresh parsley, cilantro and dill",
+        "2 scallions, finely sliced",
+        "1 cup chopped baby spinach",
+        "2 tbsp chopped walnuts",
+        "1/4 tsp ground turmeric",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Whisk the eggs with the turmeric and black pepper, then fold in the chopped herbs, scallions, spinach and walnuts.",
+        "Warm the olive oil in a small non-stick skillet over medium-low heat and pour in the herb-egg mixture.",
+        "Cover and cook for 6-7 minutes, then flip and cook for 3 more minutes until firm throughout."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Eggs",
+        "Vegetarian",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF021",
+      "name": "Japanese Chawanmushi-Style Savory Egg & Shiitake Bowl",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "80g firm tofu, cubed",
+        "1/2 cup sliced shiitake mushrooms",
+        "1 cup baby spinach",
+        "3/4 cup low-sodium vegetable broth",
+        "1 tsp low-sodium soy sauce",
+        "1 scallion, finely chopped"
+      ],
+      "instructions": [
+        "Whisk the eggs gently with the vegetable broth and soy sauce until smooth.",
+        "Arrange the cubed tofu, shiitake mushrooms and baby spinach in a heatproof bowl and pour the egg mixture over them.",
+        "Place the covered bowl in a steamer basket over simmering water and steam for 12-14 minutes until the egg custard is set in the centre, then garnish with scallion."
+      ],
+      "tags": [
+        "Asian",
+        "Eggs",
+        "Tofu",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF022",
+      "name": "Korean Soft Tofu & Egg Morning Stew (Sundubu)",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g soft or silken tofu",
+        "1 large egg",
+        "1 cup sliced zucchini and mushrooms",
+        "1 cup baby spinach",
+        "1 garlic clove, minced",
+        "3/4 cup low-sodium vegetable broth",
+        "1 tsp low-sodium soy sauce and 1 tsp toasted sesame oil",
+        "1 scallion, sliced"
+      ],
+      "instructions": [
+        "Bring the vegetable broth, garlic, soy sauce, zucchini and mushrooms to a simmer in a small pot for 4 minutes.",
+        "Spoon in the soft tofu in large chunks and add the baby spinach.",
+        "Crack the egg into the simmering broth, cover and cook for 4-5 minutes until the egg is firm, then finish with sesame oil and scallion."
+      ],
+      "tags": [
+        "Asian",
+        "Tofu",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF023",
+      "name": "Spanish Spinach, Chickpea & Garlic Egg Skillet",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "1/2 cup cooked chickpeas, rinsed and drained",
+        "2 cups fresh spinach",
+        "2 garlic cloves, thinly sliced",
+        "1/2 tsp smoked paprika (pimentón)",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in a skillet over medium heat and gently toast the sliced garlic for 1 minute.",
+        "Stir in the smoked paprika and chickpeas and cook for 3 minutes until crisp at the edges.",
+        "Toss in the fresh spinach until wilted, crack in the eggs, cover and cook for 4-5 minutes until firm."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF024",
+      "name": "Mexican Machaca-Style Shredded Chicken & Egg Scramble",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "100g skinless chicken breast, finely shredded",
+        "2 large eggs, beaten",
+        "1/4 green bell pepper and 1/4 onion, diced",
+        "1 roma tomato, diced",
+        "1/4 avocado, sliced",
+        "2 tbsp fresh cilantro",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Heat the avocado oil in a skillet over medium heat and cook the shredded chicken with onion and bell pepper for 6-7 minutes.",
+        "Check with a food thermometer that the chicken reaches at least 165°F (74°C).",
+        "Add the diced tomato and cook for 2 minutes, then pour in the beaten eggs and scramble until firm.",
+        "Serve topped with sliced avocado and fresh cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Chicken",
+        "Eggs",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook poultry to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF025",
+      "name": "Indian Masala Egg Bhurji with Spinach",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs, beaten",
+        "2 cups chopped baby spinach",
+        "1/4 red onion, finely chopped",
+        "1 roma tomato, finely diced",
+        "1 tsp grated fresh ginger",
+        "1/2 tsp ground cumin, turmeric and coriander",
+        "2 tbsp chopped fresh cilantro",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Warm the avocado oil in a pan over medium heat and sauté the red onion and ginger for 3 minutes.",
+        "Add the cumin, turmeric, coriander and diced tomato; cook for 3 minutes until softened.",
+        "Stir in the baby spinach until wilted, pour in the beaten eggs and scramble until fully cooked and firm, then garnish with cilantro."
+      ],
+      "tags": [
+        "Indian",
+        "Eggs",
+        "Vegetarian",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF026",
+      "name": "Indian Spiced Tofu Bhurji & Bell Pepper Scramble",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g firm tofu, crumbled",
+        "1/2 cup green peas or shelled edamame",
+        "1/2 bell pepper, finely diced",
+        "1 cup chopped spinach",
+        "1 tsp grated ginger and 1 garlic clove, minced",
+        "1/2 tsp ground turmeric, cumin and garam masala",
+        "1 tsp avocado oil and fresh cilantro"
+      ],
+      "instructions": [
+        "Heat the avocado oil in a skillet over medium heat and sauté the ginger, garlic and bell pepper for 3 minutes.",
+        "Stir in the turmeric, cumin, garam masala, crumbled tofu and green peas; cook for 5 minutes.",
+        "Fold in the chopped spinach for 2 minutes until wilted and top with fresh cilantro."
+      ],
+      "tags": [
+        "Indian",
+        "Vegan",
+        "Tofu",
+        "High-protein"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF027",
+      "name": "Lebanese Ful Medames (Warm Fava & Chickpea Bowl)",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "3/4 cup cooked fava beans and chickpeas, rinsed",
+        "1 hard-boiled egg, halved",
+        "1/2 cup diced cucumber and tomato",
+        "2 tbsp chopped fresh parsley",
+        "1 garlic clove, minced",
+        "1/2 tsp ground cumin",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Warm the fava beans and chickpeas with garlic, cumin and 2 tbsp water in a small pot for 5 minutes, lightly mashing half the beans.",
+        "Transfer to a bowl and top with the diced cucumber, tomato, parsley and hard-boiled egg halves.",
+        "Drizzle with lemon juice and extra-virgin olive oil."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF028",
+      "name": "Ethiopian Spiced Red Lentil & Collard Green Hash",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/2 cup cooked red lentils",
+        "2 cups finely chopped collard greens or kale",
+        "1 large egg",
+        "1/4 red onion and 1 garlic clove, minced",
+        "1/2 tsp berbere spice or smoked paprika and cumin",
+        "1 tsp olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in a skillet over medium heat and sauté the onion, garlic and collard greens with a splash of water for 5 minutes until tender.",
+        "Stir in the berbere spice and cooked red lentils and warm through for 3 minutes.",
+        "Make a well in the centre, crack in the egg, cover and cook for 4-5 minutes until firm."
+      ],
+      "tags": [
+        "African",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF029",
+      "name": "French Herbes de Provence Mushroom & Spinach Omelet",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs and 2 egg whites",
+        "1 cup sliced cremini mushrooms",
+        "1.5 cups baby spinach",
+        "1/2 tsp herbes de Provence (thyme, rosemary, marjoram)",
+        "1 tbsp chopped chives",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Heat half the olive oil in a non-stick skillet over medium heat and sauté the mushrooms and spinach with herbes de Provence for 4 minutes; transfer to a plate.",
+        "Whisk the eggs, egg whites and chives together, warm the remaining oil in the skillet and pour in the eggs.",
+        "Cook until set, spoon the mushroom-spinach filling onto one half, fold over and cook for 1 more minute until firm."
+      ],
+      "tags": [
+        "European",
+        "Eggs",
+        "Vegetarian",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF030",
+      "name": "British Kipper-Style Baked Trout & Tomato Plate",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 rainbow trout fillet (about 150g)",
+        "2 roma tomatoes, halved",
+        "1 cup sliced mushrooms",
+        "1.5 cups baby spinach",
+        "1 tbsp lemon juice and chopped parsley",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Brush the trout fillet, tomato halves and mushrooms with olive oil and black pepper.",
+        "Pan-sear or broil for 4-5 minutes per side until a food thermometer in the thickest part of the trout reads 145°F (63°C).",
+        "Wilt the baby spinach in the warm pan for 1 minute and serve alongside the trout, tomatoes and mushrooms with lemon juice."
+      ],
+      "tags": [
+        "European",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF031",
+      "name": "American Southwest Turkey, Black Bean & Avocado Bowl",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "120g lean ground turkey",
+        "1/3 cup cooked black beans, rinsed",
+        "1 cup chopped kale",
+        "1/2 cup diced tomatoes and bell pepper",
+        "1/4 avocado, diced",
+        "1/2 tsp ground cumin and chili powder",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Brown the ground turkey with cumin and chili powder in avocado oil over medium-high heat for 6-7 minutes.",
+        "Check with a food thermometer that the ground turkey reads at least 165°F (74°C).",
+        "Add the kale, black beans, tomatoes and bell pepper and cook for 3 minutes until the kale is tender.",
+        "Transfer to a bowl and top with diced avocado."
+      ],
+      "tags": [
+        "American",
+        "Turkey",
+        "High-protein",
+        "High-fiber"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF032",
+      "name": "Brazilian Sardine, Egg & Tomato Savory Skillet",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 can sardines in water or olive oil (about 120g), drained",
+        "2 large eggs",
+        "1 cup chopped collard greens or spinach",
+        "1/2 cup diced tomato and onion",
+        "2 tbsp chopped cilantro",
+        "1 tbsp lime juice and 1 tsp olive oil"
+      ],
+      "instructions": [
+        "Sauté the onion, tomato and collard greens in olive oil over medium heat for 4 minutes.",
+        "Flake in the drained canned sardines and warm through for 2 minutes.",
+        "Crack in the eggs, scramble gently until the eggs are firm, and finish with lime juice and fresh cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Fish",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF033",
+      "name": "Peruvian Quinoa, Black Bean & Egg Breakfast Bowl",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "1/3 cup cooked quinoa",
+        "1/3 cup cooked black beans, rinsed",
+        "1 cup baby spinach",
+        "1/4 avocado, sliced",
+        "1 tbsp lime juice and fresh cilantro",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Warm the quinoa, black beans and baby spinach in a skillet over medium heat for 3 minutes until the spinach wilts.",
+        "In the same skillet, heat the olive oil and cook the eggs until the whites and yolks are firm.",
+        "Assemble in a bowl and top with sliced avocado, lime juice and cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF034",
+      "name": "Vietnamese Lemongrass Chicken & Greens Morning Soup",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "140g skinless chicken breast, thinly sliced",
+        "2 cups bok choy and bean sprouts",
+        "1.5 cups low-sodium chicken or vegetable broth",
+        "1 tsp grated fresh ginger and 1 stalk bruised lemongrass (or 1 tsp lime zest)",
+        "2 tbsp fresh cilantro, mint and Thai basil",
+        "1 lime wedge"
+      ],
+      "instructions": [
+        "Bring the broth, ginger and lemongrass to a simmer in a saucepan for 5 minutes.",
+        "Add the sliced chicken breast and simmer for 6-7 minutes until a food thermometer in the chicken reads at least 165°F (74°C).",
+        "Add the bok choy and bean sprouts for 2 minutes until tender-crisp, then ladle into a bowl with fresh herbs and lime."
+      ],
+      "tags": [
+        "Asian",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF035",
+      "name": "Thai Ginger-Garlic Chicken & Bok Choy Rice-Free Congee",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "140g lean ground chicken",
+        "1.5 cups riced cauliflower",
+        "1 cup chopped baby bok choy",
+        "1 cup low-sodium chicken or vegetable broth",
+        "1 tsp grated fresh ginger and 1 garlic clove, minced",
+        "1 scallion, sliced, and fresh cilantro",
+        "1 tsp toasted sesame oil"
+      ],
+      "instructions": [
+        "Simmer the riced cauliflower, ginger, garlic and broth in a pot over medium heat for 6 minutes.",
+        "Stir in the ground chicken, breaking it up fine, and simmer for 6-7 minutes until a food thermometer reads at least 165°F (74°C).",
+        "Fold in the chopped bok choy for 2 minutes until tender, then top with sesame oil, scallion and cilantro."
+      ],
+      "tags": [
+        "Asian",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook poultry to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "BF036",
+      "name": "Greek Yogurt, Hemp Seed, Walnut & Blueberry Bowl",
+      "type": "Breakfast",
+      "prepTime": "5 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "3/4 cup plain unsweetened Greek yogurt",
+        "1/2 cup fresh blueberries",
+        "2 tbsp hemp hearts",
+        "2 tbsp chopped walnuts",
+        "1 tbsp ground flaxseed",
+        "1/2 tsp ground cinnamon"
+      ],
+      "instructions": [
+        "Spoon the plain Greek yogurt into a chilled bowl.",
+        "Top evenly with the fresh blueberries, hemp hearts, chopped walnuts and ground flaxseed.",
+        "Dust with ground cinnamon and serve immediately."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Vegetarian",
+        "No-cook",
+        "High-protein"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF037",
+      "name": "Moroccan Spiced Lentil & Poached Egg Bowl",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "1/2 cup cooked brown or green lentils",
+        "2 cups baby spinach",
+        "1/2 cup diced tomatoes",
+        "1/2 tsp ground cumin, coriander and cinnamon",
+        "2 tbsp fresh cilantro",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Warm the olive oil in a skillet over medium heat and sauté the diced tomatoes, cumin, coriander and cinnamon for 3 minutes.",
+        "Stir in the cooked lentils and baby spinach until wilted.",
+        "Make two wells, crack in the eggs, cover and cook for 5 minutes until firm, then top with cilantro."
+      ],
+      "tags": [
+        "African",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF038",
+      "name": "Italian Zucchini, Tomato & Basil Frittata",
+      "type": "Breakfast",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs and 2 egg whites",
+        "1 small zucchini, thinly sliced",
+        "1/2 cup cherry tomatoes, halved",
+        "1 cup baby arugula",
+        "1 garlic clove, minced",
+        "2 tbsp fresh basil leaves, torn",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in an oven-safe or covered skillet over medium heat and sauté the zucchini and garlic for 4 minutes.",
+        "Add the cherry tomatoes and arugula for 1 minute, then pour in the beaten eggs and egg whites.",
+        "Cover and cook on medium-low heat for 6-7 minutes until completely set in the centre, then top with fresh basil."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Eggs",
+        "Vegetarian",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF039",
+      "name": "West African Black-Eyed Pea & Spinach Scramble",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "2 large eggs",
+        "1/2 cup cooked black-eyed peas, rinsed",
+        "2 cups chopped spinach",
+        "1/2 roma tomato and 1/4 red onion, diced",
+        "1/2 tsp grated fresh ginger and smoked paprika",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Heat the avocado oil in a skillet over medium heat and sauté the red onion, tomato and ginger for 3 minutes.",
+        "Add the black-eyed peas, smoked paprika and spinach; cook for 2 minutes until wilted.",
+        "Push the greens to one side, scramble the eggs until firm, then toss together and serve."
+      ],
+      "tags": [
+        "African",
+        "Eggs",
+        "Vegetarian",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "BF040",
+      "name": "Scandinavian Dill Cod & Poached Egg over Greens",
+      "type": "Breakfast",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 cod fillet (about 140g)",
+        "1 large egg",
+        "2 cups steamed asparagus spears and baby spinach",
+        "1 tbsp chopped fresh dill",
+        "1 tbsp lemon juice",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Season the cod fillet with dill, lemon juice and black pepper, and pan-sear in olive oil over medium heat for 4 minutes per side.",
+        "Check with a food thermometer that the thickest part of the cod reads at least 145°F (63°C).",
+        "Cook the egg until the white and yolk are firm, and serve over the steamed asparagus and spinach alongside the cod."
+      ],
+      "tags": [
+        "European",
+        "Fish",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH022",
+      "name": "Thai Larb Gai (Herbed Minced Chicken Lettuce Cups)",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g lean ground chicken",
+        "6 crisp butter lettuce leaves",
+        "1/2 cucumber, thinly sliced",
+        "1 shallot or 2 scallions, thinly sliced",
+        "1/2 cup fresh mint, cilantro and Thai basil",
+        "1.5 tbsp fresh lime juice and 1 tsp low-sodium soy sauce",
+        "1 tbsp crushed unsalted roasted peanuts"
+      ],
+      "instructions": [
+        "Cook the ground chicken in a skillet over medium-high heat with 2 tbsp water for 6-7 minutes, breaking it up fine.",
+        "Check with a food thermometer that the ground chicken reads at least 165°F (74°C).",
+        "Toss the warm chicken off the heat with the lime juice, soy sauce, shallot and fresh herbs.",
+        "Spoon into crisp butter lettuce leaves with cucumber slices and top with crushed peanuts."
+      ],
+      "tags": [
+        "Asian",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook poultry to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH023",
+      "name": "Korean Tofu & Mushroom Cauliflower Bibimbap Bowl",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "140g extra-firm tofu, cubed",
+        "1 large egg",
+        "1.5 cups riced cauliflower",
+        "1 cup baby spinach and 1/2 cup bean sprouts",
+        "1/2 cup sliced shiitake mushrooms and 1/2 julienned carrot",
+        "1 tbsp low-sodium soy sauce and 1 garlic clove, minced",
+        "1 tsp toasted sesame oil and 1 tsp sesame seeds"
+      ],
+      "instructions": [
+        "Pan-sear the tofu cubes in half the sesame oil over medium-high heat for 5 minutes until golden.",
+        "Sauté the riced cauliflower, mushrooms, carrot, bean sprouts and spinach with garlic and soy sauce for 4-5 minutes.",
+        "Fry the egg in the remaining oil until the white and yolk are firm, then arrange over the cauliflower bowl with the tofu and sesame seeds."
+      ],
+      "tags": [
+        "Asian",
+        "Tofu",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH024",
+      "name": "Vietnamese Lemongrass Tofu & Cabbage Salad (Goi Ga Style)",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g extra-firm tofu, sliced into strips",
+        "2.5 cups finely shredded green and purple cabbage",
+        "1/2 carrot and 1/2 cucumber, julienned",
+        "1/2 cup fresh mint, cilantro and Thai basil",
+        "1 tbsp chopped roasted peanuts",
+        "2 tbsp lime juice, 1 tsp low-sodium soy sauce and 1 garlic clove, minced",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Sear the tofu strips in avocado oil over medium-high heat for 5-6 minutes until crisp and golden.",
+        "Toss the shredded cabbage, carrot, cucumber and fresh herbs with the lime-garlic dressing.",
+        "Top with the warm crispy tofu and chopped roasted peanuts."
+      ],
+      "tags": [
+        "Asian",
+        "Vegan",
+        "Tofu",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH025",
+      "name": "Spanish Garlic Shrimp & White Bean Salad",
+      "type": "Lunch",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g raw shrimp, peeled and deveined",
+        "1/2 cup cooked white cannellini beans, rinsed",
+        "2 cups baby spinach and arugula",
+        "1/2 roasted red bell pepper, sliced",
+        "2 garlic cloves, thinly sliced",
+        "1/2 tsp smoked paprika",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in a skillet over medium-high heat and sauté the sliced garlic and smoked paprika for 30 seconds.",
+        "Add the shrimp and cook for 2-3 minutes per side until opaque and cooked through.",
+        "Toss the spinach, arugula, white beans and roasted red pepper with lemon juice, and top with the warm garlic shrimp."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Shrimp",
+        "High-protein",
+        "Quick"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH026",
+      "name": "Italian Tuscan Tuna, Chickpea & Arugula Salad",
+      "type": "Lunch",
+      "prepTime": "10 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 can tuna in water (about 140g), drained",
+        "1/2 cup cooked chickpeas, rinsed and drained",
+        "2 cups baby arugula",
+        "1/2 cup cherry tomatoes, halved",
+        "1 celery stalk, finely sliced",
+        "1 tbsp red wine vinegar or lemon juice",
+        "1 tsp extra-virgin olive oil and fresh basil"
+      ],
+      "instructions": [
+        "Combine the baby arugula, chickpeas, cherry tomatoes, sliced celery and torn basil in a bowl.",
+        "Top with the flaked canned tuna.",
+        "Drizzle with the lemon juice and extra-virgin olive oil, season with black pepper and toss to coat."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Fish",
+        "No-cook",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH027",
+      "name": "Mexican Grilled Fish & Jicama Cabbage Slaw Bowl",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g mahi-mahi or cod fillet",
+        "2 cups shredded cabbage and julienned jicama (or radish)",
+        "1/3 cup cooked pinto or black beans, rinsed",
+        "1/4 avocado, diced",
+        "2 tbsp plain unsweetened Greek yogurt whisked with 1 tbsp lime juice",
+        "1/2 tsp chili powder and ground cumin",
+        "1 tsp avocado oil and fresh cilantro"
+      ],
+      "instructions": [
+        "Rub the fish fillet with chili powder, cumin and black pepper, and sear in avocado oil over medium-high heat for 4 minutes per side.",
+        "Check with a food thermometer that the thickest part of the fish reads at least 145°F (63°C).",
+        "Toss the shredded cabbage, jicama and cilantro with the lime-yogurt dressing, and top with the black beans, flaked fish and avocado."
+      ],
+      "tags": [
+        "Mexican",
+        "Fish",
+        "High-protein",
+        "Low-carb"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH028",
+      "name": "Peruvian Lime-Poached Halibut & Avocado Bowl",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g halibut or cod fillet, cubed",
+        "1/3 cup cubed sweet potato, steamed",
+        "2 cups crisp romaine lettuce",
+        "1/4 red onion, thinly sliced",
+        "1/4 avocado, sliced",
+        "2 tbsp fresh lime juice and 1/4 cup vegetable broth",
+        "2 tbsp fresh cilantro"
+      ],
+      "instructions": [
+        "Simmer the fish cubes gently in the vegetable broth and half the lime juice in a covered skillet for 5-6 minutes.",
+        "Check with a food thermometer that the thickest piece of fish reads at least 145°F (63°C).",
+        "Arrange the romaine lettuce, steamed sweet potato, red onion and avocado in a bowl, top with the fish and drizzle with remaining lime juice and cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Fish",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH029",
+      "name": "Brazilian Collard Greens, Black Bean & Grilled Chicken Bowl",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g skinless chicken breast",
+        "1/2 cup cooked black beans, rinsed",
+        "2 cups finely ribboned collard greens (couve)",
+        "1/2 cup diced tomato, onion and vinegar salsa (vinagrete)",
+        "2 garlic cloves, minced",
+        "1/2 tsp ground cumin",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Season the chicken breast with half the garlic, cumin and black pepper, and grill or sear for 6-7 minutes per side.",
+        "Check with a food thermometer that the thickest part of the chicken reads at least 165°F (74°C).",
+        "Sauté the ribboned collard greens with the remaining garlic in olive oil for 3 minutes until bright green and tender.",
+        "Serve the sliced chicken over the collard greens and warm black beans, topped with the fresh tomato vinagrete."
+      ],
+      "tags": [
+        "Mexican",
+        "Chicken",
+        "High-fiber",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH030",
+      "name": "Indian Dal Palak (Spiced Red Lentil & Spinach Soup)",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1/2 cup dry red lentils, rinsed",
+        "2.5 cups fresh baby spinach",
+        "1 roma tomato and 1/4 onion, diced",
+        "1 tsp grated fresh ginger and 1 garlic clove, minced",
+        "1/2 tsp ground turmeric, cumin seeds and garam masala",
+        "1.5 cups water or low-sodium vegetable broth",
+        "1 tsp avocado oil and 1 tbsp lemon juice"
+      ],
+      "instructions": [
+        "Simmer the rinsed red lentils with turmeric and broth in a saucepan for 14-15 minutes until soft.",
+        "In a small skillet, warm the avocado oil and sauté the cumin seeds, onion, garlic, ginger and tomato with garam masala for 4 minutes.",
+        "Stir the spiced tomato mixture and baby spinach into the lentils, simmer for 2 minutes until wilted, and finish with lemon juice."
+      ],
+      "tags": [
+        "Indian",
+        "Vegan",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH031",
+      "name": "Indian Spiced Chickpea, Cucumber & Mint Chana Salad",
+      "type": "Lunch",
+      "prepTime": "10 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "3/4 cup cooked chickpeas, rinsed and drained",
+        "2 tbsp plain unsweetened Greek yogurt or tahini",
+        "1 cup diced cucumber and roma tomato",
+        "1/4 red onion, finely diced",
+        "1 cup baby spinach",
+        "1/2 tsp roasted ground cumin and chaat masala (or black pepper)",
+        "1 tbsp lemon juice and 2 tbsp fresh cilantro and mint"
+      ],
+      "instructions": [
+        "Combine the chickpeas, cucumber, tomato, red onion, spinach, cilantro and mint in a bowl.",
+        "Whisk the lemon juice, roasted cumin and Greek yogurt (or tahini) together.",
+        "Toss the salad with the spiced dressing and serve chilled or at room temperature."
+      ],
+      "tags": [
+        "Indian",
+        "Vegetarian",
+        "No-cook",
+        "High-fiber"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH032",
+      "name": "Turkish Grilled Chicken Skewers (Tavuk Sis) & Shepherd Salad",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g skinless chicken breast, cubed",
+        "1 tbsp plain unsweetened Greek yogurt",
+        "1 cup diced cucumber, tomato and green bell pepper",
+        "1/4 red onion, thinly sliced",
+        "2 tbsp chopped flat-leaf parsley",
+        "1 tsp paprika, oregano and garlic",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Toss the chicken cubes with Greek yogurt, paprika, oregano and garlic.",
+        "Grill or sear in a hot skillet for 7-8 minutes until a food thermometer in the thickest cube reads at least 165°F (74°C).",
+        "Toss the cucumber, tomato, bell pepper, red onion and parsley with lemon juice and olive oil, and serve alongside the chicken."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH033",
+      "name": "Persian Herb, Lentil & Chicken Soup (Ash-e Jo Twist)",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "140g skinless chicken breast, diced",
+        "1/3 cup cooked green lentils",
+        "2 cups chopped spinach, parsley, cilantro and dill",
+        "1/4 onion and 1 garlic clove, chopped",
+        "1/2 tsp ground turmeric and cumin",
+        "1.5 cups low-sodium vegetable broth",
+        "1 tbsp lemon juice and 1 tsp olive oil"
+      ],
+      "instructions": [
+        "Sauté the onion, garlic, turmeric and cumin in olive oil in a saucepan over medium heat for 3 minutes.",
+        "Add the diced chicken breast, cooked lentils and broth; cover and simmer for 12-14 minutes.",
+        "Check with a food thermometer that the chicken reaches at least 165°F (74°C).",
+        "Stir in the chopped spinach and fresh herbs for 3 minutes until tender, and finish with lemon juice."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Chicken",
+        "High-fiber",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH034",
+      "name": "Ethiopian Chicken Tibs with Garlic Collard Greens (Gomen)",
+      "type": "Lunch",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g skinless chicken breast, cubed",
+        "2.5 cups chopped collard greens",
+        "1/4 red onion, sliced",
+        "2 garlic cloves and 1 tsp fresh ginger, minced",
+        "1 tsp berbere spice or paprika, cumin and cardamom",
+        "1 tbsp lemon juice",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Steam or braise the collard greens with half the garlic and 1/4 cup water in a covered pan for 8 minutes until tender.",
+        "In a skillet, heat the olive oil over medium-high heat and sear the chicken cubes with red onion, remaining garlic, ginger and berbere spice for 7-8 minutes.",
+        "Check with a food thermometer that the thickest piece of chicken reads at least 165°F (74°C), squeeze lemon juice over top, and serve with the collard greens."
+      ],
+      "tags": [
+        "African",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH035",
+      "name": "Moroccan Spiced Carrot, Chickpea & Grilled Turkey Salad",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g turkey breast cutlet",
+        "1/2 cup cooked chickpeas, rinsed",
+        "2 cups baby spinach and arugula",
+        "1 medium carrot, julienned",
+        "1 tbsp toasted pumpkin seeds",
+        "1/2 tsp ground cumin, cinnamon and paprika",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Rub the turkey breast cutlet with cumin, cinnamon, paprika and black pepper, and pan-sear in olive oil for 5-6 minutes per side.",
+        "Check with a food thermometer that the thickest part of the turkey reads at least 165°F (74°C).",
+        "Toss the spinach, arugula, carrot and chickpeas with lemon juice, top with sliced turkey and sprinkle with pumpkin seeds."
+      ],
+      "tags": [
+        "African",
+        "Turkey",
+        "High-protein",
+        "High-fiber"
+      ],
+      "safetyNotes": [
+        "Cook turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH036",
+      "name": "French Salad Niçoise with Seared Salmon & Green Beans",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "140g salmon fillet",
+        "1 hard-boiled egg, halved",
+        "1 cup fresh green beans, steamed tender-crisp",
+        "2 cups mixed salad greens",
+        "1/2 cup cherry tomatoes, halved",
+        "6 Niçoise or kalamata olives",
+        "1 tsp Dijon mustard, 1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Sear the salmon fillet in a non-stick skillet over medium heat for 4 minutes per side until a food thermometer in the thickest part reads at least 145°F (63°C).",
+        "Arrange the salad greens, steamed green beans, cherry tomatoes, olives and hard-boiled egg on a plate.",
+        "Top with the warm salmon fillet and drizzle with the whisked Dijon, lemon juice and olive oil dressing."
+      ],
+      "tags": [
+        "European",
+        "Fish",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [
+        "Cook salmon to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH037",
+      "name": "Nordic Open-Faced Sardine, Egg & Cucumber Rye Plate",
+      "type": "Lunch",
+      "prepTime": "10 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 can sardines in water or olive oil (about 120g), drained",
+        "1 hard-boiled egg, sliced",
+        "1 thin slice 100% whole-grain sprouted rye bread, toasted",
+        "1 cup sliced cucumber and radishes",
+        "1 cup baby arugula",
+        "1 tbsp fresh dill and 1 tbsp lemon juice"
+      ],
+      "instructions": [
+        "Layer the baby arugula, cucumber slices, drained canned sardines and sliced hard-boiled egg over the toasted rye slice and alongside on the plate.",
+        "Squeeze fresh lemon juice over the sardines and garnish generously with fresh dill and radish slices."
+      ],
+      "tags": [
+        "European",
+        "Fish",
+        "Eggs",
+        "No-cook"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH038",
+      "name": "American California Turkey, Avocado & Greens Cobb Bowl",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g turkey breast cutlet",
+        "1 hard-boiled egg, quartered",
+        "2.5 cups chopped romaine and watercress",
+        "1/2 cup cherry tomatoes and 1/2 cucumber, diced",
+        "1/4 avocado, diced",
+        "1 tbsp apple cider vinegar and 1 tsp extra-virgin olive oil",
+        "1 tsp Dijon mustard"
+      ],
+      "instructions": [
+        "Season the turkey breast with black pepper and garlic powder, and grill or pan-sear for 5-6 minutes per side.",
+        "Check with a food thermometer that the thickest part of the turkey reads at least 165°F (74°C), then slice.",
+        "Arrange the romaine, watercress, tomatoes, cucumber, avocado, hard-boiled egg and turkey in a bowl, and drizzle with whisked vinegar, Dijon and olive oil."
+      ],
+      "tags": [
+        "American",
+        "Turkey",
+        "Eggs",
+        "Low-carb"
+      ],
+      "safetyNotes": [
+        "Cook turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "LH039",
+      "name": "Chinese Sesame-Ginger Tofu & Cabbage Slaw",
+      "type": "Lunch",
+      "prepTime": "15 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g extra-firm tofu, cubed",
+        "1/3 cup shelled edamame, steamed",
+        "2.5 cups shredded Napa cabbage and purple cabbage",
+        "1/2 carrot, julienned, and 2 scallions, sliced",
+        "1 tbsp rice vinegar and 1 tsp low-sodium soy sauce",
+        "1 tsp grated fresh ginger",
+        "1 tsp toasted sesame oil and 1 tbsp sliced almonds"
+      ],
+      "instructions": [
+        "Sear the cubed tofu in a non-stick skillet over medium-high heat for 5-6 minutes until golden on all sides.",
+        "Whisk together the rice vinegar, soy sauce, grated ginger and toasted sesame oil.",
+        "Toss the shredded cabbage, carrot, scallions and edamame with the dressing, and top with the warm tofu and sliced almonds."
+      ],
+      "tags": [
+        "Asian",
+        "Vegan",
+        "Tofu",
+        "Low-carb"
+      ],
+      "safetyNotes": [],
+      "nutrition": null
+    },
+    {
+      "id": "LH040",
+      "name": "Greek Grilled Halibut & Artichoke Salad",
+      "type": "Lunch",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g halibut or snapper fillet",
+        "1/2 cup marinated artichoke hearts (in water), quartered",
+        "2 cups chopped romaine and baby spinach",
+        "1/2 cup cherry tomatoes and cucumber, diced",
+        "1 tsp dried oregano and 1 garlic clove, minced",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Season the fish fillet with oregano, garlic, half the lemon juice and olive oil.",
+        "Grill or pan-sear over medium-high heat for 4 minutes per side until a food thermometer in the thickest part of the fish reads at least 145°F (63°C).",
+        "Arrange the romaine, spinach, artichoke hearts, tomatoes and cucumber on a plate, top with the fish and drizzle with remaining lemon juice."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN022",
+      "name": "Nordic Dill-Baked Salmon with Roasted Brussels Sprouts",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g salmon fillet",
+        "1.5 cups Brussels sprouts, trimmed and halved",
+        "1/2 cup asparagus spears",
+        "1 tbsp chopped fresh dill",
+        "1 garlic clove, minced",
+        "1 tbsp lemon juice",
+        "1.5 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Preheat the oven to 400°F (200°C). Toss the halved Brussels sprouts and asparagus with 1 tsp olive oil and roast on a sheet pan for 10 minutes.",
+        "Place the salmon fillet on the sheet pan, rub with the remaining olive oil, lemon juice, garlic and fresh dill.",
+        "Roast for 12-14 minutes more until a food thermometer in the thickest part of the salmon reads at least 145°F (63°C)."
+      ],
+      "tags": [
+        "European",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook salmon to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN023",
+      "name": "Greek Lemon-Garlic Haddock with Braised Greens (Horta)",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g haddock or cod fillet",
+        "3 cups chopped dandelion greens, Swiss chard or spinach",
+        "1/2 cup cherry tomatoes, halved",
+        "2 garlic cloves, minced",
+        "1 tsp dried oregano",
+        "1.5 tbsp fresh lemon juice",
+        "1.5 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Sauté half the garlic in 1 tsp olive oil in a deep skillet over medium heat, add the chopped greens and a splash of water, and braise for 5 minutes until tender.",
+        "Season the haddock fillet with oregano, remaining garlic and lemon juice, and sear in a pan for 4 minutes per side.",
+        "Check with a food thermometer that the thickest part of the fish reads at least 145°F (63°C), then serve over the braised lemon greens."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN024",
+      "name": "Spanish Pollo al Ajillo (Garlic-Herb Chicken) with Zucchini",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast, cut into bite-sized pieces",
+        "1.5 cups sliced zucchini and roasted red bell peppers",
+        "1 cup baby spinach",
+        "4 garlic cloves, thinly sliced",
+        "1 bay leaf and 1/2 tsp fresh thyme",
+        "1/3 cup low-sodium vegetable broth and 1 tbsp lemon juice",
+        "1.5 tsp extra-virgin olive oil and chopped parsley"
+      ],
+      "instructions": [
+        "Warm the olive oil in a skillet over medium heat and cook the sliced garlic for 2 minutes until lightly golden.",
+        "Add the chicken pieces, bay leaf and thyme; sear for 6-7 minutes until browned.",
+        "Add the zucchini, red peppers, broth and lemon juice; simmer for 5-6 minutes until a food thermometer in the thickest piece of chicken reads at least 165°F (74°C).",
+        "Fold in the spinach and parsley and serve."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN025",
+      "name": "Italian Chicken Cacciatore with Mushrooms & Bell Peppers",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast",
+        "1 cup sliced cremini mushrooms",
+        "1/2 bell pepper and 1/4 onion, sliced",
+        "3/4 cup crushed tomatoes (no sugar added)",
+        "1 tsp capers and 4 kalamata olives",
+        "2 garlic cloves, minced, and 1 tsp Italian herbs",
+        "1 tsp extra-virgin olive oil and fresh basil"
+      ],
+      "instructions": [
+        "Sear the chicken breast in olive oil over medium heat for 4 minutes per side.",
+        "Add the onion, bell pepper, mushrooms and garlic around the chicken and cook for 4 minutes.",
+        "Pour in the crushed tomatoes, Italian herbs, capers and olives; cover and simmer for 10-12 minutes until a food thermometer in the thickest part of the chicken reads at least 165°F (74°C).",
+        "Garnish with fresh basil and serve."
+      ],
+      "tags": [
+        "Mediterranean",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN026",
+      "name": "Turkish Baked Eggplants with Spiced Ground Turkey",
+      "type": "Dinner",
+      "prepTime": "35 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "1 small eggplant, halved lengthwise",
+        "150g lean ground turkey",
+        "1/2 cup diced tomatoes",
+        "1/4 onion and 1/2 green pepper, finely diced",
+        "2 garlic cloves, minced",
+        "1/2 tsp ground cumin, paprika and cinnamon",
+        "2 tbsp chopped flat-leaf parsley",
+        "1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Preheat the oven to 400°F (200°C). Score the eggplant halves, brush with half the olive oil and roast for 18 minutes until tender.",
+        "Meanwhile, brown the ground turkey with onion, green pepper, garlic, cumin, paprika and cinnamon in a skillet for 7 minutes, then stir in the tomatoes.",
+        "Spoon the turkey filling over the eggplant halves and bake for 8 minutes until a food thermometer in the centre of the turkey reads at least 165°F (74°C).",
+        "Top with fresh parsley and serve."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Turkey",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN027",
+      "name": "Persian Ghormeh Sabzi (Fresh Herb, Kidney Bean & Chicken Stew)",
+      "type": "Dinner",
+      "prepTime": "35 min",
+      "servings": 1,
+      "difficulty": "Medium",
+      "ingredients": [
+        "160g skinless chicken breast, cubed",
+        "1/2 cup cooked red kidney beans, rinsed",
+        "2.5 cups finely chopped parsley, cilantro, spinach and scallions",
+        "1/4 onion and 2 garlic cloves, chopped",
+        "1/2 tsp ground turmeric and fenugreek leaves",
+        "1 cup low-sodium vegetable broth and 1.5 tbsp fresh lime juice",
+        "1.5 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Sauté the finely chopped herbs and spinach in 1 tsp olive oil over medium heat for 6 minutes until dark green and fragrant.",
+        "In a pot, brown the chicken cubes with onion, garlic and turmeric in the remaining oil for 5 minutes.",
+        "Add the sautéed herbs, kidney beans, broth and lime juice; cover and simmer for 18-20 minutes.",
+        "Check with a food thermometer that the thickest piece of chicken reads at least 165°F (74°C) before serving."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Chicken",
+        "High-fiber",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN028",
+      "name": "Lebanese Baked Kibbeh-Spiced Turkey & Cucumber Salad",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g lean ground turkey",
+        "2 tbsp fine bulgur wheat or ground flaxseed, soaked in water",
+        "1/4 onion, grated, and 2 tbsp chopped fresh mint and parsley",
+        "1/2 tsp ground allspice, cinnamon and cumin",
+        "1.5 cups diced cucumber, tomato and radish salad",
+        "1 tbsp lemon juice and 1 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Preheat the oven to 375°F (190°C). Mix the ground turkey, soaked bulgur (or flaxseed), grated onion, mint, allspice, cinnamon and cumin.",
+        "Press into a small baking dish, score into diamonds, brush with olive oil and bake for 20-22 minutes.",
+        "Check with a food thermometer that the centre of the turkey reads at least 165°F (74°C).",
+        "Serve alongside the crisp cucumber, tomato and radish salad dressed with lemon juice."
+      ],
+      "tags": [
+        "Middle Eastern",
+        "Turkey",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN029",
+      "name": "Ethiopian Doro Wat Style Spiced Chicken & Red Lentils",
+      "type": "Dinner",
+      "prepTime": "35 min",
+      "servings": 1,
+      "difficulty": "Medium",
+      "ingredients": [
+        "160g skinless chicken breast or thigh, cubed",
+        "1 hard-boiled egg",
+        "1/3 cup cooked red lentils",
+        "1.5 cups steamed collard greens",
+        "1/2 red onion, finely diced",
+        "1 tsp grated ginger and 2 garlic cloves, minced",
+        "1.5 tsp berbere spice blend",
+        "1 tsp avocado oil and 3/4 cup vegetable broth"
+      ],
+      "instructions": [
+        "Cook the finely diced red onion in avocado oil with a splash of water over medium-low heat for 6 minutes until soft.",
+        "Stir in the garlic, ginger and berbere spice for 1 minute, then add the chicken and vegetable broth.",
+        "Cover and simmer for 16-18 minutes until a food thermometer in the thickest piece of chicken reads at least 165°F (74°C).",
+        "Nestle the hard-boiled egg into the sauce and serve alongside the red lentils and steamed collard greens."
+      ],
+      "tags": [
+        "African",
+        "Chicken",
+        "Eggs",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN030",
+      "name": "Moroccan Spiced Turkey & Chickpea Harira Stew",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "150g lean ground turkey",
+        "1/2 cup cooked chickpeas and 1/4 cup cooked green lentils",
+        "1 cup crushed tomatoes and 1 cup vegetable broth",
+        "1 celery stalk and 1/4 onion, diced",
+        "1 tsp grated ginger, turmeric, cumin and cinnamon",
+        "1/3 cup chopped fresh cilantro and parsley",
+        "1 tbsp lemon juice and 1 tsp olive oil"
+      ],
+      "instructions": [
+        "Heat the olive oil in a pot over medium heat and brown the ground turkey with onion, celery and ginger for 6-7 minutes.",
+        "Check with a food thermometer that the ground turkey reaches at least 165°F (74°C).",
+        "Add the turmeric, cumin, cinnamon, crushed tomatoes, broth, chickpeas and lentils; simmer for 12-15 minutes.",
+        "Stir in the fresh cilantro, parsley and lemon juice before serving."
+      ],
+      "tags": [
+        "African",
+        "Turkey",
+        "High-fiber",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN031",
+      "name": "West African Ginger-Peanut Chicken & Kale Stew",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g skinless chicken breast, cubed",
+        "2 cups chopped kale or collard greens",
+        "1/2 cup crushed tomatoes and 3/4 cup vegetable broth",
+        "1 tbsp natural unsweetened peanut butter",
+        "1/4 onion, 1 garlic clove and 1 tsp fresh ginger, minced",
+        "1/4 tsp cayenne or black pepper",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Sear the chicken cubes with onion, garlic and ginger in avocado oil over medium heat for 5 minutes.",
+        "Whisk in the crushed tomatoes, vegetable broth and natural peanut butter, then cover and simmer for 14-16 minutes.",
+        "Stir in the chopped kale for the last 4 minutes of cooking.",
+        "Check with a food thermometer that the thickest piece of chicken reads at least 165°F (74°C) before serving."
+      ],
+      "tags": [
+        "African",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN032",
+      "name": "Indian Tandoori Salmon with Roasted Cauliflower & Spinach",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g salmon fillet",
+        "1.5 cups cauliflower florets",
+        "1.5 cups baby spinach",
+        "1.5 tbsp plain unsweetened Greek yogurt",
+        "1 tsp garam masala, ground cumin, coriander and turmeric",
+        "1 tsp grated ginger and 1 garlic clove, minced",
+        "1 tbsp lemon juice and 1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Preheat the oven to 400°F (200°C). Toss the cauliflower florets with avocado oil and a pinch of turmeric and roast on a sheet pan for 10 minutes.",
+        "Coat the salmon fillet with Greek yogurt, ginger, garlic, garam masala, cumin and coriander, and place on the sheet pan.",
+        "Roast for 12-14 minutes more until a food thermometer in the thickest part of the salmon reads at least 145°F (63°C).",
+        "Serve over fresh baby spinach with a squeeze of lemon juice."
+      ],
+      "tags": [
+        "Indian",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook salmon to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN033",
+      "name": "Indian Chicken Tikka Skillet with Peppers & Fenugreek Greens",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast, cubed",
+        "2 tbsp plain unsweetened Greek yogurt",
+        "1/2 bell pepper and 1/4 red onion, cut into petals",
+        "2 cups chopped spinach",
+        "1/2 cup tomato purée",
+        "1 tsp garam masala, cumin, paprika and dried fenugreek leaves (kasuri methi)",
+        "1 tsp grated ginger, 1 garlic clove and 1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Marinate the chicken cubes in Greek yogurt, ginger, garlic, garam masala, cumin and paprika.",
+        "Sear the chicken, bell pepper and onion in avocado oil over medium-high heat for 6 minutes.",
+        "Add the tomato purée, fenugreek leaves and spinach; simmer for 6-8 minutes until a food thermometer in the thickest piece of chicken reads at least 165°F (74°C)."
+      ],
+      "tags": [
+        "Indian",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN034",
+      "name": "Japanese Miso-Glazed Cod with Baby Bok Choy & Edamame",
+      "type": "Dinner",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g cod or halibut fillet",
+        "1.5 cups baby bok choy, halved",
+        "1/2 cup shelled edamame, steamed",
+        "1 tbsp white miso paste",
+        "1 tsp rice vinegar and 1 tbsp water",
+        "1 tsp grated fresh ginger",
+        "1 tsp toasted sesame oil"
+      ],
+      "instructions": [
+        "Whisk together the white miso paste, rice vinegar, grated ginger, sesame oil and water.",
+        "Brush the cod fillet with the miso glaze and bake at 400°F (200°C) or pan-sear over medium heat for 10-12 minutes.",
+        "Check with a food thermometer that the thickest part of the cod reads at least 145°F (63°C).",
+        "Steam the baby bok choy and edamame for 4 minutes and serve alongside the miso-glazed cod."
+      ],
+      "tags": [
+        "Asian",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN035",
+      "name": "Thai Lemongrass Poached Snapper with Bok Choy & Mushrooms",
+      "type": "Dinner",
+      "prepTime": "20 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g red snapper or mahi-mahi fillet",
+        "1.5 cups baby bok choy and 1/2 cup sliced mushrooms",
+        "1 cup low-sodium vegetable broth",
+        "1 stalk bruised lemongrass and 1 tsp grated ginger",
+        "1 garlic clove, sliced",
+        "1 tbsp fresh lime juice and 1 tsp low-sodium soy sauce",
+        "2 tbsp fresh cilantro and Thai basil"
+      ],
+      "instructions": [
+        "Bring the vegetable broth, lemongrass, ginger, garlic and mushrooms to a gentle simmer in a deep skillet for 5 minutes.",
+        "Nestle the snapper fillet and baby bok choy into the fragrant broth, cover and poach for 7-9 minutes.",
+        "Check with a food thermometer that the thickest part of the fish reads at least 145°F (63°C).",
+        "Stir in the lime juice and soy sauce, and garnish with fresh cilantro and Thai basil."
+      ],
+      "tags": [
+        "Asian",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN036",
+      "name": "Vietnamese Ginger-Scallion Chicken with Chayote & Greens",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast, sliced",
+        "1 medium chayote squash (or zucchini), julienned",
+        "1.5 cups Chinese broccoli or baby spinach",
+        "2 scallions, cut into 1-inch pieces",
+        "1 tbsp finely julienned fresh ginger and 2 garlic cloves",
+        "1 tbsp low-sodium soy sauce and 1/4 cup water",
+        "1 tsp toasted sesame oil"
+      ],
+      "instructions": [
+        "Heat the sesame oil in a skillet over medium-high heat and stir-fry the ginger, garlic and chicken slices for 5 minutes.",
+        "Add the chayote squash, Chinese broccoli, soy sauce and water; cover and cook for 5-6 minutes.",
+        "Check with a food thermometer that the thickest slice of chicken reads at least 165°F (74°C), toss with the scallions and serve."
+      ],
+      "tags": [
+        "Asian",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN037",
+      "name": "Mexican Smoky Turkey, Black Bean & Zucchini Enchilada Skillet",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "160g lean ground turkey",
+        "1/3 cup cooked black beans, rinsed",
+        "1 medium zucchini, cubed",
+        "1/2 cup fire-roasted crushed tomatoes",
+        "1/4 onion and 1 garlic clove, minced",
+        "1 tsp chili powder, ground cumin and oregano",
+        "1/4 avocado, sliced, and 2 tbsp fresh cilantro",
+        "1 tsp avocado oil"
+      ],
+      "instructions": [
+        "Heat the avocado oil in a skillet over medium-high heat and brown the ground turkey with onion, garlic, chili powder, cumin and oregano for 6-7 minutes.",
+        "Check with a food thermometer that the ground turkey reads at least 165°F (74°C).",
+        "Stir in the cubed zucchini, black beans and fire-roasted tomatoes; cover and simmer for 6-8 minutes until the zucchini is tender.",
+        "Top with sliced avocado and fresh cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Turkey",
+        "High-fiber",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook ground turkey to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN038",
+      "name": "Peruvian Aji-Style Herb Chicken with Cauliflower & Olives",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast, sliced",
+        "1.5 cups cauliflower florets, steamed",
+        "1 cup baby spinach",
+        "2 tbsp walnut pieces, toasted",
+        "1/4 onion, 2 garlic cloves and 1/2 yellow bell pepper, blended with 1/4 cup vegetable broth",
+        "4 kalamata olives, halved",
+        "1 tsp extra-virgin olive oil and fresh cilantro"
+      ],
+      "instructions": [
+        "Sear the chicken slices in olive oil over medium heat for 5 minutes.",
+        "Pour in the blended yellow pepper, onion, garlic, walnut and vegetable broth sauce; simmer for 8-10 minutes until thickened.",
+        "Check with a food thermometer that the thickest piece of chicken reads at least 165°F (74°C).",
+        "Serve over the steamed cauliflower and baby spinach, garnished with olives and cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN039",
+      "name": "Brazilian Moqueca-Style Fish & Bell Pepper Stew (Olive Oil)",
+      "type": "Dinner",
+      "prepTime": "25 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g firm white fish fillet (cod, mahi-mahi or snapper), cut into chunks",
+        "1/2 red and 1/2 yellow bell pepper, sliced",
+        "1/2 cup crushed tomatoes and 1/2 cup vegetable broth",
+        "1/4 onion and 2 garlic cloves, minced",
+        "1/2 tsp sweet paprika and ground cumin",
+        "1.5 tbsp fresh lime juice and 1/3 cup chopped cilantro",
+        "1.5 tsp extra-virgin olive oil"
+      ],
+      "instructions": [
+        "Marinate the fish chunks with half the lime juice and garlic for 5 minutes.",
+        "In a deep skillet, sauté the onion, bell peppers, remaining garlic, paprika and cumin in olive oil for 4 minutes, then add the crushed tomatoes and broth.",
+        "Nestle the fish chunks into the simmering sauce, cover and cook for 7-8 minutes until a food thermometer in the thickest piece of fish reads at least 145°F (63°C).",
+        "Finish with remaining lime juice and fresh cilantro."
+      ],
+      "tags": [
+        "Mexican",
+        "Fish",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook fish to an internal temperature of 145°F (63°C)."
+      ],
+      "nutrition": null
+    },
+    {
+      "id": "DN040",
+      "name": "French Provençal Roast Chicken with Ratatouille Vegetables",
+      "type": "Dinner",
+      "prepTime": "30 min",
+      "servings": 1,
+      "difficulty": "Easy",
+      "ingredients": [
+        "170g skinless chicken breast",
+        "1 cup cubed eggplant and zucchini",
+        "1/2 bell pepper, diced",
+        "1/2 cup crushed tomatoes",
+        "2 garlic cloves, minced",
+        "1 tsp herbes de Provence (thyme, rosemary, oregano)",
+        "1.5 tsp extra-virgin olive oil and fresh basil"
+      ],
+      "instructions": [
+        "Season the chicken breast with half the herbes de Provence and black pepper, and sear in olive oil in an oven-safe skillet over medium heat for 4 minutes per side.",
+        "Add the eggplant, zucchini, bell pepper, garlic, crushed tomatoes and remaining herbs around the chicken, then cover and simmer for 12-14 minutes until the vegetables are tender.",
+        "Check with a food thermometer that the thickest part of the chicken reads at least 165°F (74°C).",
+        "Garnish with fresh basil and serve."
+      ],
+      "tags": [
+        "European",
+        "Chicken",
+        "Low-carb",
+        "High-protein"
+      ],
+      "safetyNotes": [
+        "Cook chicken to an internal temperature of 165°F (74°C)."
+      ],
+      "nutrition": null
     }
-  ]
+  ],
+  "updatedAt": "2026-11-16"
 }

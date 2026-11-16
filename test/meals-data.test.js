@@ -10,10 +10,10 @@ test('BUILT_IN_MEALS stays in sync with meals.json', () => {
 });
 
 test('catalog includes worldwide recipes across every major region', () => {
-    assert.equal(data.meals.length, 60);
+    assert.equal(data.meals.length, 120);
     for (const cuisine of CUISINES.filter(c => c.id !== 'any')) {
         const matches = data.meals.filter(m => mealMatchesCuisine(m, cuisine.id));
-        assert.ok(matches.length >= 2, `Expected at least 2 recipes for ${cuisine.id}, found ${matches.length}`);
+        assert.ok(matches.length >= 6, `Expected at least 6 recipes for ${cuisine.id}, found ${matches.length}`);
     }
 });
 
