@@ -718,7 +718,7 @@ async function generateWithAI() {
             return;
         }
         const meal = normalizeMeal({ ...(data?.meal || {}), source: 'ai' });
-        if (!meal || safetyIssues(meal).length > 0 || exclusionReasons(meal, state.settings).length > 0
+        if (!meal || safetyIssues(meal).length > 0 || exclusionReasons(meal, state.settings, selected).length > 0
             || !mealMatchesProteins(meal, selected)
             || (selectedFindType() !== 'any' && meal.type !== selectedFindType())) {
             aiEl.replaceChildren(hint('The AI response could not be used. Please try again.', 'protein-hint error'));

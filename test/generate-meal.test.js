@@ -302,3 +302,67 @@ test('the safety sentences the prompt asks for are accepted by the food-safety s
     // The wording that was being rejected in production: endpoint mentioned alongside the pan.
     assert.notDeepEqual(safetyIssues({ name: 'Test', ingredients: ['2 chicken breasts'], instructions: ['Cook the chicken in the pan until it reaches 165°F (74°C)'] }), []);
 });
+
+test('handler repairs free-form AI safety steps, ackee wording, and slightly off nutrition estimates instead of failing', async () => {
+    const freeformChicken = {
+        ...goodRecipe(),
+        ingredients: ['2 chicken breasts', '1 cup ackee, drained', '2 cups callaloo, chopped'],
+        instructions: [
+            '1. Season the chicken breasts with jerk seasoning.',
+            '2. Cook the chicken in the pan until it reaches 165°F (74°C).',
+            '3. Fold in the ackee and steamed callaloo.',
+        ],
+        nutritionPerServing: { calories: 310, protein: 38, carbs: 36, fiber: 9 },
+    };
+    const body = {
+        ...goodBody(),
+        proteins: ['chicken', 'ackee'],
+        preferences: { ...goodBody().preferences, carbTolerance: 'low', calorieTarget: 650 },
+    };
+    const res = await call({ createClient: fakeClient(modelReply(freeformChicken)) }, { body });
+    assert.equal(res.statusCode, 200);
+    assert.ok(res.body.meal.ingredients.some(i => /canned ackee/i.test(i)));
+    assert.ok(res.body.meal.instructions.some(i => /165°F \(74°C\)/.test(i)));
+});
+
+test('user-selected proteins (shrimp, tuna, sardines, beef) succeed even when gout and heart toggles are enabled', async () => {
+    const shrimpRecipe = {
+        name: 'Jamaican Peppered Shrimp & Callaloo',
+        type: 'Dinner',
+        prepTime: '20 min',
+        servings: 2,
+        difficulty: 'Easy',
+        ingredients: ['300g shrimp, peeled', '2 cups callaloo, chopped', '1 tsp olive oil', '1 clove garlic, minced'],
+        instructions: ['Sauté garlic and shrimp in olive oil for 4 minutes until opaque.', 'Steam callaloo and serve alongside.'],
+        tags: ['Jamaican', 'Shrimp'],
+        nutritionPerServing: { calories: 380, protein: 36, carbs: 10, fiber: 4 },
+    };
+    const body = {
+        ...goodBody(),
+        proteins: ['shrimp'],
+        preferences: { ...goodBody().preferences, avoidGout: true, prioritizeHeart: true },
+    };
+    const res = await call({ createClient: fakeClient(modelReply(shrimpRecipe)) }, { body });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.meal.name, 'Jamaican Peppered Shrimp & Callaloo');
+
+    const beefRecipe = {
+        name: 'Jamaican Peppered Beef Steak with Steamed Cabbage',
+        type: 'Dinner',
+        prepTime: '25 min',
+        servings: 2,
+        difficulty: 'Easy',
+        ingredients: ['300g beef sirloin steak, seasoned with ground black pepper and minced garlic', '2 cups cabbage, shredded', '1 tsp olive oil'],
+        instructions: ['Sear the beef in a hot skillet for 4 minutes per side.', 'Steam the cabbage until tender-crisp.'],
+        tags: ['Jamaican', 'Beef'],
+        nutritionPerServing: { calories: 460, protein: 42, carbs: 12, fiber: 4 },
+    };
+    const beefBody = {
+        ...goodBody(),
+        proteins: ['beef'],
+        preferences: { ...goodBody().preferences, avoidGout: true, prioritizeHeart: true },
+    };
+    const beefRes = await call({ createClient: fakeClient(modelReply(beefRecipe)) }, { body: beefBody });
+    assert.equal(beefRes.statusCode, 200);
+    assert.equal(beefRes.body.meal.name, 'Jamaican Peppered Beef Steak with Steamed Cabbage');
+});

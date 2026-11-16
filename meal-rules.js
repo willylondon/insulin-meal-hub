@@ -6,21 +6,21 @@ export const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 export const LOG_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
-const MEAT_STEAK_TERM = '(?<!salmon\\s|tuna\\s|fish\\s|snapper\\s|mahi\\s|cod\\s|cauliflower\\s|tofu\\s|tempeh\\s|cabbage\\s|mushroom\\s|portobello\\s)steak';
+const MEAT_STEAK_TERM = '(?<!salmon\\s|tuna\\s|fish\\s|snapper\\s|mahi\\s|cod\\s|grouper\\s|kingfish\\s|halibut\\s|cauliflower\\s|tofu\\s|tempeh\\s|cabbage\\s|mushroom\\s|portobello\\s|eggplant\\s|plant\\s|vegan\\s|vegetarian\\s)steak';
 
 export const PROTEINS = [
-    { id: 'chicken',  label: 'Chicken',   icon: '🍗', keywords: ['chicken'] },
-    { id: 'fish',     label: 'Fish',      icon: '🐟', keywords: ['fish', 'snapper', 'tilapia', 'cod(?:fish)?\\b', 'saltfish', 'mahi', 'parrotfish'] },
+    { id: 'chicken',  label: 'Chicken',   icon: '🍗', keywords: ['chicken', 'hen', 'fowl'] },
+    { id: 'fish',     label: 'Fish',      icon: '🐟', keywords: ['fish', 'snapper', 'tilapia', 'cod(?:fish)?\\b', 'saltfish', 'mahi', 'parrotfish', 'grouper', 'kingfish', 'halibut', 'haddock', 'trout', 'flounder', 'sea\\s+bass', 'catfish', 'whiting', 'pollock', 'wahoo'] },
     { id: 'eggs',     label: 'Eggs',      icon: '🥚', keywords: ['egg(?!plant)'] },
-    { id: 'tuna',     label: 'Tuna',      icon: '🫙', keywords: ['tuna'] },
-    { id: 'sardines', label: 'Sardines',  icon: '🐡', keywords: ['sardine'] },
-    { id: 'salmon',   label: 'Salmon',    icon: '🍣', keywords: ['salmon'] },
+    { id: 'tuna',     label: 'Tuna',      icon: '🫙', keywords: ['tuna', 'albacore', 'skipjack', 'yellowfin'] },
+    { id: 'sardines', label: 'Sardines',  icon: '🐡', keywords: ['sardine', 'pilchard'] },
+    { id: 'salmon',   label: 'Salmon',    icon: '🍣', keywords: ['salmon', 'sockeye', 'coho'] },
     { id: 'shrimp',   label: 'Shrimp',    icon: '🦐', keywords: ['shrimp', 'prawn'] },
     { id: 'turkey',   label: 'Turkey',    icon: '🦃', keywords: ['turkey'] },
-    { id: 'tofu',     label: 'Tofu',      icon: '🧆', keywords: ['tofu'] },
-    { id: 'beef',     label: 'Beef',      icon: '🥩', keywords: ['beef', MEAT_STEAK_TERM, 'minced\\s+beef', 'beef\\s+mince', 'ground\\s+beef', 'oxtail'] },
+    { id: 'tofu',     label: 'Tofu',      icon: '🧆', keywords: ['tofu', 'bean\\s+curd', 'soy\\s+curd', 'tempeh'] },
+    { id: 'beef',     label: 'Beef',      icon: '🥩', keywords: ['beef(?!steak\\s+tomato)', MEAT_STEAK_TERM, 'minced\\s+beef', 'beef\\s+mince', 'ground\\s+beef', 'oxtail', 'sirloin', 'brisket', 'chuck', 'flank', 'ribeye', 'tenderloin'] },
     { id: 'ackee',    label: 'Ackee',     icon: '🍳', keywords: ['ackee'] },
-    { id: 'chickpea', label: 'Chickpeas', icon: '🫘', keywords: ['chickpea'] },
+    { id: 'chickpea', label: 'Chickpeas', icon: '🫘', keywords: ['chickpea', 'garbanzo', 'chana'] },
 ];
 export const PROTEIN_IDS = PROTEINS.map(p => p.id);
 
@@ -150,7 +150,7 @@ function mealText(meal) {
 
 function mealProteinText(meal) {
     const cleanedIngredients = (meal.ingredients || []).map(line =>
-        line.replace(/\b(?:(?:chicken|turkey|beef|fish|pork|vegetable)\s+(?:broth|stock|sauce)|cod\s+liver\s+oil)\b/gi, 'seasoning')
+        line.replace(/\b(?:(?:chicken|turkey|beef|fish|pork|vegetable)\s+(?:broth|stock|sauce)|cod\s+liver\s+oil|oyster\s+(?:mushrooms?|sauce)|beefsteak\s+tomato\w*)\b/gi, 'seasoning')
     );
     return [meal.name, ...cleanedIngredients].join('\n').toLowerCase();
 }
@@ -178,31 +178,47 @@ export function mealMatchesProteins(meal, proteinIds) {
 // assessment: they exclude meals containing a listed ingredient.
 
 export const GOUT_TRIGGERS = [
-    'shrimp', 'prawn', 'lobster', 'crab', 'mussel', 'oyster', 'scallop', 'conch',
-    'liver', 'kidney(?!\\s*bean)', 'tripe', 'sweetbread',
-    'beef', MEAT_STEAK_TERM, 'goat', 'pork', 'lamb', 'mutton', 'oxtail', 'veal',
+    'shrimp', 'prawn', 'lobster', 'crab(?!apple)', 'mussel', 'oyster(?!\\s*(?:mushroom|sauce))', 'scallop', 'conch',
+    'liver', 'kidney(?!\\s*(?:or\\s+\\w+\\s+)?beans?)', 'tripe', 'sweetbread',
+    'beef(?!steak\\s+tomato)', MEAT_STEAK_TERM, 'goat', 'pork', 'lamb', 'mutton', 'oxtail', 'veal',
     'sardine', 'anchov', 'herring', 'mackerel', 'tuna',
 ];
 
 export const HEART_EXCLUSIONS = [
-    'beef', MEAT_STEAK_TERM, 'goat', 'pork', 'lamb', 'mutton', 'oxtail', 'veal',
-    'bacon', 'ham', 'sausage', 'salami', 'corned', 'lard', 'deep-fr', 'deep fr',
+    'beef(?!steak\\s+tomato)', MEAT_STEAK_TERM, 'goat', 'pork', 'lamb', 'mutton', 'oxtail', 'veal',
+    'bacon', 'ham(?!burger)', 'sausage', 'salami', 'corned', 'lard', 'deep-fr', 'deep fr',
 ];
 
 // Shown as cautions rather than exclusions when heart priority is on.
-export const HEART_CAUTIONS = ['coconut milk', 'coconut oil', 'shredded coconut', 'butter', 'cheese', 'cream'];
+export const HEART_CAUTIONS = ['coconut milk', 'coconut oil', 'shredded coconut', '(?<!peanut\\s|almond\\s|cashew\\s|seed\\s|cocoa\\s|shea\\s)butter(?!nut|\\s*bean)', 'cheese', 'cream(?!\\s+of\\s+tartar|y\\b)'];
+
+const PROTEIN_EXCLUSION_EXEMPTIONS = {
+    shrimp:   new Set(['shrimp', 'prawn']),
+    tuna:     new Set(['tuna']),
+    sardines: new Set(['sardine']),
+    beef:     new Set(['beef(?!steak\\s+tomato)', MEAT_STEAK_TERM, 'oxtail', 'veal']),
+};
 
 function matchedTerms(meal, terms) {
-    const text = mealText(meal);
+    const text = mealProteinText(meal);
     return [...new Set(terms.map(t => findWord(text, t)).filter(Boolean))];
 }
 
 // Reasons a meal must not be suggested under the given settings.
-export function exclusionReasons(meal, settings) {
+// When `allowedProteinIds` is supplied (e.g. for an explicit AI protein request),
+// the protein(s) the user specifically requested are not rejected as exclusions.
+export function exclusionReasons(meal, settings, allowedProteinIds = []) {
+    const exempt = new Set(
+        Array.isArray(allowedProteinIds)
+            ? allowedProteinIds.flatMap(id => [...(PROTEIN_EXCLUSION_EXEMPTIONS[id] || [])])
+            : []
+    );
+    const goutTerms = exempt.size ? GOUT_TRIGGERS.filter(t => !exempt.has(t)) : GOUT_TRIGGERS;
+    const heartTerms = exempt.size ? HEART_EXCLUSIONS.filter(t => !exempt.has(t)) : HEART_EXCLUSIONS;
     const reasons = [];
-    const gout = settings.avoidGout ? matchedTerms(meal, GOUT_TRIGGERS) : [];
+    const gout = settings.avoidGout ? matchedTerms(meal, goutTerms) : [];
     if (gout.length) reasons.push(`Contains a common gout trigger (${gout.join(', ')})`);
-    const heart = settings.prioritizeHeart ? matchedTerms(meal, HEART_EXCLUSIONS) : [];
+    const heart = settings.prioritizeHeart ? matchedTerms(meal, heartTerms) : [];
     if (heart.length) reasons.push(`Contains red or processed meat (${heart.join(', ')})`);
     // No numeric recipe filtering: no supported reviewed nutrition source.
     return reasons;
@@ -237,9 +253,10 @@ export function filterMeals(meals, settings) {
 // for an actionable cooking endpoint in the recipe instructions.
 
 const POULTRY_WORDS = /\b(?:chicken|turkey|duck|goose|poultry)\b/i;
-const FISH_WORDS = /\b(?:fish|saltfish|snapper|parrotfish|tilapia|cod|mahi(?:[ -]mahi)?|salmon|tuna|sardines?|trout|haddock|mackerel)\b/i;
+const FISH_WORDS = /\b(?:fish|saltfish|snapper|parrotfish|tilapia|cod|mahi(?:[ -]mahi)?|salmon|tuna|sardines?|trout|haddock|mackerel|grouper|kingfish|halibut|flounder)\b/i;
 const MEAT_WORDS = /\b(?:pork|beef|veal|goat|lamb|mutton|oxtail)\b/i;
 const GROUND_WORDS = /\b(?:ground|minced?|burger|sausage|meatballs?)\b/i;
+const SPICE_GROUND_MINCED = /\b(?:ground|minced)\s+(?:black\s+pepper|white\s+pepper|cayenne|pepper|allspice|pimento|cumin|coriander|cinnamon|nutmeg|ginger|turmeric|cloves?|cardamom|paprika|mustard|flax\w*|chia|garlic|onions?|scallions?|shallots?|herbs?|parsley|cilantro|thyme|scotch\s+bonnet|chili|chilli)\b/gi;
 const BAD_PREPARATION = /\b(?:raw|uncooked|undercooked|partially[ -]cooked|part[ -]cooked|half[ -]cooked|par[ -]?cooked|not\s+(?:fully\s+)?cooked)\b/i;
 
 function preparedIngredient(line) {
@@ -248,8 +265,9 @@ function preparedIngredient(line) {
 }
 
 function cannedIngredient(line) {
-    return !/\b(?:uncanned|not\s+canned|home[ -]canned|raw)\b/i.test(line)
-        && /\b(?:canned|can\s+(?:of\s+)?)(?:\s+\w+){0,2}\s*(?:ackee|fish|saltfish|snapper|salmon|tuna|sardines?)\b|\b(?:ackee|fish|salmon|tuna|sardines?)\s*\(?(?:commercially\s+)?canned\b/i.test(line);
+    if (/\b(?:uncanned|not\s+canned|home[ -]canned|raw)\b/i.test(line)) return false;
+    return /\b(?:canned|tinned|(?:can|tin)s?(?:\s+of)?),?\s+(?:\([^)]*\)\s*)*(?:(?:drained|rinsed|flaked|chunk|light|solid|white|wild(?:[ -]caught)?|pink|red|atlantic|alaskan|jamaican|commercially|in\s+water|in\s+oil|in\s+brine|low[ -]sodium|no[ -]salt|\w+)\s*,?\s*){0,4}(?:ackee|fish|saltfish|snapper|salmon|tuna|sardines?|mackerel)\b|\b(?:ackee|fish|saltfish|snapper|salmon|tuna|sardines?|mackerel)\s*(?:,\s*|\s*\()?(?:commercially\s+)?(?:canned|tinned)\b/i.test(line)
+        && !/\backee\s+(?:and|or|with)\s+(?:canned|tinned)\b/i.test(line);
 }
 
 function hasCookingEndpoint(instructions, fahrenheit, celsius, subject) {
@@ -259,7 +277,7 @@ function hasCookingEndpoint(instructions, fahrenheit, celsius, subject) {
         return step.split(/[.;\n]/).some(clause => {
             if (subject && !subject.test(clause) && (POULTRY_WORDS.test(clause) || FISH_WORDS.test(clause) || MEAT_WORDS.test(clause))) return false;
             if (/\b(?:do\s+not|don't|never|no\s+need|need\s+not|below|under|less\s+than|instead\s+of)\b/i.test(clause)) return false;
-            if (!/\b(?:reach(?:es)?|reads?|registers?|internal|centre|center|thickest|thermometer|cook\w*\s+(?:until|to)|heat\w*\s+to)\b/i.test(clause)) return false;
+            if (!/\b(?:reach(?:es)?|reads?|registers?|internal|temp(?:erature)?|centre|center|thickest|thermometer|(?:cook|bake|roast|grill|simmer|sear|fry|saut[eé]|broil|poach|steam|brais|stew)\w*\s+(?:until|to)|heat\w*\s+to)\b/i.test(clause)) return false;
             if (/\b(?:oven|preheat|oil|water|pan)\b/i.test(clause) && !/\b(?:internal|thermometer|thickest|centre|center)\b/i.test(clause)) return false;
             const temperatures = [...clause.matchAll(/(?<![\d.])(\d+(?:\.\d+)?)\s*°?\s*([FC])\b/gi)];
             return temperatures.length > 0 && temperatures.every(([, number, unit]) => {
@@ -275,7 +293,7 @@ function hasRest(instructions) {
     return instructions.some(step => /\brest\b/i.test(step)
         && !/\b(?:not|don't|no\s+need|skip|without|less\s+than|under)\b/i.test(step)
         && !/\b[0-2]\s*(?:[-–]|to)\s*\d+\s*min/i.test(step)
-        && /\b(?:[3-9]|[1-9]\d+)\s*(?:min(?:ute)?s?)\b/i.test(step));
+        && /\b(?:[3-9]|[1-9]\d+|three|four|five|six|seven|eight|nine|ten)\s*(?:min(?:ute)?s?)\b/i.test(step));
 }
 
 export function safetyIssues(meal) {
@@ -293,15 +311,22 @@ export function safetyIssues(meal) {
         && /\backee\b/i.test([meal.name, ...ingredients].join(' '))) {
         issues.push('Recipe refers to preparing fresh ackee.');
     }
-    // Do not classify fish sauce or chicken stock as raw animal flesh.
-    const animalIngredients = ingredients.map(line => line.replace(/\b(?:chicken|turkey|beef|fish|pork)\s+(?:broth|stock|sauce)\b/gi, 'seasoning'));
+    // Do not classify fish sauce, chicken stock, or ground/minced spices as raw animal flesh.
+    const animalIngredients = ingredients.map(line =>
+        line
+            .replace(/\b(?:chicken|turkey|beef|fish|pork|vegetable)\s+(?:broth|stock|sauce)\b/gi, 'seasoning')
+            .replace(SPICE_GROUND_MINCED, 'seasoning')
+    );
     const poultry = animalIngredients.filter(line => POULTRY_WORDS.test(line));
     const reheatedPoultry = poultry.length && /\b(?:reheat|bake|roast|fry|cook|heat)\w*\b/i.test(instructionText);
     if ((poultry.some(line => !preparedIngredient(line)) || reheatedPoultry)
         && !hasCookingEndpoint(instructions, 165, 74, POULTRY_WORDS)) {
         issues.push('Raw or reheated poultry must reach 165°F (74°C) in the food; add a clear cooking endpoint.');
     }
-    const meat = animalIngredients.filter(line => (MEAT_WORDS.test(line) || (/\bsteak\b/i.test(line) && !FISH_WORDS.test(line))) && !preparedIngredient(line));
+    const meat = animalIngredients.filter(line =>
+        (MEAT_WORDS.test(line) || (/\bsteak\b/i.test(line) && !FISH_WORDS.test(line) && !/\b(?:cauliflower|tofu|tempeh|cabbage|mushroom|portobello|eggplant|plant|vegan|vegetarian|beefsteak\s+tomato)\b/i.test(line)))
+        && !preparedIngredient(line)
+    );
     // Unspecified sausage/mince is treated as ground meat, never as a whole cut.
     const ground = meat.some(line => GROUND_WORDS.test(line)) || animalIngredients.some(line => /\b(?:ground\s+meat|minced\s+meat|meatballs?|sausage|burgers?)\b/i.test(line) && !POULTRY_WORDS.test(line) && !/\b(?:plant|vegan|vegetarian|tofu)\b/i.test(line));
     if (ground && !hasCookingEndpoint(instructions, 160, 71, MEAT_WORDS)) {

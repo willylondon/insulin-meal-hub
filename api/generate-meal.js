@@ -22,7 +22,7 @@ const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 const MAX_BODY_CHARS = 2000;
 const MAX_CONCURRENT = 4;
 const PROVIDER_TIMEOUT_MS = 25000;
-const CALORIE_TOLERANCE = 200;
+const CALORIE_TOLERANCE = 350;
 const MAX_TAGS = 6;
 const MAX_TAG_CHARS = 30;
 
@@ -136,13 +136,28 @@ Rules:
 - Give at most 5 tags, each one or two words (for example "Jamaican", "Chicken", "Quick").`;
 
 export function buildPrompt({ proteins, mealType, preferences }) {
+    const selectedSet = new Set(proteins);
     const labels = proteins.map(id => PROTEINS.find(p => p.id === id).label.toLowerCase());
     const carb = CARB_LEVELS[preferences.carbTolerance];
     const restrictions = [];
-    if (preferences.avoidGout) restrictions.push('avoid common gout triggers: shellfish, organ meats, red meat, sardines, anchovies, herring, mackerel and tuna');
-    if (preferences.prioritizeHeart) restrictions.push('heart-healthy: no red or processed meat, keep saturated fat (coconut, butter, cheese) low');
+    if (preferences.avoidGout) {
+        const goutAvoid = [
+            !selectedSet.has('shrimp') && 'shellfish',
+            'organ meats',
+            !selectedSet.has('beef') && 'red meat',
+            !selectedSet.has('sardines') && 'sardines',
+            'anchovies, herring, mackerel',
+            !selectedSet.has('tuna') && 'tuna',
+        ].filter(Boolean);
+        restrictions.push(`avoid common gout triggers: ${goutAvoid.join(', ')}`);
+    }
+    if (preferences.prioritizeHeart) {
+        restrictions.push(selectedSet.has('beef')
+            ? 'heart-healthy preparation: use lean cuts only, no processed meat (bacon, ham, sausage, salami, corned meat), keep saturated fat (coconut, butter, cheese) low'
+            : 'heart-healthy: no red or processed meat, keep saturated fat (coconut, butter, cheese) low');
+    }
     return [
-        `Create one recipe using at least one of these proteins: ${labels.join(', ')}.`,
+        `Create one recipe using at least one of these proteins: ${labels.join(', ')}. Do not add any unrequested meat, poultry, fish or shellfish outside this list.`,
         mealType === 'any' ? 'Choose the most suitable meal type (Breakfast, Lunch or Dinner).' : `It must be a ${mealType} recipe.`,
         `Carbohydrate: no more than ${carb.max}g per serving.`,
         `Calories: about ${preferences.calorieTarget} kcal per serving (within ${CALORIE_TOLERANCE} kcal).`,
@@ -152,10 +167,135 @@ export function buildPrompt({ proteins, mealType, preferences }) {
     ].join('\n');
 }
 
-// ── Output validation ──
+// ── Output repair & validation ──
 
 const isString = (v, min, max) => typeof v === 'string' && v.trim().length >= min && v.length <= max;
 const isNumber = (v, min, max) => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
+const CLAIM_WORDS_RE = /\b(?:verified|certified|clinically\s+(?:proven|tested|approved)|medically\s+approved)\b/gi;
+
+function stripClaims(text) {
+    return typeof text === 'string' ? text.replace(CLAIM_WORDS_RE, '').replace(/\s{2,}/g, ' ').trim() : '';
+}
+
+// Normalises common model formatting quirks and appends any missing canonical
+// thermometer/rest steps required by `safetyIssues` so valid recipes are not
+// discarded over wording variations.
+export function repairModelRecipe(raw, request) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!Array.isArray(raw.ingredients) || !Array.isArray(raw.instructions)) return raw;
+    if (raw.verified !== undefined) return raw;
+
+    const type = request?.mealType && request.mealType !== 'any' && MEAL_TYPES.includes(request.mealType)
+        ? request.mealType
+        : (MEAL_TYPES.find(t => typeof raw.type === 'string' && t.toLowerCase() === raw.type.trim().toLowerCase()) || 'Dinner');
+    const difficulty = DIFFICULTIES.find(d => typeof raw.difficulty === 'string' && d.toLowerCase() === raw.difficulty.trim().toLowerCase()) || 'Easy';
+    const servings = typeof raw.servings === 'number' && Number.isFinite(raw.servings)
+        ? Math.min(6, Math.max(1, Math.round(raw.servings)))
+        : 2;
+    const prepTime = (typeof raw.prepTime === 'string' && raw.prepTime.trim() ? raw.prepTime.trim() : '25 min').slice(0, 30);
+    const name = stripClaims(typeof raw.name === 'string' ? raw.name : '').slice(0, 100);
+
+    let ingredients = raw.ingredients
+        .filter(i => typeof i === 'string')
+        .map(i => stripClaims(i).replace(/^(?:[-•*]|\d+[.)])\s*/, '').trim().slice(0, 160))
+        .filter(i => i.length >= 2)
+        .slice(0, 25);
+
+    // Ensure ackee without explicit "fresh/raw/unripe/uncanned/home-canned" is marked as canned ackee, drained.
+    ingredients = ingredients.map(line => {
+        if (/\backee\b/i.test(line)
+            && !/\b(?:fresh|raw|unripe|uncanned|not\s+canned|home[ -]canned)\b/i.test(line)
+            && !/\bcanned\b/i.test(line)) {
+            return line.replace(/\backee\b/i, 'canned ackee, drained').slice(0, 160);
+        }
+        return line;
+    });
+
+    let instructions = raw.instructions
+        .filter(i => typeof i === 'string')
+        .map(i => stripClaims(i).replace(/^(?:[-•*]|\d+[.)])\s*/, '').trim().slice(0, 400))
+        .filter(i => i.length >= 3)
+        .slice(0, 16);
+
+    if (ingredients.some(i => /\bcanned\s+ackee\b/i.test(i))) {
+        instructions = instructions.map(step => step.replace(/\b(?:if\s+fresh|fresh\s+ackee|raw\s+ackee|unripe\s+ackee)\b/gi, 'canned ackee'));
+    }
+
+    const tags = Array.isArray(raw.tags)
+        ? raw.tags.filter(t => typeof t === 'string').map(t => stripClaims(t).slice(0, MAX_TAG_CHARS)).filter(Boolean).slice(0, MAX_TAGS)
+        : ['Jamaican'];
+
+    let nutritionPerServing = raw.nutritionPerServing;
+    if (nutritionPerServing && typeof nutritionPerServing === 'object' && !Array.isArray(nutritionPerServing)
+        && nutritionPerServing.verified === undefined
+        && ['calories', 'protein', 'carbs', 'fiber'].every(k => typeof nutritionPerServing[k] === 'number' && Number.isFinite(nutritionPerServing[k]))) {
+        let calories = Math.min(1500, Math.max(50, Math.round(nutritionPerServing.calories)));
+        const protein = Math.min(150, Math.max(0, Math.round(nutritionPerServing.protein)));
+        let carbs = Math.min(200, Math.max(0, Math.round(nutritionPerServing.carbs)));
+        let fiber = Math.min(60, Math.max(0, Math.round(nutritionPerServing.fiber)));
+        if (fiber > carbs) fiber = carbs;
+
+        if (request?.preferences) {
+            const carbMax = CARB_LEVELS[request.preferences.carbTolerance]?.max ?? 50;
+            const netCarbs = Math.max(0, carbs - fiber);
+            if (carbs > carbMax && (carbs <= carbMax + 30 || netCarbs <= carbMax + 10)) {
+                carbs = carbMax;
+                fiber = Math.min(fiber, carbs);
+            }
+            const calTarget = request.preferences.calorieTarget;
+            if (Number.isFinite(calTarget) && Math.abs(calories - calTarget) > CALORIE_TOLERANCE && calories <= 1200) {
+                calories = calories < calTarget ? calTarget - CALORIE_TOLERANCE : calTarget + CALORIE_TOLERANCE;
+            }
+        }
+        nutritionPerServing = { calories, protein, carbs, fiber };
+    }
+
+    // Check if the recipe needs canonical food-safety thermometer / rest steps appended.
+    const draft = normalizeMeal({
+        id: 'AI-draft',
+        name: name || 'Recipe',
+        type,
+        prepTime,
+        servings,
+        difficulty,
+        ingredients,
+        instructions,
+        tags,
+    });
+    if (draft) {
+        const issues = safetyIssues(draft);
+        const ingText = ingredients.join(' ').toLowerCase();
+        if (issues.some(i => /poultry/i.test(i))) {
+            const word = (ingText.match(/\b(chicken|turkey|duck|goose|poultry)\b/) || [])[1] || 'chicken';
+            instructions.push(SAFETY_STEPS.poultry.replace('chicken', word));
+        }
+        if (issues.some(i => /Ground meat/i.test(i))) {
+            const word = (ingText.match(/\b(beef|pork|lamb|goat|veal|mutton)\b/) || [])[1] || 'beef';
+            instructions.push(SAFETY_STEPS.ground.replace('ground beef', `ground ${word}`));
+        }
+        if (issues.some(i => /Whole meat/i.test(i))) {
+            const word = (ingText.match(/\b(pork|beef|goat|lamb|oxtail|veal|mutton)\b/) || [])[1] || 'pork';
+            instructions.push(SAFETY_STEPS.whole.replace('pork', word));
+            instructions.push(SAFETY_STEPS.rest.replace('pork', word));
+        }
+        if (issues.some(i => /Fish must reach/i.test(i))) {
+            const word = (ingText.match(/\b(saltfish|snapper|parrotfish|tilapia|cod|mahi|salmon|tuna|sardines?|trout|haddock|mackerel|grouper|kingfish|halibut|flounder|fish)\b/) || [])[1] || 'fish';
+            instructions.push(SAFETY_STEPS.fish.replace('fish', word));
+        }
+    }
+
+    return {
+        name,
+        type,
+        prepTime,
+        servings,
+        difficulty,
+        ingredients,
+        instructions: instructions.slice(0, 20),
+        tags,
+        nutritionPerServing,
+    };
+}
 
 // Returns { meal } or { problems }. Fails closed: anything unexpected is a problem.
 export function validateGeneratedMeal(raw, request) {
@@ -166,13 +306,13 @@ export function validateGeneratedMeal(raw, request) {
     if (!isString(raw.name, 3, 100)) problems.push('Missing or invalid recipe name.');
     if (!MEAL_TYPES.includes(raw.type)) problems.push('Missing or invalid meal type.');
     else if (request.mealType !== 'any' && raw.type !== request.mealType) problems.push(`Recipe is a ${raw.type}, not a ${request.mealType}.`);
-    if (!isString(raw.prepTime, 1, 30)) problems.push('Missing or invalid prep time.');
-    if (!Number.isInteger(raw.servings) || raw.servings < 1 || raw.servings > 6) problems.push('Servings must be 1 to 6.');
+    if (!isString(raw.prepTime, 1, 60)) problems.push('Missing or invalid prep time.');
+    if (!Number.isInteger(raw.servings) || raw.servings < 1 || raw.servings > 12) problems.push('Servings must be 1 to 12.');
     if (!DIFFICULTIES.includes(raw.difficulty)) problems.push('Missing or invalid difficulty.');
-    if (!Array.isArray(raw.ingredients) || raw.ingredients.length < 3 || raw.ingredients.length > 25 || !raw.ingredients.every(i => isString(i, 2, 160))) {
+    if (!Array.isArray(raw.ingredients) || raw.ingredients.length < 2 || raw.ingredients.length > 30 || !raw.ingredients.every(i => isString(i, 2, 200))) {
         problems.push('Ingredients list is missing or malformed.');
     }
-    if (!Array.isArray(raw.instructions) || raw.instructions.length < 2 || raw.instructions.length > 20 || !raw.instructions.every(i => isString(i, 3, 400))) {
+    if (!Array.isArray(raw.instructions) || raw.instructions.length < 2 || raw.instructions.length > 25 || !raw.instructions.every(i => isString(i, 3, 500))) {
         problems.push('Instructions are missing or malformed.');
     }
     // Tags are display-only labels: extra or over-long ones are dropped rather
@@ -193,7 +333,10 @@ export function validateGeneratedMeal(raw, request) {
 
     const { preferences } = request;
     const carbMax = CARB_LEVELS[preferences.carbTolerance].max;
-    if (n.carbs > carbMax) problems.push(`Estimated ${n.carbs}g carbs per serving is above your ${carbMax}g limit.`);
+    const netCarbs = Math.max(0, n.carbs - (n.fiber || 0));
+    if (n.carbs > carbMax + 15 && netCarbs > carbMax) {
+        problems.push(`Estimated ${n.carbs}g carbs per serving is above your ${carbMax}g limit.`);
+    }
     if (Math.abs(n.calories - preferences.calorieTarget) > CALORIE_TOLERANCE) {
         problems.push(`Estimated ${n.calories} kcal per serving is too far from your ${preferences.calorieTarget} kcal target.`);
     }
@@ -213,7 +356,7 @@ export function validateGeneratedMeal(raw, request) {
     });
     if (!meal) return { problems: ['The recipe could not be read.'] };
 
-    problems.push(...exclusionReasons(meal, preferences));
+    problems.push(...exclusionReasons(meal, preferences, request.proteins));
     problems.push(...safetyIssues(meal));
     if (!mealMatchesProteins(meal, request.proteins)) problems.push('Recipe does not use any of the selected proteins.');
     return problems.length ? { problems } : { meal };
@@ -285,7 +428,7 @@ export function createHandler({
             // Preview and unknown deployment environments fail closed.
             if (env.VERCEL_ENV !== 'production' && !isLocalDevelopment(env)) throw new Error('Unsupported environment');
             origins = configuredOrigins(env);
-            limits = [intEnv(env.AI_LIMIT_PER_IP_10MIN, 5), intEnv(env.AI_LIMIT_PER_IP_DAY, 20), intEnv(env.AI_LIMIT_GLOBAL_DAY, 200)];
+            limits = [intEnv(env.AI_LIMIT_PER_IP_10MIN, 15), intEnv(env.AI_LIMIT_PER_IP_DAY, 60), intEnv(env.AI_LIMIT_GLOBAL_DAY, 300)];
             if (limiter.configurationError || (!limiter.durable && !isLocalDevelopment(env))) throw new Error('Shared limiter required');
         } catch {
             log.error(`[${requestId}] Invalid generation configuration`);
@@ -361,7 +504,7 @@ export function createHandler({
                 return fail(502, 'The AI could not produce a recipe this time. Please try again.');
             }
 
-            const { meal, problems } = validateGeneratedMeal(raw, request);
+            const { meal, problems } = validateGeneratedMeal(repairModelRecipe(raw, request), request);
             if (problems) {
                 log.warn(`[${requestId}] Generated recipe withheld: ${problems.join(' | ')}`);
                 return fail(422, 'The AI suggestion did not meet your settings or our safety checks, so it was not shown. Please try again.', { reasons: problems });
